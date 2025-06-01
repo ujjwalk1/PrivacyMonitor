@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 300px;
+            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .section h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        
+        .metric-label {
+            color: #666;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+        }
+        
+        .status-good { color: #28a745; }
+        .status-warning { color: #ffc107; }
+        .status-danger { color: #dc3545; }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔒 Privacy Monitor</h1>
+    </div>
+    
+    <div id="loading" class="loading">
+        Analyzing current page...
+    </div>
+    
+    <div id="content" style="display: none;">
+        <div class="section">
+            <h3>🌐 Connection Security</h3>
+            <div class="metric">
+                <span class="metric-label">Protocol:</span>
+                <span id="protocol" class="metric-value"></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">HTTPS:</span>
+                <span id="https-status" class="metric-value"></span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>🍪 Privacy Analysis</h3>
+            <div class="metric">
+                <span class="metric-label">Cookies:</span>
+                <span id="cookie-count" class="metric-value"></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Scripts:</span>
+                <span id="script-count" class="metric-value"></span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">3rd Party Scripts:</span>
+                <span id="third-party-scripts" class="metric-value"></span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>🛡️ Security Score</h3>
+            <div id="security-score" class="metric-value" style="text-align: center; font-size: 24px;"></div>
+            <div id="security-summary" style="text-align: center; margin-top: 5px; font-size: 12px;"></div>
+        </div>
+        
+        <button id="refresh" class="refresh-btn">🔄 Refresh Analysis</button>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "manifest_version": 2,
+  "name": "Privacy & Security Monitor",
+  "version": "1.0",
+  "description": "Monitor password strength, cookies, and security headers",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "cookies",
+    "scripting",
+    "http://*/*",
+    "https://*/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"]
+    }
+  ],
+  
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Privacy Monitor"
+  },
+  
+  "applications": {
+    "gecko": {
+      "id": "privacy-monitor@example.com"
+    }
+  }
+}
