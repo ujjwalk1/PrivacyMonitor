@@ -2,10 +2,6 @@
 
 A lightweight Firefox extension that helps users monitor website security, analyze privacy risks, and strengthen password security in real-time.
 
-![Extension Version](https://img.shields.io/badge/version-1.0-blue)
-![Firefox Compatible](https://img.shields.io/badge/firefox-compatible-orange)
-![License](https://img.shields.io/badge/license-GPL%20v3-blue)
-
 ## 🌟 Features
 
 ### Current Features
