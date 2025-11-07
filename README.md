@@ -1,37 +1,37 @@
-# 🔒 Privacy Monitor Browser Extension
+#  Privacy Monitor Browser Extension
 
 A lightweight Firefox extension that helps users monitor website security, analyze privacy risks, and strengthen password security in real-time.
 
-## 🌟 Features
+##  Features
 
 ### Current Features
 
-#### 🔐 **Password Security**
+####  **Password Security**
 - **Real-time Password Strength Analysis**: Instant feedback as you type passwords
 - **Smart Scoring System**: Comprehensive evaluation based on length, character diversity, and common patterns
 - **Visual Feedback**: Color-coded strength indicators (Weak/Medium/Strong)
 - **Improvement Suggestions**: Actionable tips to strengthen weak passwords
 - **Pattern Detection**: Identifies and warns against common weak patterns like "123", "password", "qwerty"
 
-#### 🛡️ **Website Security Analysis**
+####  **Website Security Analysis**
 - **HTTPS Detection**: Verifies secure connection protocols
 - **Security Score**: Overall security rating (0-100) for each website
 - **Performance Optimized**: Throttled analysis to minimize browser impact
 - **Real-time Monitoring**: Continuous security assessment as you browse
 
-#### 🍪 **Privacy Monitoring**
+####  **Privacy Monitoring**
 - **Cookie Tracking**: Counts and monitors HTTP cookies
 - **Script Analysis**: Identifies total scripts and third-party scripts
 - **Third-party Tracker Detection**: Highlights external scripts that may track you
 - **Privacy Impact Assessment**: Evaluates overall privacy implications
 
-#### 📊 **User Interface**
+####  **User Interface**
 - **Clean Popup Interface**: Easy-to-read security dashboard
 - **Instant Updates**: Real-time refresh capability
 - **Visual Status Indicators**: Color-coded security and privacy status
 - **Responsive Design**: Works seamlessly across different screen sizes
 
-## 🚀 Installation
+##  Installation
 
 ### Firefox Installation
 1. Download or clone this repository
@@ -46,7 +46,7 @@ git clone https://github.com/ujjwalk1/privacy-security-monitor.git
 cd privacy-security-monitor
 ```
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 privacy-security-monitor/
@@ -57,7 +57,7 @@ privacy-security-monitor/
 └── README.md             # This file
 ```
 
-## 🛠️ Technical Details
+##  Technical Details
 
 ### Technologies Used
 - **JavaScript ES6+**: Core functionality
@@ -71,39 +71,39 @@ privacy-security-monitor/
 - **Memory Optimization**: Reuses components and minimizes memory footprint
 - **Debounced Updates**: Prevents excessive API calls
 
-## 🔮 Upcoming Features
+##  Upcoming Features
 
-### 🔍 **Advanced Security Analysis** *(Coming Soon)*
+### **Advanced Security Analysis** *(Coming Soon)*
 - [ ] **Security Headers Detection**: Check for CSP, HSTS, X-Frame-Options
 - [ ] **Mixed Content Detection**: Identify HTTP resources on HTTPS pages
 - [ ] **SSL Certificate Analysis**: Display cert details and expiration warnings
 - [ ] **Vulnerable Library Scanner**: Detect outdated JavaScript libraries
 
-### 🍪 **Enhanced Privacy Features** *(Planned)*
+### **Enhanced Privacy Features** *(Planned)*
 - [ ] **Cookie Categorization**: Classify cookies by purpose (tracking, functional, etc.)
 - [ ] **Local Storage Monitor**: Track localStorage and sessionStorage usage
 - [ ] **Fingerprinting Detection**: Identify canvas fingerprinting and tracking attempts
 - [ ] **Privacy Score History**: Track website privacy changes over time
 
-### 🛡️ **Real-time Protection** *(Future)*
+### **Real-time Protection** *(Future)*
 - [ ] **Phishing Detection**: Integration with safe browsing databases
 - [ ] **Malware Scanner**: Real-time threat detection
 - [ ] **Form Security Warnings**: Alert for insecure form submissions
 - [ ] **Download Safety Scanner**: Pre-download security checks
 
-### 📊 **Analytics & Reporting** *(Roadmap)*
+### **Analytics & Reporting** *(Roadmap)*
 - [ ] **Weekly Security Reports**: Comprehensive browsing security summary
 - [ ] **Site Comparison Tools**: Compare security across similar websites
 - [ ] **Breach Database Integration**: Check domains against known breaches
 - [ ] **Export Functionality**: Data export for security auditing
 
-### ⚙️ **User Experience** *(Future)*
+### **User Experience** *(Future)*
 - [ ] **Custom Security Rules**: User-defined security criteria
 - [ ] **Whitelist/Blacklist Management**: Trusted and blocked site management
 - [ ] **Notification System**: Real-time security alerts
 - [ ] **Multi-browser Support**: Chrome and Edge compatibility
 
-## 📋 Requirements
+## Requirements
 
 - **Firefox**: Version 60 or higher
 - **Permissions**: The extension requires minimal permissions for optimal security
@@ -111,13 +111,13 @@ privacy-security-monitor/
   - `storage`: Store security analysis data
   - `cookies`: Monitor cookie usage
 
-## 🐛 Known Issues
+##  Known Issues
 
 - Extension may not work on internal browser pages (`about:`, `moz-extension:`)
 - Some dynamically loaded content may require manual refresh
 - Third-party script detection limited to loaded scripts at analysis time
 
-## 📈 Version History
+##  Version History
 
 ### v1.0.0 *(Current)*
 - Initial release with password strength analysis
@@ -125,17 +125,13 @@ privacy-security-monitor/
 - Cookie and script monitoring
 - Clean popup interface
 
-## 📄 License
+##  License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
-## 💬 Support
+##  Support
 
 - **Issues**: [GitHub Issues](https://github.com/ujjwalk1/privacy-security-monitor/issues)
 - **Email**: kaulujjwal1@gmail.com
-
----
-
-**⭐ Star this repository if you find it helpful!**
 
 **🔒 Stay secure, stay private!**
