@@ -1,130 +1,357 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <style>
-        body {
-            width: 300px;
-            padding: 15px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 14px;
-            margin: 0;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 18px;
-            color: #333;
-        }
-        
-        .section {
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-        
-        .section h3 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            color: #555;
-        }
-        
-        .metric {
-            display: flex;
-            justify-content: space-between;
-            margin: 5px 0;
-        }
-        
-        .metric-label {
-            color: #666;
-        }
-        
-        .metric-value {
-            font-weight: bold;
-        }
-        
-        .status-good { color: #28a745; }
-        .status-warning { color: #ffc107; }
-        .status-danger { color: #dc3545; }
-        
-        .loading {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-        }
-        
-        .refresh-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-top: 10px;
-            width: 100%;
-        }
-        
-        .refresh-btn:hover {
-            background: #0056b3;
-        }
-    </style>
+  <meta charset="utf-8">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      width: 320px;
+      padding: 0;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .header .domain {
+      font-size: 11px;
+      opacity: 0.65;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    /* Score ring */
+    .score-ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .score-ring {
+      width: 48px;
+      height: 48px;
+    }
+    .score-ring circle {
+      fill: none;
+      stroke-width: 5;
+    }
+    .score-ring .bg   { stroke: rgba(255,255,255,0.15); }
+    .score-ring .fill { stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+    .score-label {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-top: 1px;
+      text-align: center;
+    }
+
+    .content { padding: 10px 12px; }
+
+    .section {
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 12px 7px;
+      font-weight: 600;
+      font-size: 12px;
+      color: #444;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .section-body { padding: 8px 12px; }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3px 0;
+    }
+
+    .metric-label { color: #666; }
+    .metric-value { font-weight: 600; }
+
+    .good    { color: #16a34a; }
+    .warning { color: #d97706; }
+    .danger  { color: #dc2626; }
+    .muted   { color: #9ca3af; }
+
+    /* Header pills */
+    .header-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 8px 12px;
+    }
+
+    .header-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 7px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .pill-present {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .pill-missing {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* Breach card */
+    .breach-list {
+      padding: 6px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .breach-item {
+      background: #fff7ed;
+      border-left: 3px solid #f97316;
+      border-radius: 0 4px 4px 0;
+      padding: 5px 8px;
+    }
+
+    .breach-item .breach-name {
+      font-weight: 600;
+      font-size: 12px;
+      color: #9a3412;
+    }
+
+    .breach-item .breach-meta {
+      font-size: 11px;
+      color: #78350f;
+      margin-top: 1px;
+    }
+
+    .no-breaches {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      color: #16a34a;
+      font-weight: 500;
+    }
+
+    /* Loading / error states */
+    .loading-row {
+      padding: 10px 12px;
+      color: #9ca3af;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #6b7280;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-warning {
+      padding: 8px 12px;
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+      margin: 6px 12px;
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      color: #92400e;
+    }
+
+    .refresh-btn {
+      width: calc(100% - 24px);
+      margin: 0 12px 12px;
+      background: #1a1a2e;
+      color: white;
+      border: none;
+      padding: 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+
+    .refresh-btn:hover { background: #2d2d4e; }
+
+    #loading-screen {
+      padding: 30px 20px;
+      text-align: center;
+      color: #9ca3af;
+    }
+
+    #main-content { display: none; }
+
+    .tag-new {
+      font-size: 9px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 1px 5px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🔒 Privacy Monitor</h1>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>🔒 Privacy Monitor</h1>
+      <div class="domain" id="current-domain">Loading…</div>
     </div>
-    
-    <div id="loading" class="loading">
-        Analyzing current page...
+    <div class="score-ring-wrap">
+      <svg class="score-ring" viewBox="0 0 36 36">
+        <circle class="bg"   cx="18" cy="18" r="15.9"/>
+        <circle class="fill" id="score-arc" cx="18" cy="18" r="15.9"
+                stroke="#4ade80"
+                stroke-dasharray="100 100"
+                stroke-dashoffset="25"
+                transform="rotate(-90 18 18)"/>
+        <text x="18" y="13" text-anchor="middle"
+              font-size="7" fill="white" font-weight="700" dy=".3em"
+              id="score-text" style="dominant-baseline:middle;font-family:sans-serif;">—</text>
+        <text x="18" y="25" text-anchor="middle"
+              font-size="4.5" fill="rgba(255,255,255,0.7)"
+              style="font-family:sans-serif;">/100</text>
+      </svg>
+      <div class="score-label" id="score-label">Score</div>
     </div>
-    
-    <div id="content" style="display: none;">
-        <div class="section">
-            <h3>🌐 Connection Security</h3>
-            <div class="metric">
-                <span class="metric-label">Protocol:</span>
-                <span id="protocol" class="metric-value"></span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">HTTPS:</span>
-                <span id="https-status" class="metric-value"></span>
-            </div>
+  </div>
+
+  <div id="loading-screen">
+    <div class="spinner" style="width:20px;height:20px;border-width:3px;margin:0 auto 8px;"></div>
+    Analyzing page…
+  </div>
+
+  <div id="main-content">
+    <div class="content">
+
+      <!-- Connection -->
+      <div class="section">
+        <div class="section-title">🌐 Connection</div>
+        <div class="section-body">
+          <div class="metric">
+            <span class="metric-label">Protocol</span>
+            <span id="protocol" class="metric-value"></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">HTTPS</span>
+            <span id="https-status" class="metric-value"></span>
+          </div>
         </div>
-        
-        <div class="section">
-            <h3>🍪 Privacy Analysis</h3>
-            <div class="metric">
-                <span class="metric-label">Cookies:</span>
-                <span id="cookie-count" class="metric-value"></span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">Scripts:</span>
-                <span id="script-count" class="metric-value"></span>
-            </div>
-            <div class="metric">
-                <span class="metric-label">3rd Party Scripts:</span>
-                <span id="third-party-scripts" class="metric-value"></span>
-            </div>
+      </div>
+
+      <!-- Security Headers -->
+      <div class="section">
+        <div class="section-title">
+          🛡️ Security Headers
+          <span class="tag-new">New</span>
         </div>
-        
-        <div class="section">
-            <h3>🛡️ Security Score</h3>
-            <div id="security-score" class="metric-value" style="text-align: center; font-size: 24px;"></div>
-            <div id="security-summary" style="text-align: center; margin-top: 5px; font-size: 12px;"></div>
+        <div id="headers-loading" class="loading-row">
+          <div class="spinner"></div> Checking headers…
         </div>
-        
-        <button id="refresh" class="refresh-btn">🔄 Refresh Analysis</button>
-    </div>
-    
-    <script src="popup.js"></script>
+        <div id="headers-grid" class="header-grid" style="display:none;"></div>
+        <div id="headers-error" style="display:none;" class="loading-row">
+          ⚠ Could not read headers for this page
+        </div>
+      </div>
+
+      <!-- Data Breach -->
+      <div class="section">
+        <div class="section-title">
+          🔓 Data Breach Check
+          <span class="tag-new">New</span>
+        </div>
+        <div id="breach-loading" class="loading-row">
+          <div class="spinner"></div> Checking breach database…
+        </div>
+        <div id="breach-none" class="no-breaches" style="display:none;">
+          ✅ No known breaches for this domain
+        </div>
+        <div id="breach-list" class="breach-list" style="display:none;"></div>
+        <div id="breach-error" style="display:none;" class="loading-row">
+          Could not reach breach database
+        </div>
+      </div>
+
+      <!-- Forms -->
+      <div class="section" id="forms-section">
+        <div class="section-title">
+          📋 Form Security
+          <span class="tag-new">New</span>
+        </div>
+        <div id="forms-loading" class="loading-row">
+          <div class="spinner"></div> Scanning forms…
+        </div>
+        <div id="forms-body" style="display:none;"></div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="section">
+        <div class="section-title">🍪 Privacy Analysis</div>
+        <div class="section-body">
+          <div class="metric">
+            <span class="metric-label">Cookies</span>
+            <span id="cookie-count" class="metric-value"></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Total Scripts</span>
+            <span id="script-count" class="metric-value"></span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">3rd-Party Scripts</span>
+            <span id="third-party-scripts" class="metric-value"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <button id="refresh" class="refresh-btn">🔄 Refresh Analysis</button>
+  </div><!-- /main-content -->
+
+  <script src="popup.js"></script>
 </body>
 </html>
