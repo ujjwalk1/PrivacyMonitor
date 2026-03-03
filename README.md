@@ -155,6 +155,6 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 ##  Support
 
 - **Issues**: [GitHub Issues](https://github.com/ujjwalk1/privacy-security-monitor/issues)
-- **Email**: kaulujjwal1@gmail.com
+- **Email**: nee103kn3@mozmail.com
 
 **🔒 Stay secure, stay private!**
