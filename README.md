@@ -1,6 +1,6 @@
 #  Privacy Monitor Browser Extension
 
-A lightweight Firefox extension that helps users monitor website security, analyze privacy risks, and strengthen password security in real-time.
+A lightweight Firefox extension that helps users monitor website security, analyze privacy risks, detect data breaches, and strengthen password security in real-time.
 
 ##  Features
 
@@ -13,9 +13,26 @@ A lightweight Firefox extension that helps users monitor website security, analy
 - **Improvement Suggestions**: Actionable tips to strengthen weak passwords
 - **Pattern Detection**: Identifies and warns against common weak patterns like "123", "password", "qwerty"
 
+####  **Security Headers Detection** *(New in v1.1)*
+- **Header Interception**: Background script inspects HTTP response headers before the page finishes loading
+- **Six Header Checks**: Evaluates CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy
+- **Visual Header Pills**: Color-coded indicators (green = present, red = missing) in the popup
+- **Header Score**: Missing headers are factored into the overall security score by importance level
+
+####  **Data Breach Detection** *(New in v1.1)*
+- **HaveIBeenPwned Integration**: Checks the current domain against a database of known data breaches
+- **Breach Details**: Displays breach name, date, and number of affected accounts
+- **Score Impact**: Breached domains receive a penalty in the overall security score
+
+####  **Insecure Form Detection** *(New in v1.1)*
+- **HTTP Form Scanning**: Detects forms that submit credentials over unencrypted HTTP
+- **In-Page Warnings**: Injects a visible warning banner directly into insecure password forms on the page
+- **Dynamic Monitoring**: Mutation observer watches for forms added after initial page load
+- **Popup Summary**: Form security status surfaced in the extension popup
+
 ####  **Website Security Analysis**
 - **HTTPS Detection**: Verifies secure connection protocols
-- **Security Score**: Overall security rating (0-100) for each website
+- **Security Score**: Reworked overall security rating (0-100) now factors in headers, breaches, and form safety
 - **Performance Optimized**: Throttled analysis to minimize browser impact
 - **Real-time Monitoring**: Continuous security assessment as you browse
 
@@ -26,7 +43,7 @@ A lightweight Firefox extension that helps users monitor website security, analy
 - **Privacy Impact Assessment**: Evaluates overall privacy implications
 
 ####  **User Interface**
-- **Clean Popup Interface**: Easy-to-read security dashboard
+- **Redesigned Popup**: Score ring in the header, sectioned layout with clear visual hierarchy
 - **Instant Updates**: Real-time refresh capability
 - **Visual Status Indicators**: Color-coded security and privacy status
 - **Responsive Design**: Works seamlessly across different screen sizes
@@ -51,10 +68,11 @@ cd privacy-security-monitor
 ```
 privacy-security-monitor/
 ├── manifest.json          # Extension configuration
-├── content-script.js      # Main functionality and password analysis
-├── popup.html            # Extension popup interface
-├── popup.js              # Popup logic and data processing
-└── README.md             # This file
+├── background.js          # Header interception via webRequest API
+├── content-script.js      # Password analysis and insecure form detection
+├── popup.html             # Extension popup interface
+├── popup.js               # Popup logic, breach check, and data processing
+└── README.md              # This file
 ```
 
 ##  Technical Details
@@ -63,18 +81,19 @@ privacy-security-monitor/
 - **JavaScript ES6+**: Core functionality
 - **HTML5 & CSS3**: User interface
 - **WebExtensions API**: Browser integration
-- **Firefox Browser API**: Storage and tab management
+- **Firefox Browser API**: Storage, tab management, and webRequest interception
+- **HaveIBeenPwned API v3**: Domain breach lookup
 
 ### Performance Features
 - **Throttled Processing**: Limits analysis frequency to preserve performance
 - **Efficient DOM Monitoring**: Smart mutation observer for dynamic content
 - **Memory Optimization**: Reuses components and minimizes memory footprint
 - **Debounced Updates**: Prevents excessive API calls
+- **Background Header Capture**: Headers intercepted once at page load, not on every popup open
 
 ##  Upcoming Features
 
-### **Advanced Security Analysis** *(Coming Soon)*
-- [ ] **Security Headers Detection**: Check for CSP, HSTS, X-Frame-Options
+### **Advanced Security Analysis** *(Planned)*
 - [ ] **Mixed Content Detection**: Identify HTTP resources on HTTPS pages
 - [ ] **SSL Certificate Analysis**: Display cert details and expiration warnings
 - [ ] **Vulnerable Library Scanner**: Detect outdated JavaScript libraries
@@ -85,16 +104,9 @@ privacy-security-monitor/
 - [ ] **Fingerprinting Detection**: Identify canvas fingerprinting and tracking attempts
 - [ ] **Privacy Score History**: Track website privacy changes over time
 
-### **Real-time Protection** *(Future)*
-- [ ] **Phishing Detection**: Integration with safe browsing databases
-- [ ] **Malware Scanner**: Real-time threat detection
-- [ ] **Form Security Warnings**: Alert for insecure form submissions
-- [ ] **Download Safety Scanner**: Pre-download security checks
-
 ### **Analytics & Reporting** *(Roadmap)*
 - [ ] **Weekly Security Reports**: Comprehensive browsing security summary
 - [ ] **Site Comparison Tools**: Compare security across similar websites
-- [ ] **Breach Database Integration**: Check domains against known breaches
 - [ ] **Export Functionality**: Data export for security auditing
 
 ### **User Experience** *(Future)*
@@ -106,20 +118,31 @@ privacy-security-monitor/
 ## Requirements
 
 - **Firefox**: Version 60 or higher
-- **Permissions**: The extension requires minimal permissions for optimal security
+- **Permissions**: The extension requires the following permissions
   - `activeTab`: Access current tab information
   - `storage`: Store security analysis data
   - `cookies`: Monitor cookie usage
+  - `webRequest`: Intercept HTTP response headers
 
 ##  Known Issues
 
 - Extension may not work on internal browser pages (`about:`, `moz-extension:`)
 - Some dynamically loaded content may require manual refresh
-- Third-party script detection limited to loaded scripts at analysis time
+- Third-party script detection limited to scripts loaded at analysis time
+- Breach check requires an internet connection; shows an error state if the HaveIBeenPwned API is unreachable
+- Security headers are only captured on full page loads — refreshing a tab after installing the extension ensures accurate header data
 
 ##  Version History
 
-### v1.0.0 *(Current)*
+### v1.1.0 *(Current)*
+- Security headers detection (CSP, HSTS, X-Frame-Options, and more)
+- HaveIBeenPwned breach database integration
+- Insecure form detection with in-page warning banners
+- Reworked security score factoring in headers, breaches, and form safety
+- Redesigned popup UI with score ring and sectioned layout
+- Added background.js for webRequest-based header interception
+
+### v1.0.0
 - Initial release with password strength analysis
 - Basic security scoring system
 - Cookie and script monitoring
