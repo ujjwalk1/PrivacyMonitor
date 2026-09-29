@@ -1,0 +1,7 @@
+[
+  "manifest.json",
+  "background.js",
+  "content-script.js",
+  "popup.html",
+  "popup.js"
+]
