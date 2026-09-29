@@ -3,45 +3,8 @@
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 // ---------------------------------------------------------------------------
-// Score calculation
+// Score presentation (calculation lives in scoring.js)
 // ---------------------------------------------------------------------------
-
-function calculateSecurityScore({ basicData, headerData, breachData, formData }) {
-  let score = 0;
-
-  // HTTPS: 25 pts
-  if (basicData?.httpsOnly) score += 25;
-
-  // Security headers: up to 30 pts (based on headerScore 0-100 mapped to 0-30)
-  if (headerData?.headerScore != null) {
-    score += Math.round((headerData.headerScore / 100) * 30);
-  }
-
-  // Cookie penalty: up to -10
-  if (basicData) {
-    score -= Math.min(basicData.cookies * 2, 10);
-  }
-
-  // Third-party script penalty: up to -15
-  if (basicData) {
-    score -= Math.min(basicData.thirdPartyScripts * 3, 15);
-  }
-
-  // Breach penalty: -15 if site has been breached
-  if (breachData && Array.isArray(breachData) && breachData.length > 0) {
-    score -= 15;
-  }
-
-  // Insecure form penalty: -10 if password form is HTTP
-  if (formData?.insecurePasswordForms > 0) {
-    score -= 10;
-  }
-
-  // Base
-  score += 20;
-
-  return Math.max(0, Math.min(100, score));
-}
 
 function getScoreStyle(score) {
   if (score >= 80) return { color: '#4ade80', label: 'Excellent' };
@@ -55,11 +18,19 @@ function getScoreStyle(score) {
 // ---------------------------------------------------------------------------
 
 function updateScoreRing(score) {
-  const { color, label } = getScoreStyle(score);
   const arc = document.getElementById('score-arc');
   const text = document.getElementById('score-text');
   const lbl  = document.getElementById('score-label');
 
+  if (score === null) {
+    arc.setAttribute('stroke-dashoffset', '100');
+    arc.setAttribute('stroke', '#9ca3af');
+    text.textContent = '—';
+    lbl.textContent = 'Incomplete';
+    return;
+  }
+
+  const { color, label } = getScoreStyle(score);
   // stroke-dashoffset: 100 = empty, 0 = full; offset = 100 - score
   arc.setAttribute('stroke-dashoffset', String(100 - score));
   arc.setAttribute('stroke', color);
@@ -226,6 +197,7 @@ async function fetchBreaches(hostname) {
 }
 
 async function loadAllData() {
+  updateScoreRing(null);
   try {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
     let hostname;
@@ -269,13 +241,12 @@ async function loadAllData() {
     renderHeaders(headerData);
     renderForms(formData);
 
+    // The local score does not depend on the historical breach lookup.
+    updateScoreRing(PrivacyMonitorScoring.calculateSecurityScore({ basicData, headerData, formData }));
+
     // Breach check is async — show spinner until done
     const breaches = await fetchBreaches(hostname);
     renderBreaches(breaches);
-
-    // Final score (now that we have everything)
-    const score = calculateSecurityScore({ basicData, headerData, breachData: breaches, formData });
-    updateScoreRing(score);
 
   } catch (err) {
     console.error('[Privacy Monitor] Load error:', err);

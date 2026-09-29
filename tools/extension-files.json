@@ -3,5 +3,6 @@
   "background.js",
   "content-script.js",
   "popup.html",
+  "scoring.js",
   "popup.js"
 ]

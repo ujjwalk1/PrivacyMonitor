@@ -1,8 +1,9 @@
 # Privacy Monitor local development
 
-D01 preserves the five v1.1 extension files in place. There is no framework,
+D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
+module documented in `SCORING.md`. There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
-Git checkout; the D01 files are synchronized through the GitHub connection.
+Git checkout; D01 and D02 updates use the GitHub connection.
 
 ## Recoverable baseline
 
@@ -23,20 +24,21 @@ Verified here with Node 24.19.0. No npm install or network access is required.
 Run from the project directory:
 
 ```powershell
-node --test tests/baseline.test.mjs
+node --test tests/*.test.mjs
 node tools/lint.mjs
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The tests exercise mocked background header events, content-script initialization,
-and popup boot registration. They do not simulate a full browser or validate the
-score, breach API, or all existing behaviors. Local lint checks JavaScript syntax,
+popup boot registration, scoring, and score/breach separation in the popup. They
+do not simulate a full browser or validate the breach API or all existing
+behaviors. Local lint checks JavaScript syntax,
 the MV2 manifest basics, and that manifest/popup file references are packaged.
 It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
 validation remain outstanding for the assigned later manifest/release days.
 
 Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the five paths in `tools/extension-files.json`, then verifies each
+includes only the six paths in `tools/extension-files.json`, then verifies each
 archive entry against the source SHA-256. Development files, checkpoints, and the
 unrelated image are excluded. Add future extension assets to that list when needed.
 The ZIP is a local unsigned development artifact, not a submission-ready release.
@@ -63,7 +65,7 @@ selected. These steps follow [Mozilla temporary installation instructions](https
 
 Current v1.1 behavior: opening the popup on an analyzed page automatically sends
 the hostname to Have I Been Pwned. Content scans persist page URLs in extension
-local storage. D01 leaves these behaviors unchanged; consent and storage changes
+local storage. D01 and D02 leave these behaviors unchanged; consent and storage changes
 belong to D05 and D10. Use non-sensitive test pages and a disposable profile.
 
 Browser acceptance is still pending. Passing mocked tests and byte-identical
