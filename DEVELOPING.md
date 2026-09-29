@@ -1,9 +1,10 @@
 # Privacy Monitor local development
 
 D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
-module documented in `SCORING.md`. There is no framework,
+module documented in `SCORING.md`. D03's popup states and local preview fixtures
+are documented in `POPUP_STATES.md`. There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
-Git checkout; D01 and D02 updates use the GitHub connection.
+Git checkout; D01–D03 updates use the GitHub connection.
 
 ## Recoverable baseline
 
@@ -30,7 +31,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The tests exercise mocked background header events, content-script initialization,
-popup boot registration, scoring, and score/breach separation in the popup. They
+popup boot registration, scoring, popup state transitions, and score/breach separation. They
 do not simulate a full browser or validate the breach API or all existing
 behaviors. Local lint checks JavaScript syntax,
 the MV2 manifest basics, and that manifest/popup file references are packaged.
@@ -38,7 +39,7 @@ It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
 validation remain outstanding for the assigned later manifest/release days.
 
 Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the six paths in `tools/extension-files.json`, then verifies each
+includes only the seven paths in `tools/extension-files.json`, then verifies each
 archive entry against the source SHA-256. Development files, checkpoints, and the
 unrelated image are excluded. Add future extension assets to that list when needed.
 The ZIP is a local unsigned development artifact, not a submission-ready release.
@@ -65,7 +66,7 @@ selected. These steps follow [Mozilla temporary installation instructions](https
 
 Current v1.1 behavior: opening the popup on an analyzed page automatically sends
 the hostname to Have I Been Pwned. Content scans persist page URLs in extension
-local storage. D01 and D02 leave these behaviors unchanged; consent and storage changes
+local storage. D01–D03 leave these behaviors unchanged for ordinary analyzed pages; consent and storage changes
 belong to D05 and D10. Use non-sensitive test pages and a disposable profile.
 
 Browser acceptance is still pending. Passing mocked tests and byte-identical

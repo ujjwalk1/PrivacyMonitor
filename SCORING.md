@@ -52,8 +52,9 @@ record directly, so previously stored records need no migration. Background
 storage is unchanged for its later record migration.
 
 The popup displays an empty neutral ring, a dash, and “Incomplete” for a null
-score, and clears the previous score when loading again. The full popup state
-model is deferred to D03.
+score, and clears the previous score when loading again. D03 also withholds the
+numeric score when any other local observation is incomplete; weights and this
+pure function are unchanged. See `POPUP_STATES.md` for the display state model.
 
 ## Limits and verification
 

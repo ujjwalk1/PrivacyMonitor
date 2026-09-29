@@ -4,5 +4,6 @@
   "content-script.js",
   "popup.html",
   "scoring.js",
+  "popup-state.js",
   "popup.js"
 ]

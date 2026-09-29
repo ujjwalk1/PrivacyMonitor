@@ -1,6 +1,7 @@
 // popup.js — Privacy Monitor v1.1
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
+let loadVersion = 0;
 
 // ---------------------------------------------------------------------------
 // Score presentation (calculation lives in scoring.js)
@@ -17,7 +18,7 @@ function getScoreStyle(score) {
 // Ring chart
 // ---------------------------------------------------------------------------
 
-function updateScoreRing(score) {
+function updateScoreRing(score, emptyLabel = 'Incomplete') {
   const arc = document.getElementById('score-arc');
   const text = document.getElementById('score-text');
   const lbl  = document.getElementById('score-label');
@@ -26,7 +27,7 @@ function updateScoreRing(score) {
     arc.setAttribute('stroke-dashoffset', '100');
     arc.setAttribute('stroke', '#9ca3af');
     text.textContent = '—';
-    lbl.textContent = 'Incomplete';
+    lbl.textContent = emptyLabel;
     return;
   }
 
@@ -47,67 +48,103 @@ function hide(id) { document.getElementById(id).style.display = 'none'; }
 function showFlex(id) { document.getElementById(id).style.display = 'flex'; }
 function showBlock(id) { document.getElementById(id).style.display = 'block'; }
 
+function renderOverall(kind, message) {
+  const labels = { loading: 'Loading', incomplete: 'Incomplete', unavailable: 'Unavailable',
+    unsupported: 'Unsupported' };
+  const messages = {
+    loading: 'Loading observations…',
+    incomplete: 'Analysis incomplete. Some observations are missing or unavailable. Reload the page and try again; Firefox may restrict access.',
+    unavailable: 'Analysis unavailable. Could not read this tab or its observations. Try again on an ordinary web page.',
+    unsupported: 'Unsupported page. Privacy Monitor analyzes HTTP and HTTPS pages, not browser-internal, extension, or local-file pages.',
+    ready: 'Local observations loaded. This score is not a safety guarantee.',
+  };
+  document.getElementById('loading-screen').setAttribute('data-state', kind);
+  document.getElementById('status-message').textContent = message || messages[kind];
+  document.getElementById('status-spinner').style.display = kind === 'loading' ? 'block' : 'none';
+  document.getElementById('main-content').style.display = ['ready', 'incomplete'].includes(kind) ? 'block' : 'none';
+  document.getElementById('refresh').disabled = ['loading', 'unsupported'].includes(kind);
+  if (kind !== 'ready') updateScoreRing(null, labels[kind]);
+}
+
+function resetView() {
+  document.getElementById('current-domain').textContent = '—';
+  renderConnection({ kind: 'not-observed' });
+  renderPrivacy(PrivacyMonitorPopupState.local({}));
+  hide('headers-grid');
+  hide('headers-error');
+  hide('forms-body');
+  document.getElementById('headers-grid').innerHTML = '';
+  document.getElementById('forms-body').innerHTML = '';
+  showFlex('headers-loading');
+  showFlex('forms-loading');
+  resetBreaches();
+  renderOverall('loading');
+}
+
+function resetBreaches() {
+  for (const id of ['breach-none', 'breach-list', 'breach-error']) hide(id);
+  document.getElementById('breach-list').innerHTML = '';
+  document.getElementById('breach-error').textContent = 'Breach lookup unavailable. No conclusion can be drawn.';
+  showFlex('breach-loading');
+}
+
 // ---------------------------------------------------------------------------
 // Section renderers
 // ---------------------------------------------------------------------------
 
 function renderConnection(data) {
-  document.getElementById('protocol').textContent = data.protocol.replace(':', '').toUpperCase();
-
   const el = document.getElementById('https-status');
+  if (data.kind !== 'observed') {
+    const label = data.kind === 'not-observed' ? 'Not observed' : 'Unavailable';
+    document.getElementById('protocol').textContent = label;
+    el.textContent = label;
+    el.className = 'metric-value muted';
+    return;
+  }
+  document.getElementById('protocol').textContent = data.protocol.replace(':', '').toUpperCase();
   if (data.httpsOnly) {
-    el.textContent  = '✓ Secure';
+    el.textContent  = 'HTTPS observed';
     el.className    = 'metric-value good';
   } else {
-    el.textContent  = '⚠ Not Secure';
+    el.textContent  = 'HTTP observed';
     el.className    = 'metric-value danger';
   }
 }
 
 function renderPrivacy(data) {
-  document.getElementById('cookie-count').textContent  = data.cookies;
-  document.getElementById('script-count').textContent  = data.scripts;
-
-  const tpEl = document.getElementById('third-party-scripts');
-  tpEl.textContent = data.thirdPartyScripts;
-  if      (data.thirdPartyScripts > 10) tpEl.className = 'metric-value danger';
-  else if (data.thirdPartyScripts > 5)  tpEl.className = 'metric-value warning';
-  else                                   tpEl.className = 'metric-value good';
+  for (const [id, value] of [['cookie-count', data.cookies], ['script-count', data.scripts],
+    ['third-party-scripts', data.thirdPartyScripts]]) {
+    const el = document.getElementById(id);
+    el.textContent = value.kind === 'observed' ? String(value.value)
+      : value.kind === 'not-observed' ? 'Not observed' : 'Unavailable';
+    el.className = value.kind === 'observed' ? 'metric-value' : 'metric-value muted';
+  }
 }
 
-function renderHeaders(headerData) {
+function renderHeaders(headers) {
   hide('headers-loading');
-
-  if (!headerData) {
-    show('headers-error');
-    return;
-  }
-
+  hide('headers-error');
   const grid = document.getElementById('headers-grid');
   grid.style.display = 'flex';
-
-  const allHeaders = [
-    'CSP', 'HSTS', 'X-Frame-Options',
-    'X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy',
-  ];
-
-  grid.innerHTML = allHeaders.map(name => {
-    const present = name in headerData.present;
-    return `<span class="header-pill ${present ? 'pill-present' : 'pill-missing'}">
-      ${present ? '✓' : '✗'} ${name}
+  const labels = { present: 'Present', absent: 'Absent', 'not-observed': 'Not observed', unavailable: 'Unavailable' };
+  grid.innerHTML = headers.map(({ name, kind }) => {
+    const style = kind === 'present' ? 'pill-present' : kind === 'absent' ? 'pill-missing' : 'pill-unknown';
+    return `<span class="header-pill ${style}">
+      ${name}: ${labels[kind]}
     </span>`;
   }).join('');
 }
 
 function renderBreaches(breaches) {
+  resetBreaches();
   hide('breach-loading');
-
-  if (breaches === null) {
-    show('breach-error');
+  const kind = PrivacyMonitorPopupState.breaches(breaches);
+  if (kind === 'unavailable') {
+    showBlock('breach-error');
     return;
   }
 
-  if (breaches.length === 0) {
+  if (kind === 'empty') {
     showFlex('breach-none');
     return;
   }
@@ -124,7 +161,7 @@ function renderBreaches(breaches) {
     <div class="breach-item">
       <div class="breach-name">⚠ ${escHtml(b.Name)}</div>
       <div class="breach-meta">
-        ${escHtml(b.BreachDate)} · ${(b.PwnCount || 0).toLocaleString()} accounts
+        ${escHtml(b.BreachDate)} · ${b.PwnCount == null ? 'Account count unavailable' : b.PwnCount.toLocaleString() + ' accounts'}
         ${b.DataClasses ? '<br>' + b.DataClasses.slice(0, 3).map(escHtml).join(', ') : ''}
       </div>
     </div>
@@ -144,8 +181,10 @@ function renderForms(formData) {
   const body = document.getElementById('forms-body');
   body.style.display = 'block';
 
-  if (!formData) {
-    body.innerHTML = `<div class="loading-row" style="color:#9ca3af;">No form data available</div>`;
+  if (formData.kind !== 'observed') {
+    body.innerHTML = `<div class="loading-row">${formData.kind === 'not-observed'
+      ? 'Form scan not observed. No conclusion can be drawn.'
+      : 'Form observations unavailable. No conclusion can be drawn.'}</div>`;
     return;
   }
 
@@ -165,7 +204,7 @@ function renderForms(formData) {
   } else {
     body.innerHTML = `
       <div class="no-breaches" style="padding:8px 12px;">
-        ✅ All forms use secure submission
+        No HTTP forms observed in this scan.
       </div>`;
   }
 }
@@ -188,27 +227,25 @@ async function fetchBreaches(hostname) {
       `https://haveibeenpwned.com/api/v3/breaches?domain=${encodeURIComponent(hostname)}`,
       { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' } }
     );
-    if (!res.ok) return [];
+    if (!res.ok) return null; // A failed request is not a successful empty result.
     return await res.json();
   } catch (e) {
-    console.warn('[Privacy Monitor] Breach API error:', e);
     return null; // null = network failure
   }
 }
 
 async function loadAllData() {
-  updateScoreRing(null);
+  const version = ++loadVersion;
+  resetView();
   try {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
-    let hostname;
-
-    try {
-      hostname = new URL(tab.url).hostname;
-    } catch {
-      document.getElementById('loading-screen').textContent = 'Cannot analyze this page.';
+    if (version !== loadVersion) return;
+    const page = PrivacyMonitorPopupState.page(tab);
+    if (page.kind !== 'supported') {
+      renderOverall(page.kind);
       return;
     }
-
+    const { hostname } = page;
     document.getElementById('current-domain').textContent = hostname;
 
     // Fetch stored data
@@ -217,40 +254,39 @@ async function loadAllData() {
       `headers_${hostname}`,
       `forms_${hostname}`,
     ]);
+    if (version !== loadVersion) return;
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) throw new Error('Invalid observations');
 
-    const basicData  = stored[`security_data_${hostname}`] || null;
-    const headerData = stored[`headers_${hostname}`]       || null;
-    const formData   = stored[`forms_${hostname}`]         || null;
+    const data = {
+      basicData: stored[`security_data_${hostname}`],
+      headerData: stored[`headers_${hostname}`],
+      formData: stored[`forms_${hostname}`],
+    };
+    const local = PrivacyMonitorPopupState.local(data);
+    const score = PrivacyMonitorScoring.calculateSecurityScore(data);
+    renderConnection(local.connection);
+    renderPrivacy(local);
+    renderHeaders(local.headers);
+    renderForms(local.forms);
+    const kind = local.kind === 'ready' && score !== null ? 'ready' : 'incomplete';
+    renderOverall(kind);
+    if (kind === 'ready') updateScoreRing(score);
 
-    // Show main UI immediately with what we have
-    hide('loading-screen');
-    showBlock('main-content');
-
-    if (basicData) {
-      renderConnection(basicData);
-      renderPrivacy(basicData);
-    } else {
-      // No page data yet — content script hasn't run (e.g. browser page)
-      document.getElementById('loading-screen').textContent =
-        'No data yet — try refreshing the page.';
-      show('loading-screen');
-      hide('main-content');
+    // Preserve the existing lookup boundary: no page scan, no external lookup.
+    if (local.connection.kind !== 'observed') {
+      hide('breach-loading');
+      document.getElementById('breach-error').textContent = 'Breach lookup not run: page observations are missing or unavailable.';
+      showBlock('breach-error');
       return;
     }
 
-    renderHeaders(headerData);
-    renderForms(formData);
-
-    // The local score does not depend on the historical breach lookup.
-    updateScoreRing(PrivacyMonitorScoring.calculateSecurityScore({ basicData, headerData, formData }));
-
     // Breach check is async — show spinner until done
     const breaches = await fetchBreaches(hostname);
+    if (version !== loadVersion) return;
     renderBreaches(breaches);
 
   } catch (err) {
-    console.error('[Privacy Monitor] Load error:', err);
-    document.getElementById('loading-screen').textContent = 'Error loading data.';
+    if (version === loadVersion) renderOverall('unavailable');
   }
 }
 
@@ -259,13 +295,23 @@ async function loadAllData() {
 // ---------------------------------------------------------------------------
 
 async function refreshData() {
+  const version = ++loadVersion;
+  resetView();
   const btn = document.getElementById('refresh');
   btn.textContent = '⏳ Refreshing…';
   btn.disabled = true;
 
   try {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
-    const scriptingAPI = api.scripting || chrome.scripting;
+    if (version !== loadVersion) return;
+    const page = PrivacyMonitorPopupState.page(tab);
+    if (page.kind !== 'supported') {
+      renderOverall(page.kind);
+      btn.textContent = '🔄 Refresh Analysis';
+      return;
+    }
+    document.getElementById('current-domain').textContent = page.hostname;
+    const scriptingAPI = api.scripting || (typeof chrome !== 'undefined' ? chrome.scripting : null);
 
     await scriptingAPI.executeScript({
       target: { tabId: tab.id },
@@ -319,13 +365,14 @@ async function refreshData() {
     });
 
     setTimeout(() => {
+      if (version !== loadVersion) return;
       loadAllData();
       btn.textContent = '🔄 Refresh Analysis';
-      btn.disabled = false;
     }, 600);
 
   } catch (err) {
-    console.error('[Privacy Monitor] Refresh error:', err);
+    if (version !== loadVersion) return;
+    renderOverall('unavailable', 'Analysis unavailable. Firefox could not scan this page. Access may be restricted; try an ordinary HTTP or HTTPS page.');
     btn.textContent = '🔄 Refresh Analysis';
     btn.disabled = false;
   }
