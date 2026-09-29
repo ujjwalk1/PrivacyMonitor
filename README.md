@@ -1,160 +1,162 @@
-#  Privacy Monitor Browser Extension
+# Privacy Monitor
 
-A lightweight Firefox extension that helps users monitor website security, analyze privacy risks, detect data breaches, and strengthen password security in real-time.
+A Firefox Manifest V2 extension for observing page connections, security-header
+presence, HTTP form destinations, and cookie/script counts, with local password
+strength feedback and a separate historical breach lookup.
 
-##  Features
+**Development status:** D01–D03 are implemented. The 32 local tests, local lint,
+package verification, and mocked popup wording review pass. Installed-Firefox
+acceptance is still pending; this is not a submission-ready release. The manifest
+version remains `1.1`.
 
-### Current Features
+[Development guide](docs/DEVELOPING.md) · [Score rules](docs/SCORING.md) ·
+[Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
+[Daily plan](DAILY_PLAN.md)
 
-####  **Password Security**
-- **Real-time Password Strength Analysis**: Instant feedback as you type passwords
-- **Smart Scoring System**: Comprehensive evaluation based on length, character diversity, and common patterns
-- **Visual Feedback**: Color-coded strength indicators (Weak/Medium/Strong)
-- **Improvement Suggestions**: Actionable tips to strengthen weak passwords
-- **Pattern Detection**: Identifies and warns against common weak patterns like "123", "password", "qwerty"
+## Features included through D03
 
-####  **Security Headers Detection** *(New in v1.1)*
-- **Header Interception**: Background script inspects HTTP response headers before the page finishes loading
-- **Six Header Checks**: Evaluates CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy
-- **Visual Header Pills**: Color-coded indicators (green = present, red = missing) in the popup
-- **Header Score**: Missing headers are factored into the overall security score by importance level
+| Day | Implemented additions | Verification and limits |
+| --- | --- | --- |
+| **D01 — Recoverable baseline and local tooling** | Recoverable source baseline; dependency-free startup smoke tests and local lint; an allowlisted Windows package command with file-hash verification; Firefox loading and recovery instructions. | Local commands pass. Original recovery ZIPs are local-only; Git history also preserves the baseline. Live Firefox loading checks remain pending. |
+| **D02 — Documented page score** | A pure 0–100 scorer: HTTPS **40**, weighted header presence **40**, no observed HTTP password forms **20**. Complete best/worst observations reach 100/0. Missing or invalid required inputs return no score. Historical breaches, cookies, and third-party script counts do not affect the score. Local scoring does not wait for the breach lookup. | Tests cover boundaries, deductions, missing/invalid inputs, and breach independence. The score is an observation heuristic, not a safety guarantee. [Rules and limits](docs/SCORING.md). |
+| **D03 — Honest popup states** | Explicit loading, incomplete, unavailable, unsupported-page, and ready states. Missing evidence stays neutral; available partial observations remain visible. Reloads clear old results, and superseded requests cannot overwrite a newer popup load. Failed/malformed breach results no longer look like successful empty results. Includes local visual fixtures. | State tests and mocked browser wording review pass. Installed-Firefox checks remain open. Distinct breach error outcomes and request timeout remain D04 work. [State mapping](docs/POPUP_STATES.md). |
 
-####  **Data Breach Detection** *(New in v1.1)*
-- **HaveIBeenPwned Integration**: Checks the current domain against a database of known data breaches
-- **Breach Details**: Displays breach name, date, and number of affected accounts
-- **Score Impact**: Breached domains receive a penalty in the overall security score
+### Existing monitoring features
 
-####  **Insecure Form Detection** *(New in v1.1)*
-- **HTTP Form Scanning**: Detects forms that submit credentials over unencrypted HTTP
-- **In-Page Warnings**: Injects a visible warning banner directly into insecure password forms on the page
-- **Dynamic Monitoring**: Mutation observer watches for forms added after initial page load
-- **Popup Summary**: Form security status surfaced in the extension popup
+- **Password feedback:** local checks for length, character variety, and common
+  patterns, with suggestions beside password inputs. This is a heuristic estimator.
+- **Connection and headers:** HTTP/HTTPS observations and presence checks for CSP,
+  HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and
+  Permissions-Policy. Header values are not evaluated for effectiveness.
+- **Form warnings:** scans form destinations for HTTP and adds a warning to
+  detected HTTP password forms. Dynamic content and destination resolution have
+  known limitations.
+- **Page counts:** cookies accessible through `document.cookie`, script elements,
+  and scripts whose hostname differs from the page. These counts are not a cookie
+  inspector or tracker classification system.
+- **Historical breaches:** a domain lookup through Have I Been Pwned, displayed
+  separately from the page score. The popup shows up to three recent records.
+- **Popup refresh:** requests another local scan. A failed refresh shows
+  unavailable and clears the old score; the scanner itself still has limitations.
 
-####  **Website Security Analysis**
-- **HTTPS Detection**: Verifies secure connection protocols
-- **Security Score**: Reworked overall security rating (0-100) now factors in headers, breaches, and form safety
-- **Performance Optimized**: Throttled analysis to minimize browser impact
-- **Real-time Monitoring**: Continuous security assessment as you browse
+## Try the development extension
 
-####  **Privacy Monitoring**
-- **Cookie Tracking**: Counts and monitors HTTP cookies
-- **Script Analysis**: Identifies total scripts and third-party scripts
-- **Third-party Tracker Detection**: Highlights external scripts that may track you
-- **Privacy Impact Assessment**: Evaluates overall privacy implications
+Clone or download [this repository](https://github.com/ujjwalk1/PrivacyMonitor):
 
-####  **User Interface**
-- **Redesigned Popup**: Score ring in the header, sectioned layout with clear visual hierarchy
-- **Instant Updates**: Real-time refresh capability
-- **Visual Status Indicators**: Color-coded security and privacy status
-- **Responsive Design**: Works seamlessly across different screen sizes
-
-##  Installation
-
-### Firefox Installation
-1. Download or clone this repository
-2. Open Firefox and navigate to `about:debugging`
-3. Click "This Firefox" → "Load Temporary Add-on"
-4. Select the `manifest.json` file from the project directory
-5. The extension icon will appear in your toolbar
-
-### Manual Installation
-```bash
-git clone https://github.com/ujjwalk1/privacy-security-monitor.git
-cd privacy-security-monitor
+```sh
+git clone https://github.com/ujjwalk1/PrivacyMonitor.git
+cd PrivacyMonitor
 ```
 
-##  Project Structure
+1. Use a disposable Firefox test profile and non-sensitive test pages.
+2. Open `about:debugging` → **This Firefox** → **Load Temporary Add-on**.
+3. Select the repository-root `manifest.json`.
+4. Reload an ordinary HTTP/HTTPS page, then open Privacy Monitor from the
+   extensions menu. Header observations require a page load after installation.
+5. Follow the [Firefox checklist](docs/DEVELOPING.md#load-and-check-in-firefox)
+   and record results in [PROGRESS.md](PROGRESS.md).
 
+Temporary installation ends when Firefox restarts. A tested minimum Firefox
+version has not yet been selected; Firefox 156.0.1 was found on the development
+machine, but installation there has not been verified.
+
+## Local checks and packaging
+
+Use Node.js 24 LTS and Windows PowerShell 5.1+ or PowerShell 7. The recorded runs
+used Node 24.19.0. From the repository root, no dependency installation is needed:
+
+```powershell
+node --test tests/*.test.mjs
+node tools/lint.mjs
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
-privacy-security-monitor/
-├── manifest.json          # Extension configuration
-├── background.js          # Header interception via webRequest API
-├── content-script.js      # Password analysis and insecure form detection
-├── popup.html             # Extension popup interface
-├── popup.js               # Popup logic, breach check, and data processing
-└── README.md              # This file
+
+The package command creates `dist/privacy-monitor-1.1.zip`, containing only the
+seven extension files listed in [tools/extension-files.json](tools/extension-files.json),
+and verifies their contents against the source. It is an unsigned development
+package. Local lint checks syntax and package references; it is not Mozilla's
+add-on validator.
+
+To inspect the popup using synthetic data without making breach requests:
+
+```powershell
+node tests/popup-preview.mjs
 ```
 
-##  Technical Details
+Open `http://127.0.0.1:4179/` and stop the server with Ctrl+C when finished.
+The [preview guide](docs/POPUP_STATES.md#verification-and-next-browser-check)
+explains its mocked APIs and limitations.
 
-### Technologies Used
-- **JavaScript ES6+**: Core functionality
-- **HTML5 & CSS3**: User interface
-- **WebExtensions API**: Browser integration
-- **Firefox Browser API**: Storage, tab management, and webRequest interception
-- **HaveIBeenPwned API v3**: Domain breach lookup
+## Repository layout
 
-### Performance Features
-- **Throttled Processing**: Limits analysis frequency to preserve performance
-- **Efficient DOM Monitoring**: Smart mutation observer for dynamic content
-- **Memory Optimization**: Reuses components and minimizes memory footprint
-- **Debounced Updates**: Prevents excessive API calls
-- **Background Header Capture**: Headers intercepted once at page load, not on every popup open
+```text
+PrivacyMonitor/
+├── README.md                  # Overview, features, and quick start
+├── LICENSE                    # GPL-3.0 license
+├── DAILY_PLAN.md               # Sequenced work plan; proposed work is not completed work
+├── PROGRESS.md                 # Current handoff and pending acceptance checks
+├── manifest.json              # Firefox MV2 entry point
+├── background.js              # Response-header capture
+├── content-script.js          # Page, password, and form observations
+├── popup.html                 # Popup markup and styles
+├── popup.js                   # Popup loading, rendering, and refresh
+├── popup-state.js             # Observation-to-display state mapping
+├── scoring.js                 # Pure page-score calculation
+├── docs/
+│   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
+│   ├── SCORING.md              # D02 weights, inputs, and limits
+│   └── POPUP_STATES.md         # D03 states and preview instructions
+├── tests/
+│   ├── *.test.mjs             # Smoke, scoring, and popup-state tests
+│   ├── helpers/               # Shared test harness
+│   ├── fixtures/              # Synthetic browser-preview data
+│   └── popup-preview.mjs      # Local-only preview server
+└── tools/
+    ├── extension-files.json   # Package allowlist
+    ├── lint.mjs               # Dependency-free local checks
+    └── package.ps1            # Build and verify the development ZIP
+```
 
-##  Upcoming Features
+The extension files stay at the root so temporary loading and packaging keep the
+same entry points. Generated `dist/`, `checkpoints/`, `node_modules/`, and
+`web-ext-artifacts/` are ignored. Local recovery archives and screenshots are not
+required for a fresh clone.
 
-### **Advanced Security Analysis** *(Planned)*
-- [ ] **Mixed Content Detection**: Identify HTTP resources on HTTPS pages
-- [ ] **SSL Certificate Analysis**: Display cert details and expiration warnings
-- [ ] **Vulnerable Library Scanner**: Detect outdated JavaScript libraries
+## Current privacy behavior and limitations
 
-### **Enhanced Privacy Features** *(Planned)*
-- [ ] **Cookie Categorization**: Classify cookies by purpose (tracking, functional, etc.)
-- [ ] **Local Storage Monitor**: Track localStorage and sessionStorage usage
-- [ ] **Fingerprinting Detection**: Identify canvas fingerprinting and tracking attempts
-- [ ] **Privacy Score History**: Track website privacy changes over time
+- Opening the popup on an analyzed page automatically sends its **hostname** to
+  Have I Been Pwned. There is no opt-in control yet; disclosure/consent work is D05.
+- Page scans persist the **full page URL** and observation summaries in extension
+  local storage. Records are keyed by hostname and can be stale or shared across
+  tabs. Per-tab records and retention/private-session fixes are planned for D07–D10.
+- Password feedback runs locally. The implementation does not persist password
+  values or include them in the breach lookup.
+- The manifest requests HTTP/HTTPS host access, `activeTab`, `storage`,
+  `cookies`, `scripting`, and `webRequest`. The broad monitoring permissions
+  and currently unused `cookies` permission await the D16 audit.
+- Non-HTTP/HTTPS URLs are unsupported. Firefox can also restrict access to some
+  HTTPS pages. Missing observations do not mean a page passed a check.
+- A hanging breach request can still leave its spinner running. D04 must add a
+  timeout and distinguish failure types; D03 only prevents false clean results.
+- Refresh still uses a duplicated injected scanner and can remove form warnings.
+  Dynamic form handling, header-value evaluation, and tab/navigation isolation
+  remain unfinished. A score of 100 does not establish site trustworthiness.
 
-### **Analytics & Reporting** *(Roadmap)*
-- [ ] **Weekly Security Reports**: Comprehensive browsing security summary
-- [ ] **Site Comparison Tools**: Compare security across similar websites
-- [ ] **Export Functionality**: Data export for security auditing
+## Roadmap and validation
 
-### **User Experience** *(Future)*
-- [ ] **Custom Security Rules**: User-defined security criteria
-- [ ] **Whitelist/Blacklist Management**: Trusted and blocked site management
-- [ ] **Notification System**: Real-time security alerts
-- [ ] **Multi-browser Support**: Chrome and Edge compatibility
+[DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
+[PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
+D01–D03's live Firefox checks must be resolved before treating the baseline as
+accepted. No later day is claimed as complete.
 
-## Requirements
+The original v1.0 introduced password feedback and basic page counts. v1.1 added
+header capture, historical breach lookup, form warnings, and the sectioned popup.
+D02 subsequently replaced the score formula and removed the breach-history
+penalty; D03 added the explicit display states described above.
 
-- **Firefox**: Version 60 or higher
-- **Permissions**: The extension requires the following permissions
-  - `activeTab`: Access current tab information
-  - `storage`: Store security analysis data
-  - `cookies`: Monitor cookie usage
-  - `webRequest`: Intercept HTTP response headers
+## License and support
 
-##  Known Issues
+Licensed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE).
 
-- Extension may not work on internal browser pages (`about:`, `moz-extension:`)
-- Some dynamically loaded content may require manual refresh
-- Third-party script detection limited to scripts loaded at analysis time
-- Breach check requires an internet connection; shows an error state if the HaveIBeenPwned API is unreachable
-- Security headers are only captured on full page loads — refreshing a tab after installing the extension ensures accurate header data
-
-##  Version History
-
-### v1.1.0 *(Current)*
-- Security headers detection (CSP, HSTS, X-Frame-Options, and more)
-- HaveIBeenPwned breach database integration
-- Insecure form detection with in-page warning banners
-- Reworked security score factoring in headers, breaches, and form safety
-- Redesigned popup UI with score ring and sectioned layout
-- Added background.js for webRequest-based header interception
-
-### v1.0.0
-- Initial release with password strength analysis
-- Basic security scoring system
-- Cookie and script monitoring
-- Clean popup interface
-
-##  License
-
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
-
-##  Support
-
-- **Issues**: [GitHub Issues](https://github.com/ujjwalk1/privacy-security-monitor/issues)
-- **Email**: nee103kn3@mozmail.com
-
-**🔒 Stay secure, stay private!**
+- [Report an issue](https://github.com/ujjwalk1/PrivacyMonitor/issues)
+- Contact: nee103kn3@mozmail.com

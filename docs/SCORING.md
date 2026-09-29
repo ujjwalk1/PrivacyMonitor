@@ -1,5 +1,9 @@
 # Page observation score (D02)
 
+[Repository overview](../README.md) · [Development guide](DEVELOPING.md)
+
+Source and command paths below are relative to the repository root.
+
 `scoring.js` supplies the pure `PrivacyMonitorScoring.calculateSecurityScore`
 function. `popup.html` loads it before `popup.js`; the popup calculates the score
 from local observations before waiting for the separate historical breach lookup.
@@ -54,7 +58,7 @@ storage is unchanged for its later record migration.
 The popup displays an empty neutral ring, a dash, and “Incomplete” for a null
 score, and clears the previous score when loading again. D03 also withholds the
 numeric score when any other local observation is incomplete; weights and this
-pure function are unchanged. See `POPUP_STATES.md` for the display state model.
+pure function are unchanged. See [POPUP_STATES.md](POPUP_STATES.md) for the display state model.
 
 ## Limits and verification
 
@@ -68,4 +72,4 @@ Run `node --test tests/*.test.mjs` for score boundaries, deductions, invalid/mis
 inputs, breach independence, and mocked popup integration. Live Firefox checks
 remain separate: load the extension, check the new script loads without errors,
 confirm local scoring before breach completion, and inspect complete/incomplete
-score rendering. Record results in `PROGRESS.md`.
+score rendering. Record results in [PROGRESS.md](../PROGRESS.md).

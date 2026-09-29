@@ -1,4 +1,4 @@
-// Local observation score only; no DOM, storage, or network access. See SCORING.md.
+// Local observation score only; no DOM, storage, or network access. See docs/SCORING.md.
 const PrivacyMonitorScoring = (() => {
   const HEADER_WEIGHTS = Object.freeze({
     CSP: 10,

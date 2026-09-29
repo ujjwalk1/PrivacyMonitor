@@ -1,5 +1,9 @@
 # Popup observation states (D03)
 
+[Repository overview](../README.md) · [Development guide](DEVELOPING.md)
+
+Source, command, and local checkpoint paths below are relative to the repository root.
+
 `popup-state.js` maps the existing stored records into display states without
 accessing tabs, storage, or the network. `popup.js` owns loading and rendering.
 
@@ -52,7 +56,7 @@ remain; D09 must replace that duplicated path and address warning removal.
 
 ## Verification and next browser check
 
-Run `node --test tests/*.test.mjs` and the package command in `DEVELOPING.md`.
+Run `node --test tests/*.test.mjs` and the package command in [DEVELOPING.md](DEVELOPING.md).
 The D03 tests cover state mapping, invalid/partial data, unsupported URLs,
 tab/storage errors, refresh failure, stale async completions, and breach display
 guards. Tests use synthetic observations and no external requests.
@@ -73,7 +77,7 @@ example is `checkpoints/d03-unavailable-preview.png`.
 This was not an installed Firefox test. The preview runner also logged one
 MutationObserver error without a source location (the popup files do not use that
 API); do not treat its console as a clean Firefox result. Next, temporarily load
-the current `manifest.json` in a disposable Firefox profile using `DEVELOPING.md`.
+the current `manifest.json` in a disposable Firefox profile using [DEVELOPING.md](DEVELOPING.md).
 Check an ordinary page, `about:config`, a page without scan records, and a denied
 refresh. Confirm no stale success, readable scrolling, and no popup-console
-errors. Record exact results in `PROGRESS.md`; D01/D02 Firefox checks remain open.
+errors. Record exact results in [PROGRESS.md](../PROGRESS.md); D01/D02 Firefox checks remain open.

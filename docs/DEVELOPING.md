@@ -1,10 +1,11 @@
 # Privacy Monitor local development
 
 D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
-module documented in `SCORING.md`. D03's popup states and local preview fixtures
-are documented in `POPUP_STATES.md`. There is no framework,
+module documented in [SCORING.md](SCORING.md). D03's popup states and local preview fixtures
+are documented in [POPUP_STATES.md](POPUP_STATES.md). There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
-Git checkout; D01–D03 updates use the GitHub connection.
+Git checkout; its updates use the GitHub connection. A fresh clone has normal
+Git history. See the [repository overview](../README.md) for the layout.
 
 ## Recoverable baseline
 
@@ -22,7 +23,7 @@ For repository users, the unchanged extension baseline is recoverable from
 
 Prerequisites: Node.js 24 LTS on PATH and Windows PowerShell 5.1+ (or PowerShell 7).
 Verified here with Node 24.19.0. No npm install or network access is required.
-Run from the project directory:
+Run from the repository root (all command/file paths below are relative to it):
 
 ```powershell
 node --test tests/*.test.mjs
@@ -61,7 +62,7 @@ selected. These steps follow [Mozilla temporary installation instructions](https
    password feedback and HTTP form warning appear. Do not submit the form. Check
    the popup's Refresh Analysis button and record the outcome.
 5. Record Firefox version, pages/fixtures, and exact pass/fail results in
-   `PROGRESS.md`. Reload the temporary add-on after source edits, then reload the
+   [PROGRESS.md](../PROGRESS.md). Reload the temporary add-on after source edits, then reload the
    page. Temporary installation ends when Firefox restarts.
 
 Current v1.1 behavior: opening the popup on an analyzed page automatically sends
