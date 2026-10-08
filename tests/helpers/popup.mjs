@@ -36,10 +36,20 @@ export function popup(headerData = {
   };
   const calls = { storage: 0, fetch: 0, executeScript: 0 };
   const timers = [];
+  let clock = 0;
+  function advanceTime(ms) {
+    clock += ms;
+    for (const timer of [...timers]) {
+      if (timer.due > clock) continue;
+      timers.splice(timers.indexOf(timer), 1);
+      timer();
+    }
+  }
   const context = vm.createContext({
-    URL,
+    URL, AbortController,
     console: { error: (...args) => errors.push(args), warn() {} },
-    setTimeout: fn => timers.push(fn),
+    setTimeout(fn, ms) { fn.due = clock + ms; timers.push(fn); return fn; },
+    clearTimeout(timer) { const i = timers.indexOf(timer); if (i !== -1) timers.splice(i, 1); },
     browser: {
       tabs: { query: (...args) => controls.query(...args) },
       storage: { local: { get: (...args) => { calls.storage++; return controls.storage(...args); } } },
@@ -54,6 +64,6 @@ export function popup(headerData = {
   for (const [, path] of html.matchAll(/<script\s+src="([^"]+)"/g)) {
     vm.runInContext(read(path), context, { filename: path });
   }
-  return { context, nodes, stored, controls, calls, timers,
+  return { context, nodes, stored, controls, calls, timers, advanceTime,
     requested: requested.promise, finishFetch: response.resolve, errors };
 }

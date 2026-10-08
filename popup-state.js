@@ -73,10 +73,12 @@ const PrivacyMonitorPopupState = (() => {
   }
 
   function breaches(value) {
-    // Minimal display guard. Detailed response/error contracts and timeout are D04.
+    // Validate every field used by the renderer; reject partial malformed lists.
+    const isDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
     if (!Array.isArray(value) || !value.every(item => isRecord(item) &&
         typeof item.Name === 'string' && item.Name.trim() &&
-        typeof item.BreachDate === 'string' && Number.isFinite(Date.parse(item.BreachDate)) &&
+        isDate(item.BreachDate) &&
         (item.PwnCount == null || isCount(item.PwnCount)) &&
         (item.DataClasses == null || (Array.isArray(item.DataClasses) &&
           item.DataClasses.every(entry => typeof entry === 'string'))))) return 'unavailable';

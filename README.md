@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D03 are implemented. The 32 local tests, local lint,
+**Development status:** D01–D04 are implemented. The 41 local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,13 +13,14 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D03
+## Features included through D04
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
 | **D01 — Recoverable baseline and local tooling** | Recoverable source baseline; dependency-free startup smoke tests and local lint; an allowlisted Windows package command with file-hash verification; Firefox loading and recovery instructions. | Local commands pass. Original recovery ZIPs are local-only; Git history also preserves the baseline. Live Firefox loading checks remain pending. |
 | **D02 — Documented page score** | A pure 0–100 scorer: HTTPS **40**, weighted header presence **40**, no observed HTTP password forms **20**. Complete best/worst observations reach 100/0. Missing or invalid required inputs return no score. Historical breaches, cookies, and third-party script counts do not affect the score. Local scoring does not wait for the breach lookup. | Tests cover boundaries, deductions, missing/invalid inputs, and breach independence. The score is an observation heuristic, not a safety guarantee. [Rules and limits](docs/SCORING.md). |
-| **D03 — Honest popup states** | Explicit loading, incomplete, unavailable, unsupported-page, and ready states. Missing evidence stays neutral; available partial observations remain visible. Reloads clear old results, and superseded requests cannot overwrite a newer popup load. Failed/malformed breach results no longer look like successful empty results. Includes local visual fixtures. | State tests and mocked browser wording review pass. Installed-Firefox checks remain open. Distinct breach error outcomes and request timeout remain D04 work. [State mapping](docs/POPUP_STATES.md). |
+| **D03 — Honest popup states** | Explicit loading, incomplete, unavailable, unsupported-page, and ready states. Missing evidence stays neutral; available partial observations remain visible. Reloads clear old results, and superseded requests cannot overwrite a newer popup load. Failed/malformed breach results no longer look like successful empty results. Includes local visual fixtures. | State tests and mocked browser wording review pass. Installed-Firefox checks remain open. [State mapping](docs/POPUP_STATES.md). |
+| **D04 — Bounded breach lookup** | Distinct empty, records, HTTP error, network error, malformed response, and timeout outcomes. An eight-second deadline covers the request and body read, aborts stalled work, and clears its timer. Late results cannot restore stale success; the local score remains independent. | Simulated outcome/timeout tests and all six mocked browser previews pass. Installed-Firefox checks remain open. [Outcome contract](docs/POPUP_STATES.md#breach-lookup-outcomes-d04). |
 
 ### Existing monitoring features
 
@@ -105,9 +106,9 @@ PrivacyMonitor/
 ├── docs/
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
-│   └── POPUP_STATES.md         # D03 states and preview instructions
+│   └── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
 ├── tests/
-│   ├── *.test.mjs             # Smoke, scoring, and popup-state tests
+│   ├── *.test.mjs             # Smoke, scoring, popup-state, and breach tests
 │   ├── helpers/               # Shared test harness
 │   ├── fixtures/              # Synthetic browser-preview data
 │   └── popup-preview.mjs      # Local-only preview server
@@ -136,8 +137,8 @@ required for a fresh clone.
   and currently unused `cookies` permission await the D16 audit.
 - Non-HTTP/HTTPS URLs are unsupported. Firefox can also restrict access to some
   HTTPS pages. Missing observations do not mean a page passed a check.
-- A hanging breach request can still leave its spinner running. D04 must add a
-  timeout and distinguish failure types; D03 only prevents false clean results.
+- Breach requests now time out after eight seconds. Failures mean unavailable
+  evidence; retries, caching, and rate-limit backoff are not automatic.
 - Refresh still uses a duplicated injected scanner and can remove form warnings.
   Dynamic form handling, header-value evaluation, and tab/navigation isolation
   remain unfinished. A score of 100 does not establish site trustworthiness.
@@ -146,7 +147,7 @@ required for a fresh clone.
 
 [DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
 [PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
-D01–D03's live Firefox checks must be resolved before treating the baseline as
+D01–D04's live Firefox checks must be resolved before treating the baseline as
 accepted. No later day is claimed as complete.
 
 The original v1.0 introduced password feedback and basic page counts. v1.1 added

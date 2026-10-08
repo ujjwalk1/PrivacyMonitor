@@ -156,11 +156,11 @@ test('HTTP, malformed, and network breach failures never show a successful empty
 
 test('a new breach result replaces earlier banners and missing account counts remain unknown', () => {
   const view = popup();
-  view.context.renderBreaches([]);
-  view.context.renderBreaches([{ Name: 'Fixture', BreachDate: '2000-01-01' }]);
+  view.context.renderBreaches({ kind: 'empty' });
+  view.context.renderBreaches({ kind: 'results', breaches: [{ Name: 'Fixture', BreachDate: '2000-01-01' }] });
   assert.equal(view.nodes['breach-none'].style.display, 'none');
   assert.match(view.nodes['breach-list'].innerHTML, /Account count unavailable/);
-  view.context.renderBreaches(null);
+  view.context.renderBreaches({ kind: 'network-error' });
   assert.equal(view.nodes['breach-list'].style.display, 'none');
   assert.equal(view.nodes['breach-list'].innerHTML, '');
 });

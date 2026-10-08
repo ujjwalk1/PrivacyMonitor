@@ -82,6 +82,7 @@ function resetView() {
 }
 
 function resetBreaches() {
+  document.getElementById('breach-section').setAttribute('data-state', 'loading');
   for (const id of ['breach-none', 'breach-list', 'breach-error']) hide(id);
   document.getElementById('breach-list').innerHTML = '';
   document.getElementById('breach-error').textContent = 'Breach lookup unavailable. No conclusion can be drawn.';
@@ -135,11 +136,21 @@ function renderHeaders(headers) {
   }).join('');
 }
 
-function renderBreaches(breaches) {
+function renderBreaches(result) {
   resetBreaches();
   hide('breach-loading');
-  const kind = PrivacyMonitorPopupState.breaches(breaches);
-  if (kind === 'unavailable') {
+  const { kind } = result;
+  document.getElementById('breach-section').setAttribute('data-state', kind);
+  if (kind !== 'empty' && kind !== 'results') {
+    const status = Number.isInteger(result.status) ? ` (HTTP ${result.status})` : '';
+    const messages = {
+      'http-error': `Breach lookup unavailable: the service returned an error${status}. Try again later.`,
+      'network-error': 'Breach lookup unavailable: could not reach the service or finish reading its response. Try again.',
+      malformed: 'Breach lookup unavailable: the service returned an unreadable or unexpected response.',
+      timeout: 'Breach lookup timed out after 8 seconds. Try again.',
+    };
+    document.getElementById('breach-error').textContent =
+      `${messages[kind] || 'Breach lookup unavailable.'} No conclusion can be drawn.`;
     showBlock('breach-error');
     return;
   }
@@ -151,6 +162,7 @@ function renderBreaches(breaches) {
 
   const list = document.getElementById('breach-list');
   list.style.display = 'flex';
+  const { breaches } = result;
 
   // Show up to 3 most recent breaches
   const recent = [...breaches]
@@ -222,15 +234,42 @@ function escHtml(str) {
 // ---------------------------------------------------------------------------
 
 async function fetchBreaches(hostname) {
+  const controller = new AbortController();
+  let timer;
+  const deadline = new Promise(resolve => {
+    timer = setTimeout(() => {
+      // Resolve first so an abort rejection cannot disguise the timeout as a network error.
+      resolve({ kind: 'timeout' });
+      controller.abort();
+    }, 8000);
+  });
+
+  async function request() {
+    try {
+      const res = await fetch(
+        `https://haveibeenpwned.com/api/v3/breaches?domain=${encodeURIComponent(hostname)}`,
+        { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' }, signal: controller.signal }
+      );
+      if (!res.ok) return { kind: 'http-error', status: res.status };
+      let breaches;
+      try {
+        breaches = await res.json();
+      } catch (error) {
+        return { kind: error?.name === 'SyntaxError' ? 'malformed' : 'network-error' };
+      }
+      const kind = PrivacyMonitorPopupState.breaches(breaches);
+      if (kind === 'unavailable') return { kind: 'malformed' };
+      return kind === 'empty' ? { kind } : { kind, breaches };
+    } catch {
+      return { kind: 'network-error' };
+    }
+  }
+
   try {
-    const res = await fetch(
-      `https://haveibeenpwned.com/api/v3/breaches?domain=${encodeURIComponent(hostname)}`,
-      { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' } }
-    );
-    if (!res.ok) return null; // A failed request is not a successful empty result.
-    return await res.json();
-  } catch (e) {
-    return null; // null = network failure
+    // Bound both fetch and body reading, even if an implementation ignores abort.
+    return await Promise.race([request(), deadline]);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -274,6 +313,7 @@ async function loadAllData() {
 
     // Preserve the existing lookup boundary: no page scan, no external lookup.
     if (local.connection.kind !== 'observed') {
+      document.getElementById('breach-section').setAttribute('data-state', 'not-run');
       hide('breach-loading');
       document.getElementById('breach-error').textContent = 'Breach lookup not run: page observations are missing or unavailable.';
       showBlock('breach-error');
