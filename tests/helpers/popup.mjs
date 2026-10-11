@@ -14,7 +14,7 @@ export function popup(headerData = {
   present: { CSP: 'fixture', HSTS: 'fixture', 'X-Frame-Options': 'fixture',
     'X-Content-Type-Options': 'fixture', 'Referrer-Policy': 'fixture', 'Permissions-Policy': 'fixture' },
   missing: [],
-}, { consented = false } = {}) {
+}, { consented = false, background } = {}) {
   const nodes = Object.fromEntries([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => [id, {
     style: {}, attributes: {}, textContent: '', innerHTML: '',
     setAttribute(name, value) { this.attributes[name] = value; },
@@ -55,6 +55,7 @@ export function popup(headerData = {
   }
   const context = vm.createContext({
     URL, AbortController,
+    Date: class extends Date { static now() { return clock; } },
     console: { error: (...args) => errors.push(args), warn() {} },
     setTimeout(fn, ms) { fn.due = clock + ms; timers.push(fn); return fn; },
     clearTimeout(timer) { const i = timers.indexOf(timer); if (i !== -1) timers.splice(i, 1); },
@@ -76,10 +77,17 @@ export function popup(headerData = {
     },
     fetch(...args) { calls.fetch++; requested.resolve(); return controls.fetch(...args); },
   });
+  if (!background) {
+    background = vm.createContext({ URL, AbortController, Date: context.Date,
+      browser: context.browser, fetch: context.fetch,
+      setTimeout: context.setTimeout, clearTimeout: context.clearTimeout });
+    for (const path of ['popup-state.js', 'breach-service.js']) vm.runInContext(read(path), background, { filename: path });
+  }
+  context.browser.runtime = { getBackgroundPage: async () => background };
   for (const [, path] of html.matchAll(/<script\s+src="([^"]+)"/g)) {
     vm.runInContext(read(path), context, { filename: path });
   }
-  return { context, nodes, stored, controls, calls, timers, advanceTime, permissions, emitPermission,
+  return { context, background, nodes, stored, controls, calls, timers, advanceTime, permissions, emitPermission,
     requested: requested.promise, finishFetch: response.resolve, errors };
 }
 

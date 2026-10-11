@@ -51,7 +51,7 @@ before displaying it. Failures never show the successful-empty message.
 | --- | --- | --- |
 | `empty` | Successful HTTP response with a valid empty array | No breach records returned for this domain |
 | `results` | Successful HTTP response with a valid nonempty array | Up to three most recent historical records and the remaining count |
-| `http-error` | Non-success HTTP status, including 404 or 429 | Service error with the HTTP status; no conclusion |
+| `http-error` | Non-success HTTP status, including 404 (429 uses D06 backoff) | Service error with the HTTP status; no conclusion |
 | `network-error` | Fetch rejection or interrupted response-body read | Could not reach/read the service; no conclusion |
 | `malformed` | Invalid JSON or invalid fields in any returned record | Unreadable or unexpected response; no conclusion |
 | `timeout` | Request or body read is still pending after eight seconds | Lookup timed out; no conclusion |
@@ -70,10 +70,14 @@ Names and classes are escaped before HTML insertion. The local score and page
 readiness do not depend on any breach outcome.
 
 This replaces D03's temporary array-or-null fetch contract; no compatibility
-path remains. No automatic retry, cache, or backoff was added.
+path remains. D04 did not add caching or backoff; D06 now owns these in the background service.
 D05 now gates the lookup on Firefox consent and cancels pending work on revocation;
 see [BREACH_CONSENT.md](BREACH_CONSENT.md). Disabled, unsupported-consent, and
-consent-error states never imply a successful empty lookup. Caching/backoff are D06.
+consent-error states never imply a successful empty lookup. See [BREACH_CACHE.md](BREACH_CACHE.md) for D06's shared cache and backoff.
+Fresh/cache results carry a source note; HTTP 429 renders `rate-limited` with a
+retry wait and no automatic retry. Capacity exhaustion renders `busy`; shared
+cancellation renders `cancelled` if no newer popup state has replaced it.
+Missing background access renders `unavailable`. All remain independent of the score.
 
 ## Boundaries
 

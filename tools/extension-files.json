@@ -1,6 +1,7 @@
 [
   "manifest.json",
   "background.js",
+  "breach-service.js",
   "content-script.js",
   "popup.html",
   "scoring.js",

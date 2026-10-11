@@ -6,6 +6,21 @@ import test from 'node:test';
 const source = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
 
+test('manifest background scripts initialize the shared service without fetching or persisting breach data', async () => {
+  const manifest = JSON.parse(source('manifest.json'));
+  const context = vm.createContext({ URL, console,
+    fetch: () => assert.fail('Startup must not request breach data'),
+    browser: {
+      permissions: { getAll: async () => ({ data_collection: [] }), onRemoved: { addListener() {} } },
+      webRequest: { onHeadersReceived: { addListener() {} } },
+      storage: { local: { set: () => assert.fail('Startup must not persist data') } },
+    },
+  });
+  for (const path of manifest.background.scripts) vm.runInContext(source(path), context, { filename: path });
+  assert.equal(typeof context.PrivacyMonitorBreachService.lookup, 'function');
+  assert.equal((await context.PrivacyMonitorBreachService.lookup('fixture.example')).kind, 'disabled');
+});
+
 function background() {
   const registrations = [];
   const writes = [];

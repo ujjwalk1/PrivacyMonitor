@@ -44,8 +44,8 @@ test('successful empty and populated responses have distinct states without chan
   }
 });
 
-test('HTTP errors, including 404 and rate limiting, never become empty successes', async () => {
-  for (const status of [401, 403, 404, 429, 500, 503]) {
+test('HTTP errors, including 404, never become empty successes', async () => {
+  for (const status of [401, 403, 404, 500, 503]) {
     const view = popup();
     view.controls.fetch = async () => ({ ok: false, status, json: () => assert.fail('Do not parse an HTTP error body') });
     await view.context.loadAllData();
@@ -128,6 +128,8 @@ test('a superseded request timing out cannot overwrite a newer successful load',
   view.controls.fetch = () => old.promise;
   const oldLoad = view.context.loadAllData(); await view.requested;
   view.controls.fetch = async () => response([]);
+  view.controls.query = async () => [{ id: 2, url: 'https://other.example/' }];
+  view.controls.storage = async () => Object.fromEntries(Object.entries(view.stored).map(([key, value]) => [key.replace('fixture.example', 'other.example'), value]));
   await view.context.loadAllData();
   assert.equal(state(view), 'empty');
   assert.equal(view.timers.length, 1, 'Only the older pending request still has a deadline');

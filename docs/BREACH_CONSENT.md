@@ -6,7 +6,8 @@
 
 Fresh installations make no breach request. The popup discloses the recipient
 (Have I Been Pwned), the hostname transmission on popup open/refresh after consent,
-and the service's visibility of the connection IP address. Requests omit credentials
+and the service's visibility of the connection IP address. D06 reuses fresh cached
+results and observes retry timing before sending; see [BREACH_CACHE.md](BREACH_CACHE.md). Requests omit credentials
 and referrers; page paths, queries, passwords, cookie values, and scores are not
 included. Historical domain records do not establish whether a personal account
 was breached. Local analysis works independently.
@@ -39,12 +40,12 @@ Documentation checked **2026-10-11**:
   local preference overrides Firefox's choice.
 
 MV2, the Gecko ID, and host/API permissions are preserved. The `applications` alias
-became `browser_specific_settings`. The full manifest audit remains D16; caching,
-backoff, and storage/navigation/private-session changes remain D06–D10.
+became `browser_specific_settings`. The full manifest audit remains D16; D06 caching/backoff is documented in [BREACH_CACHE.md](BREACH_CACHE.md).
+Storage/navigation/private-session changes remain D07–D10.
 
 ## Verification and pending browser checks
 
-All **53 tests** pass, including 12 D05 tests for consent, missing/failed APIs,
+The D05 checkpoint passed **53 tests**, including 12 D05 tests for consent, missing/failed APIs,
 cancellation, stale reads, revocation, request data, removal failure, and independent
 local scoring. No external requests are made by tests.
 

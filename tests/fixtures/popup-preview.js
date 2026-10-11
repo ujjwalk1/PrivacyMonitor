@@ -21,6 +21,10 @@ if (previewCase === 'warnings') {
 let previewConsent = !['consent-off', 'consent-denied', 'consent-unsupported'].includes(previewCase);
 const previewPermissionEvents = { added: [], removed: [] };
 window.browser = {
+  runtime: { getBackgroundPage: async () => {
+    if (previewCase === 'breach-cached') await window.PrivacyMonitorBreachService.lookup('fixture.example');
+    return window;
+  } },
   permissions: {
     getAll: async () => previewCase === 'consent-unsupported' ? {} : { data_collection: previewConsent ? ['browsingActivity'] : [] },
     request: async () => {
@@ -54,6 +58,7 @@ window.fetch = async (_url, { signal } = {}) => {
   if (previewCase === 'breach-unavailable' || previewCase === 'breach-http-error') {
     return new Response(null, { status: 503 });
   }
+  if (previewCase === 'breach-rate-limited') return new Response(null, { status: 429, headers: { 'Retry-After': '120' } });
   if (previewCase === 'breach-malformed') return new Response('{invalid JSON');
   const records = previewCase === 'breach-results'
     ? [{ Name: 'Historical fixture', BreachDate: '2000-01-01', PwnCount: 1000, DataClasses: ['Email addresses'] }]

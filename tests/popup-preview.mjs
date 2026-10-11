@@ -4,15 +4,15 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const cases = ['loading', 'incomplete', 'partial', 'unavailable', 'unsupported', 'ready', 'warnings',
-  'breach-results', 'breach-http-error', 'breach-network-error', 'breach-malformed', 'breach-timeout',
+  'breach-cached', 'breach-rate-limited', 'breach-results', 'breach-http-error', 'breach-network-error', 'breach-malformed', 'breach-timeout',
   'consent-off', 'consent-denied', 'consent-unsupported'];
-const assets = new Map(['scoring.js', 'popup-state.js', 'popup.js'].map(path => [`/${path}`, read(path)]));
+const assets = new Map(['scoring.js', 'popup-state.js', 'breach-service.js', 'popup.js'].map(path => [`/${path}`, read(path)]));
 assets.set('/preview-fixture.js', read('tests/fixtures/popup-preview.js'));
-const popup = read('popup.html').replace('<script src="scoring.js">',
+const popup = read('popup.html').replace('<script src="popup.js">', '<script src="breach-service.js"></script>\n  <script src="popup.js">').replace('<script src="scoring.js">',
   '<script src="preview-fixture.js"></script>\n  <script src="scoring.js">');
-const gallery = `<!doctype html><html><head><title>D03–D05 popup fixtures</title>
+const gallery = `<!doctype html><html><head><title>D03–D06 popup fixtures</title>
 <style>body{font:16px system-ui;background:#e5e7eb;margin:20px}main{display:flex;flex-wrap:wrap;gap:20px}iframe{width:340px;height:850px;border:1px solid #777;background:white}h2{font-size:16px}p{max-width:900px}</style></head>
-<body><h1>D03–D05 popup, breach, and consent states</h1><p>Local synthetic observations. Browser permissions and breach responses are mocked; no external requests or real consent prompts. Refresh is deliberately denied. The timeout takes eight seconds. Earlier cases simulate existing consent; consent-off starts disabled and lets you try Enable/Disable, consent-denied rejects Enable, and consent-unsupported keeps lookup off.</p><main>
+<body><h1>D03–D06 popup, breach, and consent states</h1><p>Local synthetic observations. Browser permissions and breach responses are mocked; no external requests or real consent prompts. Refresh is deliberately denied. The timeout takes eight seconds. Earlier cases simulate existing consent; consent-off starts disabled and lets you try Enable/Disable, consent-denied rejects Enable, and consent-unsupported keeps lookup off.</p><main>
 ${cases.map(name => `<section><h2>${name}</h2><iframe title="${name}" src="/popup.html?case=${name}"></iframe></section>`).join('')}
 </main></body></html>`;
 const server = createServer((req, res) => {

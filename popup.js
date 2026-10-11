@@ -6,7 +6,7 @@ let consentRevision = 0;
 let consentBusy = false;
 let consentBlocked = false;
 let consentKind = 'checking';
-const breachCancellations = new Set();
+let breachService;
 const breachPermission = { data_collection: ['browsingActivity'] };
 
 // Firefox owns the persistent consent choice. Missing/failed consent APIs fail closed.
@@ -27,7 +27,7 @@ async function readBreachConsent() {
 function renderBreachConsent(kind, message) {
   consentKind = kind;
   const messages = {
-    enabled: 'On. Hostnames are sent when you open or refresh an analyzed page. Disable here or in Firefox add-on permissions.',
+    enabled: 'On. Opening or refreshing uses a fresh cached result or sends the hostname when retry timing allows. Disable here or in Firefox add-on permissions.',
     disabled: 'Off. No breach lookup is sent. Local checks still work.',
     'consent-unsupported': 'Lookup stays off. Update Firefox to a version with built-in data consent to enable it. Local checks still work.',
     'consent-error': 'Could not check consent. Lookup stays off; local checks still work. Reopen the popup to try again.',
@@ -47,7 +47,7 @@ async function refreshBreachConsent() {
 
 function invalidateBreachConsent() {
   consentRevision++;
-  for (const cancel of breachCancellations) cancel();
+  breachService?.clear();
 }
 
 async function setBreachLookupEnabled(enabled) {
@@ -166,6 +166,8 @@ function resetBreaches() {
   for (const id of ['breach-none', 'breach-list', 'breach-error']) hide(id);
   document.getElementById('breach-list').innerHTML = '';
   document.getElementById('breach-error').textContent = 'Breach lookup unavailable. No conclusion can be drawn.';
+  hide('breach-cache-note');
+  document.getElementById('breach-cache-note').textContent = '';
   showFlex('breach-loading');
 }
 
@@ -228,6 +230,10 @@ function renderBreaches(result) {
       'not-run': 'Breach lookup has not run since consent changed. Refresh Analysis to check this page.',
       'consent-unsupported': 'Breach lookup is off because this Firefox version does not support data consent.',
       'consent-error': 'Breach lookup is off because consent could not be verified.',
+      'rate-limited': `Breach service rate limit (HTTP 429). Wait at least ${Math.max(1, Math.ceil((result.retryAt - Date.now()) / 1000))} seconds from this check, then reopen or refresh. No automatic retry.`,
+      cancelled: 'Breach lookup was cancelled. Reopen or refresh to check again.',
+      busy: 'Breach lookup is busy with other pages. Reopen or refresh shortly.',
+      unavailable: 'Breach lookup unavailable: the background service could not be reached.',
       'http-error': `Breach lookup unavailable: the service returned an error${status}. Try again later.`,
       'network-error': 'Breach lookup unavailable: could not reach the service or finish reading its response. Try again.',
       malformed: 'Breach lookup unavailable: the service returned an unreadable or unexpected response.',
@@ -238,6 +244,11 @@ function renderBreaches(result) {
     showBlock('breach-error');
     return;
   }
+
+  document.getElementById('breach-cache-note').textContent = result.cached
+    ? 'Reused a result checked within the last 10 minutes. No new request was sent.'
+    : 'Checked with Have I Been Pwned. Results may be reused for 10 minutes.';
+  showBlock('breach-cache-note');
 
   if (kind === 'empty') {
     showFlex('breach-none');
@@ -323,49 +334,15 @@ async function fetchBreaches(hostname, version = loadVersion) {
   if (revision !== consentRevision || version !== loadVersion) return { kind: 'cancelled' };
   if (consentBlocked || consentBusy) return { kind: 'disabled' };
   if (consent.kind !== 'enabled') return consent;
-  const controller = new AbortController();
-  let cancel;
-  const cancellation = new Promise(resolve => {
-    cancel = () => { resolve({ kind: 'cancelled' }); controller.abort(); };
-    breachCancellations.add(cancel);
-  });
-  let timer;
-  const deadline = new Promise(resolve => {
-    timer = setTimeout(() => {
-      // Resolve first so an abort rejection cannot disguise the timeout as a network error.
-      resolve({ kind: 'timeout' });
-      controller.abort();
-    }, 8000);
-  });
-
-  async function request() {
-    try {
-      const res = await fetch(
-        `https://haveibeenpwned.com/api/v3/breaches?domain=${encodeURIComponent(hostname)}`,
-        { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' }, signal: controller.signal,
-          credentials: 'omit', referrerPolicy: 'no-referrer' }
-      );
-      if (!res.ok) return { kind: 'http-error', status: res.status };
-      let breaches;
-      try {
-        breaches = await res.json();
-      } catch (error) {
-        return { kind: error?.name === 'SyntaxError' ? 'malformed' : 'network-error' };
-      }
-      const kind = PrivacyMonitorPopupState.breaches(breaches);
-      if (kind === 'unavailable') return { kind: 'malformed' };
-      return kind === 'empty' ? { kind } : { kind, breaches };
-    } catch {
-      return { kind: 'network-error' };
-    }
-  }
-
   try {
-    // Bound both fetch and body reading, even if an implementation ignores abort.
-    return await Promise.race([request(), deadline, cancellation]);
-  } finally {
-    clearTimeout(timer);
-    breachCancellations.delete(cancel);
+    const background = await api.runtime.getBackgroundPage();
+    breachService = background?.PrivacyMonitorBreachService;
+    if (revision !== consentRevision || version !== loadVersion) return { kind: 'cancelled' };
+    if (consentBlocked || consentBusy) return { kind: 'disabled' };
+    if (!breachService) return { kind: 'unavailable' };
+    return await breachService.lookup(hostname);
+  } catch {
+    return { kind: 'unavailable' };
   }
 }
 
@@ -420,7 +397,7 @@ async function loadAllData() {
     // Breach check is async — show spinner until done
     const revision = consentRevision;
     const breaches = await fetchBreaches(hostname, version);
-    if (version !== loadVersion || revision !== consentRevision || breaches.kind === 'cancelled') return;
+    if (version !== loadVersion || revision !== consentRevision) return;
     renderBreaches(breaches);
 
   } catch (err) {

@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D05 are implemented. The 53 local tests, local lint,
+**Development status:** D01–D06 are implemented. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D05
+## Features included through D06
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -27,6 +27,12 @@ and Enable/Disable controls backed by Firefox's optional Browsing activity conse
 Disabling/revoking consent cancels pending lookup work; missing consent support
 leaves lookup off while local checks work. Tests and mocked control previews pass;
 native Firefox acceptance remains pending. [Consent and checks](docs/BREACH_CONSENT.md).
+
+**D06 — Transient breach cache and backoff:** shared background results last up to
+10 minutes, with at most 32 hostnames and bounded retained data. Concurrent requests
+for one hostname share work. HTTP 429 pauses further uncached lookups across pages;
+retry timing is explicit, and no retry runs automatically. Failures are never cached
+as clean results. [Limits and pending checks](docs/BREACH_CACHE.md).
 
 ### Existing monitoring features
 
@@ -79,7 +85,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The package command creates `dist/privacy-monitor-1.1.zip`, containing only the
-seven extension files listed in [tools/extension-files.json](tools/extension-files.json),
+eight extension files listed in [tools/extension-files.json](tools/extension-files.json),
 and verifies their contents against the source. It is an unsigned development
 package. Local lint checks syntax and package references; it is not Mozilla's
 add-on validator.
@@ -104,6 +110,7 @@ PrivacyMonitor/
 ├── PROGRESS.md                 # Current handoff and pending acceptance checks
 ├── manifest.json              # Firefox MV2 entry point
 ├── background.js              # Response-header capture
+├── breach-service.js          # Transient shared lookup, cache, and rate-limit timing
 ├── content-script.js          # Page, password, and form observations
 ├── popup.html                 # Popup markup and styles
 ├── popup.js                   # Popup loading, rendering, and refresh
@@ -113,6 +120,7 @@ PrivacyMonitor/
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
 │   ├── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
+│   ├── BREACH_CACHE.md         # D06 cache, retry policy, and Firefox checks
 │   └── BREACH_CONSENT.md       # D05 disclosure, consent, and Firefox checks
 ├── tests/
 │   ├── *.test.mjs             # Smoke, scoring, popup-state, and breach tests
@@ -133,8 +141,10 @@ required for a fresh clone.
 ## Current privacy behavior and limitations
 
 - Breach lookup starts **off**. After Firefox consent, opening or refreshing an
-  analyzed page's popup sends its **hostname** to Have I Been Pwned, which also sees
-  the connection IP address. Requests omit credentials/referrers and contain no
+  analyzed page's popup reuses a fresh cached result or sends its **hostname** to Have I Been Pwned, which also sees
+  the connection IP address. New requests wait out any rate-limit cooldown.
+  Results stay only in background memory; reload/restart and consent revocation clear them.
+  Requests omit credentials/referrers and contain no
   page path, query, password, cookie value, or score. Disable it in the popup or
   Firefox add-on permissions. Without native consent support, lookup stays off.
 - Page scans persist the **full page URL** and observation summaries in extension
@@ -148,7 +158,8 @@ required for a fresh clone.
 - Non-HTTP/HTTPS URLs are unsupported. Firefox can also restrict access to some
   HTTPS pages. Missing observations do not mean a page passed a check.
 - Breach requests now time out after eight seconds. Failures mean unavailable
-  evidence; retries, caching, and rate-limit backoff are not automatic.
+  evidence. Fresh successful results are cached for 10 minutes; HTTP 429 applies
+  shared backoff. Reopen or refresh after the wait to retry; there is no automatic retry.
 - Refresh still uses a duplicated injected scanner and can remove form warnings.
   Dynamic form handling, header-value evaluation, and tab/navigation isolation
   remain unfinished. A score of 100 does not establish site trustworthiness.
@@ -157,7 +168,7 @@ required for a fresh clone.
 
 [DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
 [PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
-D01–D05's live Firefox checks must be resolved before treating the baseline as
+D01–D06's live Firefox checks must be resolved before treating the baseline as
 accepted. No later day is claimed as complete.
 
 The original v1.0 introduced password feedback and basic page counts. v1.1 added

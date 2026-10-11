@@ -15,7 +15,7 @@
   ],
 
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["popup-state.js", "breach-service.js", "background.js"],
     "persistent": true
   },
 
