@@ -14,7 +14,7 @@ export function popup(headerData = {
   present: { CSP: 'fixture', HSTS: 'fixture', 'X-Frame-Options': 'fixture',
     'X-Content-Type-Options': 'fixture', 'Referrer-Policy': 'fixture', 'Permissions-Policy': 'fixture' },
   missing: [],
-}) {
+}, { consented = false } = {}) {
   const nodes = Object.fromEntries([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => [id, {
     style: {}, attributes: {}, textContent: '', innerHTML: '',
     setAttribute(name, value) { this.attributes[name] = value; },
@@ -28,7 +28,15 @@ export function popup(headerData = {
   };
   const response = deferred();
   const requested = deferred();
+  const permissionEvents = { added: [], removed: [] };
+  const permissions = { data_collection: consented ? ['browsingActivity'] : [] };
+  function emitPermission(event, data = { data_collection: ['browsingActivity'] }) {
+    for (const listener of permissionEvents[event]) listener(data);
+  }
   const controls = {
+    getPermissions: async () => structuredClone(permissions),
+    requestPermission: async () => { permissions.data_collection = ['browsingActivity']; emitPermission('added'); return true; },
+    removePermission: async () => { permissions.data_collection = []; emitPermission('removed'); return true; },
     query: async () => [{ id: 1, url: 'https://fixture.example/' }],
     storage: async () => stored,
     fetch: () => response.promise,
@@ -51,6 +59,13 @@ export function popup(headerData = {
     setTimeout(fn, ms) { fn.due = clock + ms; timers.push(fn); return fn; },
     clearTimeout(timer) { const i = timers.indexOf(timer); if (i !== -1) timers.splice(i, 1); },
     browser: {
+      permissions: {
+        getAll: (...args) => controls.getPermissions(...args),
+        request: (...args) => controls.requestPermission(...args),
+        remove: (...args) => controls.removePermission(...args),
+        onAdded: { addListener: fn => permissionEvents.added.push(fn) },
+        onRemoved: { addListener: fn => permissionEvents.removed.push(fn) },
+      },
       tabs: { query: (...args) => controls.query(...args) },
       storage: { local: { get: (...args) => { calls.storage++; return controls.storage(...args); } } },
       scripting: { executeScript: (...args) => { calls.executeScript++; return controls.executeScript(...args); } },
@@ -64,6 +79,9 @@ export function popup(headerData = {
   for (const [, path] of html.matchAll(/<script\s+src="([^"]+)"/g)) {
     vm.runInContext(read(path), context, { filename: path });
   }
-  return { context, nodes, stored, controls, calls, timers, advanceTime,
+  return { context, nodes, stored, controls, calls, timers, advanceTime, permissions, emitPermission,
     requested: requested.promise, finishFetch: response.resolve, errors };
 }
+
+// Earlier outcome/scoring tests explicitly model an already consenting installation.
+export function consentedPopup(headerData) { return popup(headerData, { consented: true }); }

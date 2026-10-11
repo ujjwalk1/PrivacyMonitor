@@ -2,6 +2,86 @@
 
 const api = typeof browser !== 'undefined' ? browser : chrome;
 let loadVersion = 0;
+let consentRevision = 0;
+let consentBusy = false;
+let consentBlocked = false;
+let consentKind = 'checking';
+const breachCancellations = new Set();
+const breachPermission = { data_collection: ['browsingActivity'] };
+
+// Firefox owns the persistent consent choice. Missing/failed consent APIs fail closed.
+async function readBreachConsent() {
+  if (!api.permissions?.getAll || !api.permissions?.request || !api.permissions?.remove) {
+    return { kind: 'consent-unsupported' };
+  }
+  try {
+    const permissions = await api.permissions.getAll();
+    if (!permissions || !Object.hasOwn(permissions, 'data_collection')) return { kind: 'consent-unsupported' };
+    if (!Array.isArray(permissions.data_collection)) return { kind: 'consent-error' };
+    return { kind: permissions.data_collection.includes('browsingActivity') ? 'enabled' : 'disabled' };
+  } catch {
+    return { kind: 'consent-error' };
+  }
+}
+
+function renderBreachConsent(kind, message) {
+  consentKind = kind;
+  const messages = {
+    enabled: 'On. Hostnames are sent when you open or refresh an analyzed page. Disable here or in Firefox add-on permissions.',
+    disabled: 'Off. No breach lookup is sent. Local checks still work.',
+    'consent-unsupported': 'Lookup stays off. Update Firefox to a version with built-in data consent to enable it. Local checks still work.',
+    'consent-error': 'Could not check consent. Lookup stays off; local checks still work. Reopen the popup to try again.',
+    checking: 'Checking consent…',
+  };
+  document.getElementById('breach-enable').disabled = consentBusy || consentBlocked || kind !== 'disabled';
+  document.getElementById('breach-disable').disabled = consentBusy || (kind !== 'enabled' && !consentBlocked);
+  document.getElementById('breach-consent-status').textContent = message || messages[kind];
+}
+
+async function refreshBreachConsent() {
+  const revision = consentRevision;
+  const consent = await readBreachConsent();
+  if (revision === consentRevision && !consentBusy && !consentBlocked) renderBreachConsent(consent.kind);
+  return consent;
+}
+
+function invalidateBreachConsent() {
+  consentRevision++;
+  for (const cancel of breachCancellations) cancel();
+}
+
+async function setBreachLookupEnabled(enabled) {
+  if (consentBusy || (enabled && consentKind !== 'disabled')) return;
+  consentBusy = true;
+  consentBlocked = true; // Stop transmission immediately, before any permission promise settles.
+  invalidateBreachConsent();
+  renderBreaches({ kind: 'disabled' });
+  renderBreachConsent('checking', enabled ? 'Waiting for your choice in Firefox…' : 'Turning off breach lookup…');
+  let changed = false;
+  try {
+    // Must be invoked directly from the click handler, before the first await.
+    changed = await (enabled ? api.permissions.request(breachPermission) : api.permissions.remove(breachPermission));
+  } catch { /* Stay blocked and explain the failed operation below. */ }
+  consentBusy = false;
+  if (!enabled && !changed) {
+    renderBreachConsent('consent-error', 'Could not turn off Firefox’s permission. Lookups are blocked in this popup. Turn off Browsing activity in about:addons before reopening, or retry Disable.');
+    return;
+  }
+  consentBlocked = false;
+  await refreshBreachConsent();
+  if (enabled && changed) await loadAllData();
+}
+
+function onBreachPermissionChanged(change, added = false) {
+  if (!change.data_collection?.includes('browsingActivity')) return;
+  invalidateBreachConsent();
+  renderBreaches({ kind: added ? 'not-run' : 'disabled' });
+  renderBreachConsent('checking');
+  if (!consentBusy) void refreshBreachConsent();
+}
+
+api.permissions?.onAdded?.addListener(change => onBreachPermissionChanged(change, true));
+api.permissions?.onRemoved?.addListener(onBreachPermissionChanged);
 
 // ---------------------------------------------------------------------------
 // Score presentation (calculation lives in scoring.js)
@@ -144,6 +224,10 @@ function renderBreaches(result) {
   if (kind !== 'empty' && kind !== 'results') {
     const status = Number.isInteger(result.status) ? ` (HTTP ${result.status})` : '';
     const messages = {
+      disabled: 'Breach lookup is off. No further lookups will start while it is off.',
+      'not-run': 'Breach lookup has not run since consent changed. Refresh Analysis to check this page.',
+      'consent-unsupported': 'Breach lookup is off because this Firefox version does not support data consent.',
+      'consent-error': 'Breach lookup is off because consent could not be verified.',
       'http-error': `Breach lookup unavailable: the service returned an error${status}. Try again later.`,
       'network-error': 'Breach lookup unavailable: could not reach the service or finish reading its response. Try again.',
       malformed: 'Breach lookup unavailable: the service returned an unreadable or unexpected response.',
@@ -233,8 +317,18 @@ function escHtml(str) {
 // Data fetching
 // ---------------------------------------------------------------------------
 
-async function fetchBreaches(hostname) {
+async function fetchBreaches(hostname, version = loadVersion) {
+  const revision = consentRevision;
+  const consent = await refreshBreachConsent();
+  if (revision !== consentRevision || version !== loadVersion) return { kind: 'cancelled' };
+  if (consentBlocked || consentBusy) return { kind: 'disabled' };
+  if (consent.kind !== 'enabled') return consent;
   const controller = new AbortController();
+  let cancel;
+  const cancellation = new Promise(resolve => {
+    cancel = () => { resolve({ kind: 'cancelled' }); controller.abort(); };
+    breachCancellations.add(cancel);
+  });
   let timer;
   const deadline = new Promise(resolve => {
     timer = setTimeout(() => {
@@ -248,7 +342,8 @@ async function fetchBreaches(hostname) {
     try {
       const res = await fetch(
         `https://haveibeenpwned.com/api/v3/breaches?domain=${encodeURIComponent(hostname)}`,
-        { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' }, signal: controller.signal }
+        { headers: { 'User-Agent': 'PrivacyMonitorExtension/1.1' }, signal: controller.signal,
+          credentials: 'omit', referrerPolicy: 'no-referrer' }
       );
       if (!res.ok) return { kind: 'http-error', status: res.status };
       let breaches;
@@ -267,15 +362,17 @@ async function fetchBreaches(hostname) {
 
   try {
     // Bound both fetch and body reading, even if an implementation ignores abort.
-    return await Promise.race([request(), deadline]);
+    return await Promise.race([request(), deadline, cancellation]);
   } finally {
     clearTimeout(timer);
+    breachCancellations.delete(cancel);
   }
 }
 
 async function loadAllData() {
   const version = ++loadVersion;
   resetView();
+  void refreshBreachConsent(); // The control remains usable even on unsupported/unreadable pages.
   try {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
     if (version !== loadVersion) return;
@@ -321,8 +418,9 @@ async function loadAllData() {
     }
 
     // Breach check is async — show spinner until done
-    const breaches = await fetchBreaches(hostname);
-    if (version !== loadVersion) return;
+    const revision = consentRevision;
+    const breaches = await fetchBreaches(hostname, version);
+    if (version !== loadVersion || revision !== consentRevision || breaches.kind === 'cancelled') return;
     renderBreaches(breaches);
 
   } catch (err) {
@@ -424,5 +522,7 @@ async function refreshData() {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadAllData();
+  document.getElementById('breach-enable').addEventListener('click', () => setBreachLookupEnabled(true));
+  document.getElementById('breach-disable').addEventListener('click', () => setBreachLookupEnabled(false));
   document.getElementById('refresh').addEventListener('click', refreshData);
 });

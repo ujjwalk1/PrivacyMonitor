@@ -268,6 +268,22 @@
     <div id="status-message">Loading observations…</div>
   </div>
 
+  <div class="section" style="margin:12px;" aria-labelledby="breach-consent-title">
+    <div class="section-title" id="breach-consent-title">Optional breach lookup</div>
+    <div class="section-body">
+      <p id="breach-disclosure" style="margin:0 0 10px;">
+        If enabled, opening or refreshing this popup on an analyzed page sends its
+        hostname (for example, example.com) to Have I Been Pwned to find historical
+        breaches. The service also receives your IP address. No page path, query,
+        password, cookie value, or local score is included. This does not check
+        whether your personal account was breached. Local checks work without it.
+      </p>
+      <button id="breach-enable" type="button" aria-describedby="breach-disclosure" disabled>Enable breach lookup</button>
+      <button id="breach-disable" type="button" disabled>Disable breach lookup</button>
+      <p id="breach-consent-status" role="status" aria-live="polite">Checking consent…</p>
+    </div>
+  </div>
+
   <div id="main-content">
     <div class="content">
 

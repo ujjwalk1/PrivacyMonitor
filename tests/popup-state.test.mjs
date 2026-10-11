@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import test from 'node:test';
-import { popup, deferred } from './helpers/popup.mjs';
+import { consentedPopup as popup, deferred } from './helpers/popup.mjs';
 
 const mapper = vm.runInNewContext(readFileSync(new URL('../popup-state.js', import.meta.url), 'utf8') +
   '\nPrivacyMonitorPopupState;', { URL });

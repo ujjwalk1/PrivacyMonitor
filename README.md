@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D04 are implemented. The 41 local tests, local lint,
+**Development status:** D01–D05 are implemented. The 53 local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D04
+## Features included through D05
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -21,6 +21,12 @@ version remains `1.1`.
 | **D02 — Documented page score** | A pure 0–100 scorer: HTTPS **40**, weighted header presence **40**, no observed HTTP password forms **20**. Complete best/worst observations reach 100/0. Missing or invalid required inputs return no score. Historical breaches, cookies, and third-party script counts do not affect the score. Local scoring does not wait for the breach lookup. | Tests cover boundaries, deductions, missing/invalid inputs, and breach independence. The score is an observation heuristic, not a safety guarantee. [Rules and limits](docs/SCORING.md). |
 | **D03 — Honest popup states** | Explicit loading, incomplete, unavailable, unsupported-page, and ready states. Missing evidence stays neutral; available partial observations remain visible. Reloads clear old results, and superseded requests cannot overwrite a newer popup load. Failed/malformed breach results no longer look like successful empty results. Includes local visual fixtures. | State tests and mocked browser wording review pass. Installed-Firefox checks remain open. [State mapping](docs/POPUP_STATES.md). |
 | **D04 — Bounded breach lookup** | Distinct empty, records, HTTP error, network error, malformed response, and timeout outcomes. An eight-second deadline covers the request and body read, aborts stalled work, and clears its timer. Late results cannot restore stale success; the local score remains independent. | Simulated outcome/timeout tests and all six mocked browser previews pass. Installed-Firefox checks remain open. [Outcome contract](docs/POPUP_STATES.md#breach-lookup-outcomes-d04). |
+
+**D05 — Optional breach lookup:** off on fresh installation, with a clear disclosure
+and Enable/Disable controls backed by Firefox's optional Browsing activity consent.
+Disabling/revoking consent cancels pending lookup work; missing consent support
+leaves lookup off while local checks work. Tests and mocked control previews pass;
+native Firefox acceptance remains pending. [Consent and checks](docs/BREACH_CONSENT.md).
 
 ### Existing monitoring features
 
@@ -106,7 +112,8 @@ PrivacyMonitor/
 ├── docs/
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
-│   └── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
+│   ├── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
+│   └── BREACH_CONSENT.md       # D05 disclosure, consent, and Firefox checks
 ├── tests/
 │   ├── *.test.mjs             # Smoke, scoring, popup-state, and breach tests
 │   ├── helpers/               # Shared test harness
@@ -125,8 +132,11 @@ required for a fresh clone.
 
 ## Current privacy behavior and limitations
 
-- Opening the popup on an analyzed page automatically sends its **hostname** to
-  Have I Been Pwned. There is no opt-in control yet; disclosure/consent work is D05.
+- Breach lookup starts **off**. After Firefox consent, opening or refreshing an
+  analyzed page's popup sends its **hostname** to Have I Been Pwned, which also sees
+  the connection IP address. Requests omit credentials/referrers and contain no
+  page path, query, password, cookie value, or score. Disable it in the popup or
+  Firefox add-on permissions. Without native consent support, lookup stays off.
 - Page scans persist the **full page URL** and observation summaries in extension
   local storage. Records are keyed by hostname and can be stale or shared across
   tabs. Per-tab records and retention/private-session fixes are planned for D07–D10.
@@ -147,7 +157,7 @@ required for a fresh clone.
 
 [DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
 [PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
-D01–D04's live Firefox checks must be resolved before treating the baseline as
+D01–D05's live Firefox checks must be resolved before treating the baseline as
 accepted. No later day is claimed as complete.
 
 The original v1.0 introduced password feedback and basic page counts. v1.1 added

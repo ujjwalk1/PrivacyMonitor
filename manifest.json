@@ -31,9 +31,13 @@
     "default_title": "Privacy Monitor"
   },
 
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
-      "id": "privacy-monitor@example.com"
+      "id": "privacy-monitor@example.com",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": ["browsingActivity"]
+      }
     }
   }
 }

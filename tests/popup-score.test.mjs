@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { popup } from './helpers/popup.mjs';
+import { consentedPopup as popup } from './helpers/popup.mjs';
 
 test('local score renders before a pending breach request and stays unchanged after historical results', async () => {
   const view = popup();

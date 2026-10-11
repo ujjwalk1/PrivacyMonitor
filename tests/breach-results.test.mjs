@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { popup, deferred } from './helpers/popup.mjs';
+import { consentedPopup as popup, deferred } from './helpers/popup.mjs';
 
 const record = { Name: 'Historical fixture', BreachDate: '2000-01-01', PwnCount: 1000, DataClasses: ['Email addresses'] };
 const response = value => ({ ok: true, json: async () => value });

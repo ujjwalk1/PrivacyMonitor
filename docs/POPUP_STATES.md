@@ -70,9 +70,10 @@ Names and classes are escaped before HTML insertion. The local score and page
 readiness do not depend on any breach outcome.
 
 This replaces D03's temporary array-or-null fetch contract; no compatibility
-path remains. No automatic retry, cache, backoff, or consent control was added.
-The existing analyzed-page hostname lookup remains automatic. Consent is D05;
-caching and rate-limit backoff are D06.
+path remains. No automatic retry, cache, or backoff was added.
+D05 now gates the lookup on Firefox consent and cancels pending work on revocation;
+see [BREACH_CONSENT.md](BREACH_CONSENT.md). Disabled, unsupported-consent, and
+consent-error states never imply a successful empty lookup. Caching/backoff are D06.
 
 ## Boundaries
 

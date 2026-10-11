@@ -2,7 +2,8 @@
 
 D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
 module documented in [SCORING.md](SCORING.md). D03's popup states, D04's breach
-outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md). There is no framework,
+outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md).
+D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
 Git checkout; its updates use the GitHub connection. A fresh clone has normal
 Git history. See the [repository overview](../README.md) for the layout.
@@ -66,10 +67,11 @@ selected. These steps follow [Mozilla temporary installation instructions](https
    [PROGRESS.md](../PROGRESS.md). Reload the temporary add-on after source edits, then reload the
    page. Temporary installation ends when Firefox restarts.
 
-Current v1.1 behavior: opening the popup on an analyzed page automatically sends
-the hostname to Have I Been Pwned. Content scans persist page URLs in extension
-local storage. D01–D04 leave these behaviors unchanged for ordinary analyzed pages; consent and storage changes
-belong to D05 and D10. Use non-sensitive test pages and a disposable profile.
+Current development behavior: breach lookup is off until Firefox consent is granted.
+Once enabled, opening/refreshing an analyzed page's popup sends its hostname to
+Have I Been Pwned. D05's consent checklist is linked above. Content scans still
+persist page URLs locally; storage fixes remain D10. Use non-sensitive test pages
+and a disposable profile.
 
 Browser acceptance is still pending. Passing mocked tests and byte-identical
 packaging does not establish that the extension loads or works in Firefox.

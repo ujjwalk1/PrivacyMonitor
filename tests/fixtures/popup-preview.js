@@ -17,7 +17,26 @@ if (previewCase === 'warnings') {
   previewData['headers_fixture.example'] = { present: {}, missing: headerNames };
   previewData['forms_fixture.example'] = { insecureForms: 1, insecurePasswordForms: 1 };
 }
+// Consent controls are synthetic too: no real browser permission prompt is opened.
+let previewConsent = !['consent-off', 'consent-denied', 'consent-unsupported'].includes(previewCase);
+const previewPermissionEvents = { added: [], removed: [] };
 window.browser = {
+  permissions: {
+    getAll: async () => previewCase === 'consent-unsupported' ? {} : { data_collection: previewConsent ? ['browsingActivity'] : [] },
+    request: async () => {
+      if (previewCase === 'consent-denied') return false;
+      previewConsent = true;
+      previewPermissionEvents.added.forEach(fn => fn({ data_collection: ['browsingActivity'] }));
+      return true;
+    },
+    remove: async () => {
+      previewConsent = false;
+      previewPermissionEvents.removed.forEach(fn => fn({ data_collection: ['browsingActivity'] }));
+      return true;
+    },
+    onAdded: { addListener: fn => previewPermissionEvents.added.push(fn) },
+    onRemoved: { addListener: fn => previewPermissionEvents.removed.push(fn) },
+  },
   tabs: { query: async () => previewCase === 'loading' ? new Promise(() => {})
     : [{ id: 1, url: previewCase === 'unsupported' ? 'about:config' : 'https://fixture.example/' }] },
   storage: { local: { get: async () => {
