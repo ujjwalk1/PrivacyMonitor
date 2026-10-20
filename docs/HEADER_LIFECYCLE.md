@@ -53,8 +53,9 @@ into the existing scorer/renderer. Missing evidence remains not observed; transp
 or malformed replies show unavailable. Neither outcome falls back to legacy
 `headers_<hostname>` storage.
 
-Connection/form/privacy scans and refresh still use their existing implementation
-until D09. The aggregate popup can therefore still contain stale content-scan data.
+Partial D09 unifies content scanning and refresh, but connection/form/privacy
+results still use legacy hostname storage; see [SCAN_REFRESH.md](SCAN_REFRESH.md).
+The aggregate popup can therefore still contain stale content-scan data.
 Existing persistent header rows are ignored and left for D10 cleanup; preferences
 are untouched. D08 does not complete private-session enforcement, header-value
 evaluation, minimum-browser selection, or whole-popup navigation isolation.

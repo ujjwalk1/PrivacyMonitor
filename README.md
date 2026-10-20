@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D08 implementation is present, including per-tab header capture. The local tests, local lint,
+**Development status:** D01–D08 implementation is present, including per-tab header capture. Partial D09 unifies local scan/refresh; partial D10 adds privacy guards. Content-record migration and old-data cleanup remain pending. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D08
+## Features included through D08, with partial D09 and D10
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -48,6 +48,19 @@ unknown. No new hostname header records or raw header values are stored. The new
 `webNavigation` permission supplies navigation boundaries. Native Firefox checks
 remain pending. [Lifecycle and acceptance checklist](docs/HEADER_LIFECYCLE.md).
 
+**D09 — Partial shared scan/refresh:** startup and popup refresh now use the same
+content-script scan, await persistence, and preserve/recreate form warnings. The
+duplicate injected scanner and fixed delay are removed. Content-record migration,
+remaining popup readers, and native Firefox acceptance are still pending.
+[Implemented portion and exact remainder](docs/SCAN_REFRESH.md).
+
+**D10 — Partial privacy safeguards:** new scan summaries omit full URLs. Private
+or unknown contexts cannot write scan records, read shared legacy content records,
+or use breach requests/cache, even with consent. Page warnings still work locally;
+private popup content observations remain incomplete pending D09. Existing stored
+rows are not yet removed because D09's migration is unfinished.
+[Safeguards and remaining cleanup](docs/PRIVATE_HANDLING.md).
+
 ### Existing monitoring features
 
 - **Password feedback:** local checks for length, character variety, and common
@@ -63,7 +76,7 @@ remain pending. [Lifecycle and acceptance checklist](docs/HEADER_LIFECYCLE.md).
   inspector or tracker classification system.
 - **Historical breaches:** a domain lookup through Have I Been Pwned, displayed
   separately from the page score. The popup shows up to three recent records.
-- **Popup refresh:** requests another local scan. A failed refresh shows
+- **Popup refresh:** awaits the shared content-script scan and preserves warnings. A failed refresh shows
   unavailable and clears the old score; the scanner itself still has limitations.
 
 ## Try the development extension
@@ -134,6 +147,8 @@ PrivacyMonitor/
 ├── scoring.js                 # Pure page-score calculation
 ├── docs/
 │   ├── ANALYSIS_RECORDS.md    # D07 record/message contract and migration boundaries
+│   ├── PRIVATE_HANDLING.md    # Partial D10 safeguards and cleanup prerequisites
+│   ├── SCAN_REFRESH.md        # Partial D09 and remaining migration/browser checks
 │   ├── HEADER_LIFECYCLE.md    # D08 correlation rules and Firefox acceptance checks
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
@@ -159,17 +174,20 @@ required for a fresh clone.
 ## Current privacy behavior and limitations
 
 - Breach lookup starts **off**. After Firefox consent, opening or refreshing an
-  analyzed page's popup reuses a fresh cached result or sends its **hostname** to Have I Been Pwned, which also sees
+  normal tab's popup reuses a fresh cached result or sends its **hostname** to Have I Been Pwned, which also sees
   the connection IP address. New requests wait out any rate-limit cooldown.
   Results stay only in background memory; reload/restart and consent revocation clear them.
   Requests omit credentials/referrers and contain no
   page path, query, password, cookie value, or score. Disable it in the popup or
   Firefox add-on permissions. Without native consent support, lookup stays off.
-- Page scans persist the **full page URL** and observation summaries in extension
-  local storage. Records are keyed by hostname and can be stale or shared across
-  tabs. Headers now use transient per-tab records; remaining scan/reader migration
-  and retention/private-session fixes remain D09–D10. Existing legacy header rows
-  are ignored and left for D10 cleanup.
+- New normal-tab scans store observation summaries without full URLs. Private or
+  unknown-context scans do not write them, and private popups do not read shared
+  content records or use breach lookup/cache. Local warnings remain available;
+  private popup scores remain incomplete until D09's migration is finished.
+- Older stored records may still contain full URLs and earlier private data.
+  Hostname-keyed normal-tab records can be stale or shared across tabs. Headers use
+  transient per-tab records. D09's remaining migration must precede D10's targeted
+  old-record cleanup; no preferences or historical rows were deleted in this slice.
 - Password feedback runs locally. The implementation does not persist password
   values or include them in the breach lookup.
 - The manifest requests HTTP/HTTPS host access, `activeTab`, `storage`,
@@ -181,7 +199,7 @@ required for a fresh clone.
 - Breach requests now time out after eight seconds. Failures mean unavailable
   evidence. Fresh successful results are cached for 10 minutes; HTTP 429 applies
   shared backoff. Reopen or refresh after the wait to retry; there is no automatic retry.
-- Refresh still uses a duplicated injected scanner and can remove form warnings.
+- Refresh now shares the content scan, but content records still use hostname storage.
   Dynamic form handling, header-value evaluation, and isolation of the remaining
   content scans remain unfinished. A score of 100 does not establish site trustworthiness.
 

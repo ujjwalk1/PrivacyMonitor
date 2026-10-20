@@ -128,7 +128,7 @@ test('a superseded request timing out cannot overwrite a newer successful load',
   view.controls.fetch = () => old.promise;
   const oldLoad = view.context.loadAllData(); await view.requested;
   view.controls.fetch = async () => response([]);
-  view.controls.query = async () => [{ id: 2, url: 'https://other.example/' }];
+  view.controls.query = async () => [{ id: 2, url: 'https://other.example/', incognito: false }];
   view.controls.storage = async () => Object.fromEntries(Object.entries(view.stored).map(([key, value]) => [key.replace('fixture.example', 'other.example'), value]));
   await view.context.loadAllData();
   assert.equal(state(view), 'empty');

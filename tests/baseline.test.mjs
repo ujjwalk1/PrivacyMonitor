@@ -10,7 +10,7 @@ const plain = value => JSON.parse(JSON.stringify(value));
 test('manifest background scripts initialize without fetching or persisting breach data', async () => {
   const view = background();
   assert.equal(typeof view.context.PrivacyMonitorBreachService.lookup, 'function');
-  assert.equal((await view.context.PrivacyMonitorBreachService.lookup('fixture.example')).kind, 'disabled');
+  assert.equal((await view.context.PrivacyMonitorBreachService.lookup('fixture.example', { incognito: false })).kind, 'disabled');
   assert.equal(view.writes.length, 0);
 });
 
@@ -36,7 +36,7 @@ test('committed main-frame headers reach the transient per-tab record', async ()
   assert.equal(headers.data.HSTS, 'absent'); assert.equal(view.writes.length, 0);
 });
 
-test('content script waits for the document and initializes once on an empty fixture', () => {
+test('content script waits for the document and initializes once on an empty fixture', async () => {
   const events = [];
   const writes = [];
   const observations = [];
@@ -48,7 +48,7 @@ test('content script waits for the document and initializes once on an empty fix
   vm.runInNewContext(source('content-script.js'), {
     document, URL, console, setTimeout, clearTimeout,
     window: { location: new URL('https://fixture.example/') },
-    browser: { storage: { local: { set: value => writes.push(plain(value)) } } },
+    browser: { extension: { inIncognitoContext: false }, runtime: { onMessage: { addListener() {} } }, storage: { local: { set: value => writes.push(plain(value)) } } },
     MutationObserver: class { observe(...args) { observations.push(args); } },
   });
   assert.equal(writes.length, 0);
@@ -56,9 +56,10 @@ test('content script waits for the document and initializes once on an empty fix
   assert.equal(events[0][0], 'DOMContentLoaded');
   events[0][1]();
   events[0][1]();
-  assert.equal(writes.length, 2, 'Duplicate initialization must not rescan');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(writes.length, 1, 'Duplicate initialization must not rescan');
   assert.equal(writes[0]['security_data_fixture.example'].httpsOnly, true);
-  assert.equal(writes[1]['forms_fixture.example'].insecureForms, 0);
+  assert.equal(writes[0]['forms_fixture.example'].insecureForms, 0);
   assert.equal(observations.length, 1);
   assert.equal(observations[0][0], document.body);
 });

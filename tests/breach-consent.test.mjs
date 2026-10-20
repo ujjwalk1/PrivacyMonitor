@@ -39,7 +39,7 @@ test('enable requests Firefox consent synchronously from the gesture and sends o
     assert.deepEqual(JSON.parse(JSON.stringify(options)), { data_collection: ['browsingActivity'] });
     requested = true; return permission.promise;
   };
-  view.controls.query = async () => [{ id: 1, url: 'https://fixture.example/private?secret=fixture#fragment' }];
+  view.controls.query = async () => [{ id: 1, url: 'https://fixture.example/private?secret=fixture#fragment', incognito: false }];
   view.controls.fetch = async (url, options) => {
     assert.equal(url, 'https://haveibeenpwned.com/api/v3/breaches?domain=fixture.example');
     assert.equal(options.credentials, 'omit'); assert.equal(options.referrerPolicy, 'no-referrer');

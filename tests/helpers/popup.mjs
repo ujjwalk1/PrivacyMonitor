@@ -38,12 +38,12 @@ export function popup(headerData = {
     getPermissions: async () => structuredClone(permissions),
     requestPermission: async () => { permissions.data_collection = ['browsingActivity']; emitPermission('added'); return true; },
     removePermission: async () => { permissions.data_collection = []; emitPermission('removed'); return true; },
-    query: async () => [{ id: 1, url: 'https://fixture.example/' }],
+    query: async () => [{ id: 1, url: 'https://fixture.example/', incognito: false }],
     storage: async () => stored,
     fetch: () => response.promise,
-    executeScript: async () => {},
+    scan: async () => ({ channel: 'privacy-monitor.scan', version: 1, ok: true }),
   };
-  const calls = { storage: 0, fetch: 0, executeScript: 0 };
+  const calls = { storage: 0, fetch: 0, scan: 0 };
   const timers = [];
   let clock = 0;
   function advanceTime(ms) {
@@ -68,9 +68,9 @@ export function popup(headerData = {
         onAdded: { addListener: fn => permissionEvents.added.push(fn) },
         onRemoved: { addListener: fn => permissionEvents.removed.push(fn) },
       },
-      tabs: { query: (...args) => controls.query(...args) },
+      tabs: { query: (...args) => controls.query(...args),
+        sendMessage: (...args) => { calls.scan++; return controls.scan(...args); } },
       storage: { local: { get: (...args) => { calls.storage++; return Promise.resolve(controls.storage(...args)).then(result => { lastStored = result; return result; }); } } },
-      scripting: { executeScript: (...args) => { calls.executeScript++; return controls.executeScript(...args); } },
     },
     document: {
       addEventListener() {},

@@ -66,13 +66,13 @@ test('loading clears previous successful output before tab lookup finishes', asy
   query.resolve([{ url: 'about:config' }]); await loading;
 });
 
-test('unsupported tabs skip storage, injection, and breach requests on load and refresh', async () => {
+test('unsupported tabs skip storage, scan messages, and breach requests on load and refresh', async () => {
   const view = popup(); view.controls.query = async () => [{ id: 1, url: 'about:config' }];
   await view.context.loadAllData(); await view.context.refreshData();
   assert.equal(state(view), 'unsupported');
   assert.equal(view.nodes['score-label'].textContent, 'Unsupported');
   assert.equal(view.nodes['refresh'].disabled, true);
-  assert.deepEqual(view.calls, { storage: 0, executeScript: 0, fetch: 0 });
+  assert.deepEqual(view.calls, { storage: 0, scan: 0, fetch: 0 });
 });
 
 test('tab/storage failures are visible and hide old successful results', async () => {
@@ -185,7 +185,7 @@ test('a delayed storage read cannot restore a prior page after a newer unavailab
 
 test('failed refresh reports unavailable instead of retaining old green results', async () => {
   const view = popup(); settle(view); await view.context.loadAllData();
-  view.controls.executeScript = async () => { throw new Error('restricted fixture'); };
+  view.controls.scan = async () => { throw new Error('restricted fixture'); };
   await view.context.refreshData();
   assert.equal(state(view), 'unavailable');
   assert.equal(view.nodes['score-text'].textContent, '—');
@@ -193,15 +193,17 @@ test('failed refresh reports unavailable instead of retaining old green results'
   assert.equal(view.nodes['refresh'].disabled, false);
 });
 
-test('successful refresh stays loading until the subsequent read resolves', async () => {
+test('successful refresh awaits the scan acknowledgement and subsequent read without a fixed delay', async () => {
   const view = popup(); settle(view);
-  await view.context.refreshData();
-  assert.equal(state(view), 'loading');
-  const query = deferred(); view.controls.query = () => query.promise;
-  view.timers.shift()();
+  const scan = deferred(), requested = deferred(), reading = deferred(), storage = deferred();
+  view.controls.scan = () => { requested.resolve(); return scan.promise; };
+  view.controls.storage = () => { reading.resolve(); return storage.promise; };
+  const refresh = view.context.refreshData(); await requested.promise;
+  assert.equal(state(view), 'loading'); assert.equal(view.calls.storage, 0);
   assert.equal(view.nodes['refresh'].disabled, true);
-  // Finish the pending read without starting another network operation.
-  query.resolve([{ url: 'about:blank' }]);
-  await new Promise(resolve => setImmediate(resolve));
-  assert.equal(state(view), 'unsupported');
+  scan.resolve({ channel: 'privacy-monitor.scan', version: 1, ok: true }); await reading.promise;
+  assert.equal(state(view), 'loading'); assert.equal(view.nodes['refresh'].disabled, true);
+  storage.resolve(view.stored); await refresh;
+  assert.equal(state(view), 'ready'); assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal(view.timers.length, 0);
 });

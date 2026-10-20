@@ -165,8 +165,8 @@ function hasPasswordField(form) {
 }
 
 function injectFormWarning(form) {
-  if (form.getAttribute(WARN_ATTR)) return; // Already warned
   form.setAttribute(WARN_ATTR, '1');
+  if (form.querySelector('[data-pm-banner]')) return; // Preserve an existing warning; recreate a removed one.
 
   const banner = document.createElement('div');
   banner.setAttribute('data-pm-banner', '1');
@@ -207,24 +207,18 @@ function analyzeInsecureForms() {
       if (hasPasswordField(form)) {
         insecurePasswordForms++;
         injectFormWarning(form);
+        return;
       }
     }
+    // A changed form must not keep an obsolete warning after an explicit refresh.
+    form.querySelectorAll('[data-pm-banner]').forEach(banner => banner.remove());
+    form.removeAttribute(WARN_ATTR);
   });
 
-  // Persist results for popup
-  const storageApi = typeof browser !== 'undefined' ? browser : chrome;
-  try {
-    storageApi.storage.local.set({
-      [`forms_${window.location.hostname}`]: {
-        insecureForms: insecureCount,
-        insecurePasswordForms,
-        pageIsHttps: window.location.protocol === 'https:',
-        timestamp: Date.now(),
-      },
-    });
-  } catch (e) {
-    console.log('[Privacy Monitor] Storage error:', e);
-  }
+  return {
+    insecureForms: insecureCount, insecurePasswordForms,
+    pageIsHttps: window.location.protocol === 'https:', timestamp: Date.now(),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -233,7 +227,6 @@ function analyzeInsecureForms() {
 
 function analyzePageSecurity() {
   const data = {
-    url:              window.location.href,
     protocol:         window.location.protocol,
     cookies:          document.cookie ? document.cookie.split(';').length : 0,
     scripts:          document.querySelectorAll('script').length,
@@ -251,22 +244,54 @@ function analyzePageSecurity() {
     } catch (e) { /* ignore invalid URLs */ }
   });
 
-  const storageApi = typeof browser !== 'undefined' ? browser : chrome;
-  try {
-    storageApi.storage.local.set({
-      [`security_data_${window.location.hostname}`]: data,
-    });
-  } catch (e) {
-    console.log('[Privacy Monitor] Storage error:', e);
-  }
+  return data;
 }
+
+
+// One scan path for startup, the existing observer, and explicit popup refresh.
+// Legacy storage remains a temporary adapter until the rest of D09 is migrated.
+const contentApi = typeof browser !== 'undefined' ? browser : chrome;
+let analysisQueue = Promise.resolve();
+function analyzePage() {
+  const run = analysisQueue.then(async () => {
+    findPasswordInputs();
+    const basicData = analyzePageSecurity();
+    const formData = analyzeInsecureForms();
+    // Keep page warnings local in private/unknown contexts; never use persistent scan storage.
+    if (contentApi.extension?.inIncognitoContext !== false) return;
+    await contentApi.storage.local.set({
+      [`security_data_${window.location.hostname}`]: basicData,
+      [`forms_${window.location.hostname}`]: formData,
+    });
+  });
+  // Serialize writes so an earlier scan cannot finish after a later scan in this document.
+  // A failed write must not prevent the next explicit retry.
+  analysisQueue = run.catch(() => {});
+  return run;
+}
+
+function scheduleAnalysis() {
+  void analyzePage().catch(() => {}); // No page data or raw browser errors are logged.
+}
+
+contentApi.runtime.onMessage.addListener((message, sender) => {
+  if (message?.channel !== 'privacy-monitor.scan') return undefined;
+  const reply = result => Promise.resolve({ channel: 'privacy-monitor.scan', version: 1, ...result });
+  if (sender?.id !== contentApi.runtime.id || sender?.url !== contentApi.runtime.getURL('popup.html') || sender?.tab) {
+    return reply({ ok: false, error: 'forbidden' });
+  }
+  if (message.version !== 1 || message.type !== 'refresh' ||
+      Object.keys(message).length !== 3) return reply({ ok: false, error: 'invalid-request' });
+  if (!isInitialized) return reply({ ok: false, error: 'not-ready' });
+  return analyzePage().then(() => reply({ ok: true }), () => reply({ ok: false, error: 'scan-unavailable' }));
+});
 
 // ---------------------------------------------------------------------------
 // Mutation observer (watch for dynamic content)
 // ---------------------------------------------------------------------------
 
 const debouncedFindInputs = throttle(findPasswordInputs, 1000);
-const debouncedFormCheck  = throttle(analyzeInsecureForms, 2000);
+const debouncedFormCheck  = throttle(scheduleAnalysis, 2000);
 
 function setupMutationObserver() {
   const observer = new MutationObserver((mutations) => {
@@ -301,9 +326,7 @@ function initialize() {
   if (isInitialized) return;
   isInitialized = true;
 
-  findPasswordInputs();
-  analyzePageSecurity();
-  analyzeInsecureForms();
+  scheduleAnalysis();
   setupMutationObserver();
 }
 

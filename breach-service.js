@@ -36,7 +36,11 @@ var PrivacyMonitorBreachService = (() => {
     return Number.isFinite(date) ? Math.max(1000, date - now) : fallback;
   }
 
-  async function lookup(hostname) {
+  async function lookup(hostname, context) {
+    // Trusted privileged callers must supply the browser tab's privacy flag.
+    // Check before consent/cache/pending work so private pages cannot join or reuse public lookups.
+    if (context?.incognito === true) return { kind: 'private-disabled' };
+    if (context?.incognito !== false) return { kind: 'context-unavailable' };
     // Accept only a hostname, never a full URL or arbitrary service URL.
     if (typeof hostname !== 'string' || !hostname || hostname.length > 253) return { kind: 'unavailable' };
     try {

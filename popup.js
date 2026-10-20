@@ -226,6 +226,8 @@ function renderBreaches(result) {
   if (kind !== 'empty' && kind !== 'results') {
     const status = Number.isInteger(result.status) ? ` (HTTP ${result.status})` : '';
     const messages = {
+      'private-disabled': 'Breach lookup is disabled in private browsing. No hostname is sent and no cached result is used.',
+      'context-unavailable': 'Breach lookup is off because this tab’s privacy context could not be verified.',
       disabled: 'Breach lookup is off. No further lookups will start while it is off.',
       'not-run': 'Breach lookup has not run since consent changed. Refresh Analysis to check this page.',
       'consent-unsupported': 'Breach lookup is off because this Firefox version does not support data consent.',
@@ -328,7 +330,9 @@ function escHtml(str) {
 // Data fetching
 // ---------------------------------------------------------------------------
 
-async function fetchBreaches(hostname, version = loadVersion) {
+async function fetchBreaches(hostname, version = loadVersion, tab) {
+  if (tab?.incognito === true) return { kind: 'private-disabled' };
+  if (tab?.incognito !== false) return { kind: 'context-unavailable' };
   const revision = consentRevision;
   const consent = await refreshBreachConsent();
   if (revision !== consentRevision || version !== loadVersion) return { kind: 'cancelled' };
@@ -340,7 +344,7 @@ async function fetchBreaches(hostname, version = loadVersion) {
     if (revision !== consentRevision || version !== loadVersion) return { kind: 'cancelled' };
     if (consentBlocked || consentBusy) return { kind: 'disabled' };
     if (!breachService) return { kind: 'unavailable' };
-    return await breachService.lookup(hostname);
+    return await breachService.lookup(hostname, { incognito: tab.incognito });
   } catch {
     return { kind: 'unavailable' };
   }
@@ -373,11 +377,11 @@ async function loadAllData() {
     const { hostname } = page;
     document.getElementById('current-domain').textContent = hostname;
 
-    // Fetch stored data
-    const stored = await api.storage.local.get([
+    // Legacy rows may belong to a normal tab on the same host. Never read them for private/unknown tabs.
+    const stored = tab.incognito === false ? await api.storage.local.get([
       `security_data_${hostname}`,
       `forms_${hostname}`,
-    ]);
+    ]) : { [`security_data_${hostname}`]: false, [`forms_${hostname}`]: false };
     if (version !== loadVersion) return;
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) throw new Error('Invalid observations');
 
@@ -397,6 +401,13 @@ async function loadAllData() {
     const kind = local.kind === 'ready' && score !== null ? 'ready' : 'incomplete';
     renderOverall(kind);
     if (kind === 'ready') updateScoreRing(score);
+    if (tab.incognito !== false) {
+      renderOverall('incomplete', tab.incognito === true
+        ? 'Private browsing: saved scan data is not used. Page warnings remain local; some popup observations are unavailable.'
+        : 'Privacy context unavailable. Saved scan data and breach lookup are not used.');
+      renderBreaches({ kind: tab.incognito === true ? 'private-disabled' : 'context-unavailable' });
+      return;
+    }
 
     // Preserve the existing lookup boundary: no page scan, no external lookup.
     if (local.connection.kind !== 'observed') {
@@ -409,7 +420,7 @@ async function loadAllData() {
 
     // Breach check is async — show spinner until done
     const revision = consentRevision;
-    const breaches = await fetchBreaches(hostname, version);
+    const breaches = await fetchBreaches(hostname, version, tab);
     if (version !== loadVersion || revision !== consentRevision) return;
     renderBreaches(breaches);
 
@@ -439,64 +450,15 @@ async function refreshData() {
       return;
     }
     document.getElementById('current-domain').textContent = page.hostname;
-    const scriptingAPI = api.scripting || (typeof chrome !== 'undefined' ? chrome.scripting : null);
-
-    await scriptingAPI.executeScript({
-      target: { tabId: tab.id },
-      function: () => {
-        // Re-run security and form analysis
-        const hostname = window.location.hostname;
-        const storageApi = typeof browser !== 'undefined' ? browser : chrome;
-
-        const secData = {
-          url: window.location.href,
-          protocol: window.location.protocol,
-          cookies: document.cookie ? document.cookie.split(';').length : 0,
-          scripts: document.querySelectorAll('script').length,
-          thirdPartyScripts: 0,
-          httpsOnly: window.location.protocol === 'https:',
-          timestamp: Date.now(),
-        };
-
-        document.querySelectorAll('script[src]').forEach(s => {
-          try {
-            if (new URL(s.src).hostname !== hostname) secData.thirdPartyScripts++;
-          } catch {}
-        });
-
-        storageApi.storage.local.set({ [`security_data_${hostname}`]: secData });
-
-        // Re-analyze forms (remove old banners first)
-        document.querySelectorAll('[data-pm-banner]').forEach(b => b.remove());
-        document.querySelectorAll('[data-pm-warned]').forEach(f => f.removeAttribute('data-pm-warned'));
-
-        let insecureForms = 0, insecurePasswordForms = 0;
-        document.querySelectorAll('form').forEach(form => {
-          const action = form.getAttribute('action');
-          const isHttp = (action && /^http:\/\//i.test(action)) ||
-                         (!action && window.location.protocol === 'http:') ||
-                         (action && !/^https?:\/\//i.test(action) && window.location.protocol === 'http:');
-          if (isHttp) {
-            insecureForms++;
-            if (form.querySelector('input[type="password"]')) insecurePasswordForms++;
-          }
-        });
-
-        storageApi.storage.local.set({
-          [`forms_${hostname}`]: {
-            insecureForms, insecurePasswordForms,
-            pageIsHttps: window.location.protocol === 'https:',
-            timestamp: Date.now(),
-          },
-        });
-      },
-    });
-
-    setTimeout(() => {
-      if (version !== loadVersion) return;
-      loadAllData();
-      btn.textContent = '🔄 Refresh Analysis';
-    }, 600);
+    const reply = await api.tabs.sendMessage(tab.id, {
+      channel: 'privacy-monitor.scan', version: 1, type: 'refresh',
+    }, { frameId: 0 });
+    if (version !== loadVersion) return;
+    if (reply?.channel !== 'privacy-monitor.scan' || reply.version !== 1 || reply.ok !== true) {
+      throw new Error('Scan unavailable');
+    }
+    btn.textContent = '🔄 Refresh Analysis';
+    await loadAllData();
 
   } catch (err) {
     if (version !== loadVersion) return;

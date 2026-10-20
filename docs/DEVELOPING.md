@@ -4,7 +4,7 @@ D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
 module documented in [SCORING.md](SCORING.md). D03's popup states, D04's breach
 outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md).
 D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). D07's record/message foundation is in [ANALYSIS_RECORDS.md](ANALYSIS_RECORDS.md).
-D08's navigation/header correlation and native acceptance checklist are in [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md). There is no framework,
+D08's navigation/header correlation and native acceptance checklist are in [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md). Partial D09's shared scan/refresh and remaining migration are in [SCAN_REFRESH.md](SCAN_REFRESH.md). Partial D10 safeguards and cleanup prerequisites are in [PRIVATE_HANDLING.md](PRIVATE_HANDLING.md). There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
 Git checkout; its updates use the GitHub connection. A fresh clone has normal
 Git history. See the [repository overview](../README.md) for the layout.
@@ -71,8 +71,7 @@ selected. These steps follow [Mozilla temporary installation instructions](https
 
 Current development behavior: breach lookup is off until Firefox consent is granted.
 Once enabled, opening/refreshing an analyzed page's popup reuses a fresh result or
-sends its hostname to Have I Been Pwned when retry timing permits. D05's consent checklist is linked above. Content scans still
-persist page URLs locally; storage fixes remain D10. Use non-sensitive test pages
+sends a normal tab’s hostname to Have I Been Pwned when retry timing permits. Private/unknown contexts are blocked. D05's consent checklist is linked above. New scan summaries omit URLs; older stored data still awaits D10 cleanup after D09 migration. Use non-sensitive test pages
 and a disposable profile.
 
 Browser acceptance is still pending. Passing mocked tests and byte-identical

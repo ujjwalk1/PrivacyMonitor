@@ -8,6 +8,11 @@ request/body deadline, cache, and cooldown. The manifest loads `popup-state.js`
 first for response validation. Header collection is unchanged. No dependency,
 message contract for page analysis, or persistent breach storage was added.
 
+Partial D10 requires an explicit normal-tab context for
+`lookup(hostname, {incognito: false})`. The popup supplies the browser tab flag;
+private/unknown calls return before cache, pending requests, or network access.
+See [PRIVATE_HANDLING.md](PRIVATE_HANDLING.md) for the remaining acceptance checks.
+
 ## Cache and lifecycle
 
 - Only validated successful empty/record results are reusable for **10 minutes
@@ -32,7 +37,7 @@ message contract for page analysis, or persistent breach storage was added.
   background lifetime, preventing an immediate retry bypass.
 - Requests use `cache: 'no-store'`, omit credentials/referrers, and send only the
   hostname. No cache/history is written to extension storage. Existing page-scan
-  storage and private-session issues remain D07–D10, as documented in the README.
+  storage migration/cleanup and native private-session acceptance remain pending.
 
 ## Rate limiting and failures
 

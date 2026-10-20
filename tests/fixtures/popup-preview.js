@@ -26,7 +26,7 @@ window.browser = {
       observations: { headers: previewCase === 'incomplete' ? { kind: 'not-observed', data: null } :
         { kind: 'observed', data: Object.fromEntries(PrivacyMonitorPopupState.local({headerData: previewData['headers_fixture.example']}).headers.map(({name,kind}) => [name,kind])) } } } }),
     getBackgroundPage: async () => {
-    if (previewCase === 'breach-cached') await window.PrivacyMonitorBreachService.lookup('fixture.example');
+    if (previewCase === 'breach-cached') await window.PrivacyMonitorBreachService.lookup('fixture.example', { incognito: false });
     return window;
   } },
   permissions: {
@@ -45,13 +45,12 @@ window.browser = {
     onAdded: { addListener: fn => previewPermissionEvents.added.push(fn) },
     onRemoved: { addListener: fn => previewPermissionEvents.removed.push(fn) },
   },
-  tabs: { query: async () => previewCase === 'loading' ? new Promise(() => {})
-    : [{ id: 1, url: previewCase === 'unsupported' ? 'about:config' : 'https://fixture.example/' }] },
+  tabs: { sendMessage: async () => { throw new Error('Synthetic restricted-page failure'); }, query: async () => previewCase === 'loading' ? new Promise(() => {})
+    : [{ id: 1, incognito: false, url: previewCase === 'unsupported' ? 'about:config' : 'https://fixture.example/' }] },
   storage: { local: { get: async () => {
     if (previewCase === 'unavailable') throw new Error('Synthetic storage failure');
     return previewCase === 'incomplete' ? {} : previewData;
   } } },
-  scripting: { executeScript: async () => { throw new Error('Synthetic restricted-page failure'); } },
 };
 window.fetch = async (_url, { signal } = {}) => {
   if (previewCase === 'breach-timeout') {

@@ -7,7 +7,11 @@ const record = { Name: 'Fixture', BreachDate: '2000-01-01', PwnCount: 2, DataCla
 const limited = value => ({ ok: false, status: 429, headers: { get: name => {
   assert.equal(name, 'Retry-After'); return value;
 } } });
-const service = view => view.background.PrivacyMonitorBreachService;
+// Cache tests exercise explicitly normal contexts; private/unknown contexts have separate tests.
+const service = view => ({
+  lookup: hostname => view.background.PrivacyMonitorBreachService.lookup(hostname, { incognito: false }),
+  clear: () => view.background.PrivacyMonitorBreachService.clear(),
+});
 const state = view => view.nodes['breach-section'].attributes['data-state'];
 const flush = () => new Promise(resolve => setImmediate(resolve));
 

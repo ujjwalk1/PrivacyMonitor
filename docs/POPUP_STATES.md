@@ -11,12 +11,12 @@ accessing tabs, storage, or the network. `popup.js` owns loading and rendering.
 | --- | --- | --- |
 | Loading | Initial open or refresh/read in progress | Empty neutral score, loading text/spinner, disabled refresh, previous sections hidden/cleared |
 | Incomplete | Read succeeded, but some required local observations are missing, malformed, or contradictory | Available observations remain visible; unknown values are neutral; no numeric score |
-| Unavailable | No readable tab URL, tab/storage failure, or rejected refresh injection | Explicit failure message, neutral score, old results hidden, retry available |
-| Unsupported | A readable URL uses a scheme other than HTTP/HTTPS | Explanation, neutral score, disabled refresh; no storage read, injection, or breach request |
+| Unavailable | No readable tab URL, tab/storage failure, or rejected refresh message | Explicit failure message, neutral score, old results hidden, retry available |
+| Unsupported | A readable URL uses a scheme other than HTTP/HTTPS | Explanation, neutral score, disabled refresh; no storage read, scan message, or breach request |
 | Ready | All local sections have usable observations and the D02 score is available | Numeric score plus “Local observations loaded”; a separate breach result does not control local readiness |
 
 HTTP/HTTPS support is a URL classification, not a guarantee that Firefox permits
-access. Restricted HTTPS pages with no scan stay incomplete; if refresh injection
+access. Restricted HTTPS pages with no scan stay incomplete; if refresh messaging
 is denied they become unavailable. Browser-internal, local-file, extension, data,
 and FTP URLs are unsupported. Missing tab URL/access is unavailable, not evidence
 of an unsupported URL scheme. Only the hostname is displayed.
@@ -85,8 +85,9 @@ A popup-local generation counter ignores responses from superseded loads. D08
 now reads navigation-scoped headers through the background message contract, with
 no fallback to hostname storage; see [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md).
 Remaining stored content scans can still be stale or shared between same-host
-tabs until D09–D10. The existing injected refresh scanner and its 600 ms delay
-remain; D09 must replace that duplicated path and address warning removal.
+tabs until D09–D10. Partial D09 removes the injected scanner and fixed delay:
+refresh awaits the shared content-script scan and preserves/recreates warnings.
+The remaining per-tab record migration is pending; see [SCAN_REFRESH.md](SCAN_REFRESH.md).
 
 ## Verification and next browser check
 
