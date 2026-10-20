@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { webcrypto } from 'node:crypto';
 import test from 'node:test';
 
 const source = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
@@ -8,9 +9,10 @@ const plain = value => JSON.parse(JSON.stringify(value));
 
 test('manifest background scripts initialize the shared service without fetching or persisting breach data', async () => {
   const manifest = JSON.parse(source('manifest.json'));
-  const context = vm.createContext({ URL, console,
+  const context = vm.createContext({ URL, console, crypto: webcrypto,
     fetch: () => assert.fail('Startup must not request breach data'),
     browser: {
+      runtime: { id: 'privacy-monitor@example.com', getURL: path => `moz-extension://fixture/${path}`, onMessage: { addListener() {} } },
       permissions: { getAll: async () => ({ data_collection: [] }), onRemoved: { addListener() {} } },
       webRequest: { onHeadersReceived: { addListener() {} } },
       storage: { local: { set: () => assert.fail('Startup must not persist data') } },

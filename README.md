@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D06 are implemented. The local tests, local lint,
+**Development status:** D01–D06 and the D07 record/message foundation are implemented. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D06
+## Features included through D07
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -33,6 +33,12 @@ native Firefox acceptance remains pending. [Consent and checks](docs/BREACH_CONS
 for one hostname share work. HTTP 429 pauses further uncached lookups across pages;
 retry timing is explicit, and no retry runs automatically. Failures are never cached
 as clean results. [Limits and pending checks](docs/BREACH_CACHE.md).
+
+**D07 — Per-tab record and message foundation:** a bounded in-memory store keeps
+separate observations and navigation identities per tab, with explicit container
+and private-context fields and a validated read-only popup message contract.
+Focused tests pass. Live producers and the popup still use legacy records until
+D08–D09; real Firefox integration remains pending. [Contract and migration](docs/ANALYSIS_RECORDS.md).
 
 ### Existing monitoring features
 
@@ -85,7 +91,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The package command creates `dist/privacy-monitor-1.1.zip`, containing only the
-eight extension files listed in [tools/extension-files.json](tools/extension-files.json),
+ten extension files listed in [tools/extension-files.json](tools/extension-files.json),
 and verifies their contents against the source. It is an unsigned development
 package. Local lint checks syntax and package references; it is not Mozilla's
 add-on validator.
@@ -109,6 +115,8 @@ PrivacyMonitor/
 ├── DAILY_PLAN.md               # Sequenced work plan; proposed work is not completed work
 ├── PROGRESS.md                 # Current handoff and pending acceptance checks
 ├── manifest.json              # Firefox MV2 entry point
+├── analysis-records.js        # D07 record schema, store, and read-only message contract
+├── analysis-background.js     # D07 store/listener initialization
 ├── background.js              # Response-header capture
 ├── breach-service.js          # Transient shared lookup, cache, and rate-limit timing
 ├── content-script.js          # Page, password, and form observations
@@ -117,6 +125,7 @@ PrivacyMonitor/
 ├── popup-state.js             # Observation-to-display state mapping
 ├── scoring.js                 # Pure page-score calculation
 ├── docs/
+│   ├── ANALYSIS_RECORDS.md    # D07 record/message contract and migration boundaries
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
 │   ├── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
@@ -149,7 +158,7 @@ required for a fresh clone.
   Firefox add-on permissions. Without native consent support, lookup stays off.
 - Page scans persist the **full page URL** and observation summaries in extension
   local storage. Records are keyed by hostname and can be stale or shared across
-  tabs. Per-tab records and retention/private-session fixes are planned for D07–D10.
+  tabs. The D07 per-tab foundation is present; producer/reader migration and retention/private-session fixes remain D08–D10.
 - Password feedback runs locally. The implementation does not persist password
   values or include them in the breach lookup.
 - The manifest requests HTTP/HTTPS host access, `activeTab`, `storage`,
@@ -168,7 +177,7 @@ required for a fresh clone.
 
 [DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
 [PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
-D01–D06's live Firefox checks must be resolved before treating the baseline as
+D01–D07's live Firefox checks must be resolved before treating the baseline as
 accepted. No later day is claimed as complete.
 
 The original v1.0 introduced password feedback and basic page counts. v1.1 added

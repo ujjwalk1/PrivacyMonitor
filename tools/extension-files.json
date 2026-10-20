@@ -1,6 +1,8 @@
 [
   "manifest.json",
   "background.js",
+  "analysis-records.js",
+  "analysis-background.js",
   "breach-service.js",
   "content-script.js",
   "popup.html",

@@ -3,7 +3,7 @@
 D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
 module documented in [SCORING.md](SCORING.md). D03's popup states, D04's breach
 outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md).
-D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). There is no framework,
+D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). D07's parallel record/message foundation is in [ANALYSIS_RECORDS.md](ANALYSIS_RECORDS.md). There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
 Git checkout; its updates use the GitHub connection. A fresh clone has normal
 Git history. See the [repository overview](../README.md) for the layout.
@@ -42,7 +42,7 @@ It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
 validation remain outstanding for the assigned later manifest/release days.
 
 Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the eight paths in `tools/extension-files.json`, then verifies each
+includes only the ten paths in `tools/extension-files.json`, then verifies each
 archive entry against the source SHA-256. Development files, checkpoints, and the
 unrelated image are excluded. Add future extension assets to that list when needed.
 The ZIP is a local unsigned development artifact, not a submission-ready release.

@@ -15,7 +15,7 @@
   ],
 
   "background": {
-    "scripts": ["popup-state.js", "breach-service.js", "background.js"],
+    "scripts": ["analysis-records.js", "analysis-background.js", "popup-state.js", "breach-service.js", "background.js"],
     "persistent": true
   },
 
