@@ -1,63 +1,39 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-import { webcrypto } from 'node:crypto';
+import { background, nav, req } from './helpers/background.mjs';
 import test from 'node:test';
 
 const source = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
 
-test('manifest background scripts initialize the shared service without fetching or persisting breach data', async () => {
-  const manifest = JSON.parse(source('manifest.json'));
-  const context = vm.createContext({ URL, console, crypto: webcrypto,
-    fetch: () => assert.fail('Startup must not request breach data'),
-    browser: {
-      runtime: { id: 'privacy-monitor@example.com', getURL: path => `moz-extension://fixture/${path}`, onMessage: { addListener() {} } },
-      permissions: { getAll: async () => ({ data_collection: [] }), onRemoved: { addListener() {} } },
-      webRequest: { onHeadersReceived: { addListener() {} } },
-      storage: { local: { set: () => assert.fail('Startup must not persist data') } },
-    },
-  });
-  for (const path of manifest.background.scripts) vm.runInContext(source(path), context, { filename: path });
-  assert.equal(typeof context.PrivacyMonitorBreachService.lookup, 'function');
-  assert.equal((await context.PrivacyMonitorBreachService.lookup('fixture.example')).kind, 'disabled');
+test('manifest background scripts initialize without fetching or persisting breach data', async () => {
+  const view = background();
+  assert.equal(typeof view.context.PrivacyMonitorBreachService.lookup, 'function');
+  assert.equal((await view.context.PrivacyMonitorBreachService.lookup('fixture.example')).kind, 'disabled');
+  assert.equal(view.writes.length, 0);
 });
-
-function background() {
-  const registrations = [];
-  const writes = [];
-  vm.runInNewContext(source('background.js'), {
-    URL, console,
-    browser: {
-      webRequest: { onHeadersReceived: { addListener: (...args) => registrations.push(args) } },
-      storage: { local: { set: value => writes.push(plain(value)) } },
-    },
-  });
-  assert.equal(registrations.length, 1);
-  const [listener, filter, options] = registrations[0];
-  assert.deepEqual(plain(filter), { urls: ['<all_urls>'] });
-  assert.deepEqual(plain(options), ['responseHeaders']);
-  return { listener, writes };
-}
 
 test('background registers header monitoring and ignores subresources', () => {
-  const { listener, writes } = background();
-  listener({ type: 'script', url: 'https://fixture.example/app.js', responseHeaders: [] });
-  assert.equal(writes.length, 0);
+  const view = background();
+  assert.deepEqual(plain(view.registrations['request.onHeadersReceived']),
+    [{ urls: ['<all_urls>'], types: ['main_frame'] }, ['responseHeaders']]);
+  view.events['request.onHeadersReceived'](req({ type: 'script', responseHeaders: [] }));
+  assert.equal(view.store.get(1).kind, 'not-observed'); assert.equal(view.writes.length, 0);
 });
 
-test('main-frame header observation reaches extension storage', () => {
-  const { listener, writes } = background();
-  listener({
-    type: 'main_frame', url: 'https://fixture.example/',
-    responseHeaders: [{ name: 'Content-Security-Policy', value: "default-src 'self'" }],
-  });
-  assert.equal(writes.length, 1);
-  const record = writes[0]['headers_fixture.example'];
-  assert.deepEqual(record.present, { CSP: "default-src 'self'" });
-  assert.ok(record.missing.includes('HSTS'));
-  assert.ok(!record.missing.includes('CSP'));
-  assert.equal(typeof record.timestamp, 'number');
+test('committed main-frame headers reach the transient per-tab record', async () => {
+  const view = background();
+  view.events['navigation.onBeforeNavigate'](nav());
+  view.events['request.onBeforeRequest'](req());
+  view.events['request.onHeadersReceived'](req({ timeStamp: 12, statusCode: 200,
+    responseHeaders: [{ name: 'Content-Security-Policy', value: "default-src 'self'" }] }));
+  view.events['navigation.onCommitted'](nav(1, 13));
+  view.events['request.onCompleted'](req({ timeStamp: 14 }));
+  await view.settle();
+  const headers = view.store.get(1).record.observations.headers;
+  assert.equal(headers.kind, 'observed'); assert.equal(headers.data.CSP, 'present');
+  assert.equal(headers.data.HSTS, 'absent'); assert.equal(view.writes.length, 0);
 });
 
 test('content script waits for the document and initializes once on an empty fixture', () => {

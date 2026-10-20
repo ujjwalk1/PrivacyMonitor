@@ -1,4 +1,4 @@
-// D07 installs a separate record store without changing legacy producers/readers.
+// Shared record store and read-only popup transport.
 var PrivacyMonitorAnalysisStore = PrivacyMonitorAnalysis.createStore();
 (() => {
   const api = typeof browser !== 'undefined' ? browser : chrome;
@@ -7,5 +7,5 @@ var PrivacyMonitorAnalysisStore = PrivacyMonitorAnalysis.createStore();
     extensionId: api.runtime.id,
     popupUrl: api.runtime.getURL('popup.html'),
   }));
-  // D08 wires navigation and tab-close events. D09 migrates scans and the popup reader.
+  // background.js owns D08 navigation/header events. D09 migrates remaining scans/readers.
 })();

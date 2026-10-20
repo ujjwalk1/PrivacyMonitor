@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D06 and the D07 record/message foundation are implemented. The local tests, local lint,
+**Development status:** D01–D08 implementation is present, including per-tab header capture. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D07
+## Features included through D08
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -37,8 +37,16 @@ as clean results. [Limits and pending checks](docs/BREACH_CACHE.md).
 **D07 — Per-tab record and message foundation:** a bounded in-memory store keeps
 separate observations and navigation identities per tab, with explicit container
 and private-context fields and a validated read-only popup message contract.
-Focused tests pass. Live producers and the popup still use legacy records until
-D08–D09; real Firefox integration remains pending. [Contract and migration](docs/ANALYSIS_RECORDS.md).
+Focused tests pass. D08 connects headers; remaining scans/readers move in D09.
+Real Firefox integration remains pending. [Contract and migration](docs/ANALYSIS_RECORDS.md).
+
+**D08 — Headers scoped to tab navigation:** main-frame responses enter the transient
+record only after request completion and matching page commitment. Navigation,
+redirects, errors, and closed/replaced tabs discard earlier evidence. The popup
+reads headers through the D07 message contract; missing or uncertain capture stays
+unknown. No new hostname header records or raw header values are stored. The new
+`webNavigation` permission supplies navigation boundaries. Native Firefox checks
+remain pending. [Lifecycle and acceptance checklist](docs/HEADER_LIFECYCLE.md).
 
 ### Existing monitoring features
 
@@ -117,7 +125,7 @@ PrivacyMonitor/
 ├── manifest.json              # Firefox MV2 entry point
 ├── analysis-records.js        # D07 record schema, store, and read-only message contract
 ├── analysis-background.js     # D07 store/listener initialization
-├── background.js              # Response-header capture
+├── background.js              # D08 navigation-scoped response-header capture
 ├── breach-service.js          # Transient shared lookup, cache, and rate-limit timing
 ├── content-script.js          # Page, password, and form observations
 ├── popup.html                 # Popup markup and styles
@@ -126,6 +134,7 @@ PrivacyMonitor/
 ├── scoring.js                 # Pure page-score calculation
 ├── docs/
 │   ├── ANALYSIS_RECORDS.md    # D07 record/message contract and migration boundaries
+│   ├── HEADER_LIFECYCLE.md    # D08 correlation rules and Firefox acceptance checks
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist
 │   ├── SCORING.md              # D02 weights, inputs, and limits
 │   ├── POPUP_STATES.md         # D03 states, D04 breach outcomes, and previews
@@ -158,11 +167,14 @@ required for a fresh clone.
   Firefox add-on permissions. Without native consent support, lookup stays off.
 - Page scans persist the **full page URL** and observation summaries in extension
   local storage. Records are keyed by hostname and can be stale or shared across
-  tabs. The D07 per-tab foundation is present; producer/reader migration and retention/private-session fixes remain D08–D10.
+  tabs. Headers now use transient per-tab records; remaining scan/reader migration
+  and retention/private-session fixes remain D09–D10. Existing legacy header rows
+  are ignored and left for D10 cleanup.
 - Password feedback runs locally. The implementation does not persist password
   values or include them in the breach lookup.
 - The manifest requests HTTP/HTTPS host access, `activeTab`, `storage`,
-  `cookies`, `scripting`, and `webRequest`. The broad monitoring permissions
+  `cookies`, `scripting`, `webRequest`, and `webNavigation`. The latter resets and
+  binds header observations to page navigation. The broad monitoring permissions
   and currently unused `cookies` permission await the D16 audit.
 - Non-HTTP/HTTPS URLs are unsupported. Firefox can also restrict access to some
   HTTPS pages. Missing observations do not mean a page passed a check.
@@ -170,14 +182,14 @@ required for a fresh clone.
   evidence. Fresh successful results are cached for 10 minutes; HTTP 429 applies
   shared backoff. Reopen or refresh after the wait to retry; there is no automatic retry.
 - Refresh still uses a duplicated injected scanner and can remove form warnings.
-  Dynamic form handling, header-value evaluation, and tab/navigation isolation
-  remain unfinished. A score of 100 does not establish site trustworthiness.
+  Dynamic form handling, header-value evaluation, and isolation of the remaining
+  content scans remain unfinished. A score of 100 does not establish site trustworthiness.
 
 ## Roadmap and validation
 
 [DAILY_PLAN.md](DAILY_PLAN.md) is the source of planned work.
 [PROGRESS.md](PROGRESS.md) records what was implemented and what remains unverified.
-D01–D07's live Firefox checks must be resolved before treating the baseline as
+D01–D08's live Firefox checks must be resolved before treating the baseline as
 accepted. No later day is claimed as complete.
 
 The original v1.0 introduced password feedback and basic page counts. v1.1 added

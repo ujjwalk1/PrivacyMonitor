@@ -21,7 +21,11 @@ if (previewCase === 'warnings') {
 let previewConsent = !['consent-off', 'consent-denied', 'consent-unsupported'].includes(previewCase);
 const previewPermissionEvents = { added: [], removed: [] };
 window.browser = {
-  runtime: { getBackgroundPage: async () => {
+  runtime: { sendMessage: async message => ({ channel: message.channel, version: 1, ok: true, kind: 'record',
+    record: { schemaVersion: 1, tabId: message.tabId, page: { hostname: 'fixture.example', protocol: 'https:' },
+      observations: { headers: previewCase === 'incomplete' ? { kind: 'not-observed', data: null } :
+        { kind: 'observed', data: Object.fromEntries(PrivacyMonitorPopupState.local({headerData: previewData['headers_fixture.example']}).headers.map(({name,kind}) => [name,kind])) } } } }),
+    getBackgroundPage: async () => {
     if (previewCase === 'breach-cached') await window.PrivacyMonitorBreachService.lookup('fixture.example');
     return window;
   } },

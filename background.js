@@ -1,59 +1,140 @@
-// Background script: intercepts HTTP response headers for security analysis
+// D08: correlate main-frame response headers with a committed per-tab navigation.
+(() => {
+  const api = typeof browser !== 'undefined' ? browser : chrome;
+  const store = PrivacyMonitorAnalysisStore;
+  const headers = {
+    'content-security-policy': 'CSP', 'strict-transport-security': 'HSTS',
+    'x-frame-options': 'X-Frame-Options', 'x-content-type-options': 'X-Content-Type-Options',
+    'referrer-policy': 'Referrer-Policy', 'permissions-policy': 'Permissions-Policy',
+  };
+  const navigations = new Map();
+  const validEvent = d => Number.isSafeInteger(d.tabId) && d.tabId >= 0 && d.frameId === 0 &&
+    Number.isFinite(d.timeStamp) && d.timeStamp >= 0;
+  const isRequest = d => validEvent(d) && d.type === 'main_frame' &&
+    typeof d.requestId === 'string' && d.requestId.length > 0 && d.requestId.length <= 128;
+  const filter = { urls: ['<all_urls>'], types: ['main_frame'] };
 
-const SECURITY_HEADERS = {
-  'content-security-policy':    { name: 'CSP',                   importance: 'high'   },
-  'strict-transport-security':  { name: 'HSTS',                  importance: 'high'   },
-  'x-frame-options':            { name: 'X-Frame-Options',       importance: 'high'   },
-  'x-content-type-options':     { name: 'X-Content-Type-Options',importance: 'medium' },
-  'referrer-policy':            { name: 'Referrer-Policy',       importance: 'medium' },
-  'permissions-policy':         { name: 'Permissions-Policy',    importance: 'low'    },
-};
-
-const api = typeof browser !== 'undefined' ? browser : chrome;
-
-api.webRequest.onHeadersReceived.addListener(
-  (details) => {
-    // Only analyze main page loads, not sub-resources
-    if (details.type !== 'main_frame') return;
-
+  // Only a transient digest is retained for full-resource matching, never the URL itself.
+  async function fingerprint(raw) {
     try {
-      const hostname = new URL(details.url).hostname;
-      const present = {};
-      const missing = [];
+      const url = new URL(raw);
+      if (!['http:', 'https:'].includes(url.protocol)) return null;
+      url.hash = '';
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(url.href));
+      return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+    } catch { return null; }
+  }
 
-      for (const [headerKey, info] of Object.entries(SECURITY_HEADERS)) {
-        const found = details.responseHeaders.find(
-          h => h.name.toLowerCase() === headerKey
-        );
-        if (found) {
-          present[info.name] = found.value;
-        } else {
-          missing.push(info.name);
-        }
-      }
+  function remove(tabId) { navigations.delete(tabId); store.remove(tabId); }
+  function current(tabId, nav, request) {
+    return navigations.get(tabId) === nav && (!request || nav.request === request);
+  }
+  function publish(tabId, nav, request) {
+    if (!current(tabId, nav, request) || !nav.identity || !nav.key || !request.complete ||
+        !request.key || request.key !== nav.key || !request.response ||
+        request.response.key !== request.key) return;
+    store.update(nav.identity, 'headers', request.response.observation);
+  }
 
-      // Compute a header sub-score (0–100)
-      let headerScore = 100;
-      for (const missing_name of missing) {
-        const entry = Object.values(SECURITY_HEADERS).find(v => v.name === missing_name);
-        if (!entry) continue;
-        if (entry.importance === 'high')   headerScore -= 10;
-        if (entry.importance === 'medium') headerScore -= 5;
-        if (entry.importance === 'low')    headerScore -= 2;
-      }
+  api.webNavigation.onBeforeNavigate.addListener(d => {
+    if (!validEvent(d)) return;
+    const previous = navigations.get(d.tabId);
+    if (previous && d.timeStamp <= previous.lastNavigationTime) return;
+    remove(d.tabId); // Including unsupported destinations and same-URL reloads.
+    navigations.set(d.tabId, { startedAt: d.timeStamp, lastNavigationTime: d.timeStamp });
+    while (navigations.size > 256) remove(navigations.keys().next().value);
+  });
 
-      api.storage.local.set({
-        [`headers_${hostname}`]: {
-          present,
-          missing,
-          headerScore: Math.max(0, headerScore),
-          timestamp: Date.now(),
-        },
-      });
-    } catch (e) {
-      console.error('[Privacy Monitor] Header analysis error:', e);
+  api.webRequest.onBeforeRequest.addListener(d => {
+    if (!isRequest(d)) return;
+    const nav = navigations.get(d.tabId);
+    if (!nav || d.timeStamp < nav.startedAt ||
+        (nav.committedAt !== undefined && d.timeStamp > nav.committedAt)) return;
+    if (nav.request && d.timeStamp <= nav.request.lastTime) return;
+    const request = { id: d.requestId, startedAt: d.timeStamp, lastTime: d.timeStamp,
+      incognito: typeof d.incognito === 'boolean' ? d.incognito : null,
+      cookieStoreId: typeof d.cookieStoreId === 'string' && d.cookieStoreId.length <= 128 ? d.cookieStoreId : null };
+    nav.request = request; // A redirect hop or a different request invalidates pending old digest work.
+    void fingerprint(d.url).then(key => {
+      if (!current(d.tabId, nav, request)) return;
+      request.key = key; publish(d.tabId, nav, request);
+    });
+  }, filter);
+
+  function matching(d) {
+    if (!isRequest(d)) return null;
+    const nav = navigations.get(d.tabId), request = nav?.request;
+    if (!request || request.id !== d.requestId || d.timeStamp < request.lastTime || request.finished) return null;
+    request.lastTime = d.timeStamp;
+    return { nav, request };
+  }
+
+  api.webRequest.onHeadersReceived.addListener(d => {
+    const match = matching(d); if (!match) return;
+    const { nav, request } = match;
+    const data = Object.fromEntries(Object.values(headers).map(name => [name, 'absent']));
+    // A 304 may contain only changed headers: absence is not evidence of missing protection.
+    const usable = Number.isInteger(d.statusCode) && d.statusCode >= 200 &&
+      !(d.statusCode >= 300 && d.statusCode < 400) && Array.isArray(d.responseHeaders) &&
+      d.responseHeaders.every(item => item && typeof item.name === 'string');
+    if (usable) for (const item of d.responseHeaders) {
+      const key = item.name.toLowerCase();
+      if (Object.hasOwn(headers, key)) data[headers[key]] = 'present';
     }
-  },
-  { urls: ['<all_urls>'] },
-  ['responseHeaders']
-);
+    const response = { observation: usable ? { kind: 'observed', data } : { kind: 'unavailable', data: null } };
+    request.response = response;
+    void fingerprint(d.url).then(key => {
+      if (!current(d.tabId, nav, request) || request.response !== response) return;
+      response.key = key; publish(d.tabId, nav, request);
+    });
+  }, filter, ['responseHeaders']);
+
+  api.webRequest.onBeforeRedirect.addListener(d => {
+    const match = matching(d); if (!match) return;
+    // Do not carry a redirect response into its target, even when requestId/hostname are reused.
+    match.nav.request = { id: d.requestId, lastTime: d.timeStamp, finished: true };
+    if (match.nav.identity) store.update(match.nav.identity, 'headers', { kind: 'unavailable', data: null });
+  }, filter);
+
+  api.webRequest.onCompleted.addListener(d => {
+    const match = matching(d); if (!match) return;
+    match.request.complete = true; match.request.finished = true;
+    publish(d.tabId, match.nav, match.request);
+  }, filter);
+
+  api.webRequest.onErrorOccurred.addListener(d => {
+    const match = matching(d); if (!match) return;
+    match.request.finished = true;
+    match.request.response = null;
+    if (match.nav.identity) store.update(match.nav.identity, 'headers', { kind: 'unavailable', data: null });
+  }, filter);
+
+  api.webNavigation.onCommitted.addListener(d => {
+    if (!validEvent(d)) return;
+    const nav = navigations.get(d.tabId);
+    if (!nav || d.timeStamp < nav.lastNavigationTime) return;
+    if (nav.committedAt !== undefined) nav.request = null; // Never reuse evidence on an unpaired later commit.
+    nav.key = null;
+    nav.lastNavigationTime = d.timeStamp; nav.committedAt = d.timeStamp;
+    store.remove(d.tabId);
+    const request = nav.request;
+    const started = store.begin({ id: d.tabId, url: d.url,
+      incognito: request?.incognito ?? null, cookieStoreId: request?.cookieStoreId ?? null },
+    { documentId: typeof d.documentId === 'string' && d.documentId.length <= 128 ? d.documentId : null });
+    nav.identity = started.ok ? { tabId: d.tabId, navigationId: started.record.navigationId } : null;
+    void fingerprint(d.url).then(key => {
+      if (!current(d.tabId, nav) || nav.committedAt !== d.timeStamp) return;
+      nav.key = key;
+      if (nav.request) publish(d.tabId, nav, nav.request);
+    });
+  });
+
+  api.webNavigation.onErrorOccurred.addListener(d => {
+    if (!validEvent(d)) return;
+    const nav = navigations.get(d.tabId);
+    if (!nav || d.timeStamp < nav.lastNavigationTime) return;
+    remove(d.tabId); // An aborted/failed navigation cannot leave an older successful record.
+  });
+  api.tabs.onRemoved.addListener(remove);
+  api.tabs.onReplaced.addListener((addedTabId, removedTabId) => { remove(removedTabId); remove(addedTabId); });
+})();

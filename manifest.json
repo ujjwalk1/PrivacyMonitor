@@ -10,6 +10,7 @@
     "cookies",
     "scripting",
     "webRequest",
+    "webNavigation",
     "http://*/*",
     "https://*/*"
   ],

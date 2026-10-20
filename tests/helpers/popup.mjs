@@ -26,6 +26,7 @@ export function popup(headerData = {
     'headers_fixture.example': headerData,
     'forms_fixture.example': { insecureForms: 0, insecurePasswordForms: 0 },
   };
+  let lastStored = stored;
   const response = deferred();
   const requested = deferred();
   const permissionEvents = { added: [], removed: [] };
@@ -68,7 +69,7 @@ export function popup(headerData = {
         onRemoved: { addListener: fn => permissionEvents.removed.push(fn) },
       },
       tabs: { query: (...args) => controls.query(...args) },
-      storage: { local: { get: (...args) => { calls.storage++; return controls.storage(...args); } } },
+      storage: { local: { get: (...args) => { calls.storage++; return Promise.resolve(controls.storage(...args)).then(result => { lastStored = result; return result; }); } } },
       scripting: { executeScript: (...args) => { calls.executeScript++; return controls.executeScript(...args); } },
     },
     document: {
@@ -83,7 +84,18 @@ export function popup(headerData = {
       setTimeout: context.setTimeout, clearTimeout: context.clearTimeout });
     for (const path of ['popup-state.js', 'breach-service.js']) vm.runInContext(read(path), background, { filename: path });
   }
-  context.browser.runtime = { getBackgroundPage: async () => background };
+  controls.analysis = async message => {
+    const key = Object.keys(lastStored ?? {}).find(key => key.startsWith('headers_'));
+    const hostname = key?.slice(8) || 'fixture.example';
+    const header = lastStored?.[key];
+    const mapping = vm.runInContext('data => PrivacyMonitorPopupState.local({headerData: data}).headers', context)(header);
+    return { channel: message.channel, version: 1, ok: true, kind: 'record', record: {
+      schemaVersion: 1, tabId: message.tabId, page: { hostname, protocol: 'https:' },
+      observations: { headers: header === undefined ? { kind: 'not-observed', data: null } :
+        { kind: 'observed', data: Object.fromEntries(mapping.map(({name,kind}) => [name,kind])) } },
+    } };
+  };
+  context.browser.runtime = { getBackgroundPage: async () => background, sendMessage: (...args) => controls.analysis(...args) };
   for (const [, path] of html.matchAll(/<script\s+src="([^"]+)"/g)) {
     vm.runInContext(read(path), context, { filename: path });
   }

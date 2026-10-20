@@ -346,6 +346,18 @@ async function fetchBreaches(hostname, version = loadVersion) {
   }
 }
 
+async function fetchHeaderData(tab, hostname) {
+  try {
+    const reply = await api.runtime.sendMessage({ channel: 'privacy-monitor.analysis', version: 1, type: 'get', tabId: tab.id });
+    if (!reply?.ok || reply.channel !== 'privacy-monitor.analysis' || reply.version !== 1) return false;
+    if (reply.kind === 'not-observed') return undefined;
+    const record = reply.record;
+    if (reply.kind !== 'record' || record?.schemaVersion !== 1 || record.tabId !== tab.id ||
+        record.page?.hostname !== hostname || record.page?.protocol !== new URL(tab.url).protocol) return false;
+    return PrivacyMonitorPopupState.legacyHeaders(record.observations?.headers);
+  } catch { return false; }
+}
+
 async function loadAllData() {
   const version = ++loadVersion;
   resetView();
@@ -364,15 +376,16 @@ async function loadAllData() {
     // Fetch stored data
     const stored = await api.storage.local.get([
       `security_data_${hostname}`,
-      `headers_${hostname}`,
       `forms_${hostname}`,
     ]);
     if (version !== loadVersion) return;
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) throw new Error('Invalid observations');
 
+    const headerData = await fetchHeaderData(tab, hostname);
+    if (version !== loadVersion) return;
     const data = {
       basicData: stored[`security_data_${hostname}`],
-      headerData: stored[`headers_${hostname}`],
+      headerData,
       formData: stored[`forms_${hostname}`],
     };
     const local = PrivacyMonitorPopupState.local(data);

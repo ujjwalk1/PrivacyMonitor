@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import test from 'node:test';
 import vm from 'node:vm';
+import { background } from './helpers/background.mjs';
 
 const read = name => readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -161,23 +162,8 @@ test('content scripts, frames, foreign extensions, and missing sender metadata c
   assert.equal((await handler(request(1), sender)).record.context.incognito, true);
 });
 
-test('manifest installs one read-only analysis listener without changing legacy storage or fetching', async () => {
-  const listeners = []; const headerEvents = []; const writes = [];
-  const context = vm.createContext({ URL, crypto: webcrypto, console,
-    fetch: () => assert.fail('D07 must not send requests'),
-    browser: {
-      runtime: { id: sender.id, getURL: path => 'moz-extension://fixture/' + path,
-        onMessage: { addListener: fn => listeners.push(fn) } },
-      permissions: { onRemoved: { addListener() {} } },
-      webRequest: { onHeadersReceived: { addListener: fn => headerEvents.push(fn) } },
-      storage: { local: { set: data => writes.push(data), get: () => assert.fail('No legacy hydration') } },
-    },
-  });
-  for (const path of JSON.parse(read('manifest.json')).background.scripts) vm.runInContext(read(path), context, { filename: path });
-  assert.equal(listeners.length, 1); assert.equal(writes.length, 0);
-  assert.equal((await listeners[0](request(1), sender)).kind, 'not-observed');
-  headerEvents[0]({ type: 'main_frame', url: 'https://same.example/', responseHeaders: [] });
-  assert.equal(writes.length, 1);
-  assert.ok(writes[0]['headers_same.example']);
-  assert.equal((await listeners[0](request(1), sender)).kind, 'not-observed', 'D08 migration is not smuggled into D07');
+test('manifest installs read-only analysis transport without hydrating legacy records', async () => {
+  const view = background();
+  assert.equal((await view.events.message(request(1), sender)).kind, 'not-observed');
+  assert.equal(view.writes.length, 0);
 });

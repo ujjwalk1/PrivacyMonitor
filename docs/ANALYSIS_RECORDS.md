@@ -2,18 +2,19 @@
 
 [Repository overview](../README.md) · [Development guide](DEVELOPING.md)
 
-D07 introduces the in-memory record model and a read-only runtime message listener.
-It does **not** migrate the live producers or popup. On an ordinary installation,
-the new store is empty until a trusted background producer calls `begin()`.
-Headers move in D08; content scans, refresh, and the popup reader move in D09.
-Do not describe the existing popup as tab-isolated yet.
+D07 introduced the in-memory record model and a read-only runtime message listener.
+D08 now initializes records on committed navigation, captures headers, and migrates
+the popup's header reader. See [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md).
+Content scans, refresh, and remaining popup readers move in D09. The whole popup
+is not yet tab-isolated.
 
 ## Ownership and record shape
 
 `analysis-records.js` exports `PrivacyMonitorAnalysis.createStore()` and
 `createMessageHandler()`. `analysis-background.js` creates the background-owned
 `PrivacyMonitorAnalysisStore` and registers one listener. The manifest loads both
-before the existing background scripts, with no new permissions or dependencies.
+before the existing background scripts. D07 added no permissions or dependencies;
+D08 adds `webNavigation` for the lifecycle adapter.
 
 One record is keyed by numeric **tab ID**, never hostname. A snapshot contains:
 
@@ -67,8 +68,8 @@ all evidence for that tab with unknown sections; even a same-URL reload needs a
 new identity. `update()` requires the exact current `{tabId, navigationId}` and
 returns the updated snapshot. Missing records, stale identities, and malformed
 inputs return an error without changing evidence. An unsupported/invalid `begin()`
-also leaves the store unchanged; D08 must invalidate the old record at the correct
-navigation boundary before attempting to initialize another supported page.
+also leaves the store unchanged; D08's adapter explicitly invalidates the old
+record on navigation start and before initializing a committed page.
 
 `documentId` is optional metadata, not a substitute for `navigationId`. The new
 generation survives neither background restart nor extension reload; a new session
@@ -76,10 +77,10 @@ UUID prevents old work matching records created after restart. `clear()` and
 `remove()` do not reset the generation counter. Delayed producers must carry the
 identity captured when work began, not look up the latest token when it finishes.
 
-**D08 boundary:** navigation events, redirects/request correlation, browser document
-binding, and automatic tab-close cleanup are not wired yet. Do not infer navigation
-from equality of hostname or URL, or accept a content-script-provided tab/context.
-The later adapter must use browser-supplied tab/frame/document metadata. D09 must
+**D08 boundary:** the header adapter uses browser-supplied navigation/request events,
+timestamps, tab/frame IDs, request IDs, and a transient resource digest. It binds
+optional document metadata from commitment and clears records on tab closure.
+It never treats hostname or URL equality alone as navigation identity. D09 must
 validate top-frame scan messages against that identity before enabling writes.
 
 Storage is transient and capped at **256 records**, evicting the oldest begun
@@ -117,7 +118,7 @@ rejected. Payloads cannot assert sender identity or change context. No `begin`,
 `update`, or `refresh` operation is exposed over messages in D07. Unrelated
 channels return `undefined` synchronously so other listeners can respond; only
 owned messages return a Promise. Schema/version changes must be coordinated with
-the future popup reader; transport errors must not be interpreted as empty success.
+popup reader; transport errors must not be interpreted as empty success.
 
 Mozilla references checked 2026-10-13: [MessageSender](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/MessageSender)
 documents sender identity, frame/tab metadata, and optional document identity;
@@ -128,16 +129,18 @@ documents tab IDs and container/private metadata. Unknown optional fields remain
 
 ## Compatibility and verification
 
-`background.js` still writes `headers_<hostname>`, content scans still write their
-legacy records, and `popup.js` still reads them. D07 neither imports that possibly
-shared/stale evidence into a tab record nor deletes it. This parallel foundation is
-temporary: D08 migrates header writes, D09 migrates scans/readers, and D10 removes
-obsolete persistent records. D06 breach caching and its consent gate are unchanged.
+`background.js` now writes headers only to the transient store. The popup reads
+them through v1 messages and projects presence states into the existing renderer
+and scorer; it never falls back to `headers_<hostname>`. Content scans and their
+readers still use legacy records. No legacy evidence is imported or deleted.
+D09 migrates the remaining scans/readers and removes the temporary projection
+when no longer needed; D10 removes obsolete persistent records.
+D06 breach caching and its consent gate are unchanged.
 
 `tests/analysis-records.test.mjs` covers two same-host tabs through the real handler,
 context metadata, unknown/zero/error states, stale generation rejection, payload
 validation/redaction, snapshot isolation, bounded capacity, removal/restart,
-sender authorization, and manifest wiring alongside legacy behavior.
+sender authorization, and manifest wiring without legacy header hydration.
 
 Native Firefox checks remain pending. In a disposable profile:
 
@@ -151,8 +154,8 @@ Native Firefox checks remain pending. In a disposable profile:
 3. Begin another generation for one tab; submit an update carrying its old token
    and confirm `stale-navigation`. Inspect container/private fields with separate
    disposable contexts and confirm unavailable metadata remains null.
-4. Verify a content-script read is forbidden, legacy popup behavior still works,
-   and extension reload empties the new store. Automatic navigation/close behavior
-   belongs to D08 and must not be reported as verified here.
+4. Verify a content-script read is forbidden, remaining legacy scan behavior still
+   works, and extension reload empties the new store. Run automatic navigation/close
+   checks using the separate D08 checklist; manual seeding is only a contract fixture.
 5. Record Firefox version, message results, console errors, and exact pass/fail in
    [PROGRESS.md](../PROGRESS.md), carrying outstanding D01–D06 checks forward.

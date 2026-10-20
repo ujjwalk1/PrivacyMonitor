@@ -3,7 +3,8 @@
 D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
 module documented in [SCORING.md](SCORING.md). D03's popup states, D04's breach
 outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md).
-D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). D07's parallel record/message foundation is in [ANALYSIS_RECORDS.md](ANALYSIS_RECORDS.md). There is no framework,
+D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). D07's record/message foundation is in [ANALYSIS_RECORDS.md](ANALYSIS_RECORDS.md).
+D08's navigation/header correlation and native acceptance checklist are in [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md). There is no framework,
 bundling step, or runtime dependency. The original local working folder is not a
 Git checkout; its updates use the GitHub connection. A fresh clone has normal
 Git history. See the [repository overview](../README.md) for the layout.
@@ -34,7 +35,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 
 The tests exercise mocked background header events, content-script initialization,
 popup boot registration, scoring, popup state transitions, breach outcomes/timeouts,
-and score/breach separation. They
+score/breach separation, and per-tab header isolation across navigation, redirects,
+delayed events, errors, and tab closure. They
 do not simulate a full browser or validate the breach API or all existing
 behaviors. Local lint checks JavaScript syntax,
 the MV2 manifest basics, and that manifest/popup file references are packaged.
@@ -75,5 +77,7 @@ and a disposable profile.
 
 Browser acceptance is still pending. Passing mocked tests and byte-identical
 packaging does not establish that the extension loads or works in Firefox.
+For D08, reload the add-on with its new `webNavigation` permission and run the
+[header lifecycle checklist](HEADER_LIFECYCLE.md#native-firefox-acceptance-pending).
 Mozilla's [web-ext reference](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)
 documents optional future browser/lint tooling; D01 requires no global tool install.

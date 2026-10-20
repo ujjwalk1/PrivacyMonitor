@@ -1,4 +1,4 @@
-// D07 foundation. Producers and legacy popup migration are deliberately left to D08/D09.
+// Per-tab record foundation; header lifecycle is wired in background.js.
 var PrivacyMonitorAnalysis = (() => {
   const CHANNEL = 'privacy-monitor.analysis';
   const VERSION = 1;

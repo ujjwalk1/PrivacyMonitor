@@ -85,5 +85,21 @@ const PrivacyMonitorPopupState = (() => {
     return value.length ? 'results' : 'empty';
   }
 
-  return Object.freeze({ page, local, breaches });
+  // D08 bridge: project per-tab presence states for the existing scorer/renderer.
+  function legacyHeaders(observation) {
+    if (observation?.kind === 'not-observed') return undefined;
+    if (observation?.kind !== 'observed' || !isRecord(observation.data) ||
+        Object.keys(observation.data).length !== HEADER_NAMES.length ||
+        !HEADER_NAMES.every(name => Object.hasOwn(observation.data, name) &&
+          ['present', 'absent', 'not-observed', 'unavailable'].includes(observation.data[name]))) return false;
+    const present = {}, missing = [];
+    for (const name of HEADER_NAMES) {
+      const kind = observation.data[name];
+      if (kind === 'present') present[name] = ''; // Presence only; raw header values are not retained.
+      else if (kind === 'absent') missing.push(name);
+      else if (kind === 'unavailable') present[name] = null;
+    }
+    return { present, missing };
+  }
+  return Object.freeze({ page, local, breaches, legacyHeaders });
 })();

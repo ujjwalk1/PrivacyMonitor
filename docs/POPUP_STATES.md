@@ -81,9 +81,11 @@ Missing background access renders `unavailable`. All remain independent of the s
 
 ## Boundaries
 
-A popup-local generation counter ignores responses from superseded loads. It
-does not solve stale stored records, navigation identity, or same-host tab
-isolation (D07–D10). The existing injected refresh scanner and its 600 ms delay
+A popup-local generation counter ignores responses from superseded loads. D08
+now reads navigation-scoped headers through the background message contract, with
+no fallback to hostname storage; see [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md).
+Remaining stored content scans can still be stale or shared between same-host
+tabs until D09–D10. The existing injected refresh scanner and its 600 ms delay
 remain; D09 must replace that duplicated path and address warning removal.
 
 ## Verification and next browser check
