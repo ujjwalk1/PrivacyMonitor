@@ -301,13 +301,13 @@ function renderForms(formData) {
     body.innerHTML = `
       <div class="form-warning">
         ⚠️ <strong>${formData.insecurePasswordForms} insecure form${formData.insecurePasswordForms > 1 ? 's' : ''} detected</strong><br>
-        Password form${formData.insecurePasswordForms > 1 ? 's' : ''} submit${formData.insecurePasswordForms === 1 ? 's' : ''}
+        Password form${formData.insecurePasswordForms > 1 ? 's' : ''} can submit
         over HTTP — credentials could be intercepted.
       </div>`;
   } else if (formData.insecureForms > 0) {
     body.innerHTML = `
       <div class="form-warning">
-        ⚠️ ${formData.insecureForms} form${formData.insecureForms > 1 ? 's' : ''} use HTTP
+        ⚠️ ${formData.insecureForms} form${formData.insecureForms > 1 ? 's' : ''} can submit over HTTP
         (no password fields detected).
       </div>`;
   } else {

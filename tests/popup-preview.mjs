@@ -18,7 +18,10 @@ ${cases.map(name => `<section><h2>${name}</h2><iframe title="${name}" src="/popu
 const server = createServer((req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1:4179');
   res.setHeader('Cache-Control', 'no-store');
-  if (url.pathname === '/' || url.pathname === '/popup.html') {
+  if (url.pathname === '/form-destinations.html' || url.pathname === '/dynamic-forms.html') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.end(read(`tests/fixtures${url.pathname}`));
+  } else if (url.pathname === '/' || url.pathname === '/popup.html') {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(url.pathname === '/' ? gallery : popup);
   } else if (assets.has(url.pathname)) {

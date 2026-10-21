@@ -11,10 +11,11 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
 const plain = value => JSON.parse(JSON.stringify(value));
 
 function content({ ready = true, privacy = false, url = 'https://fixture.example/' } = {}) {
-  const events = {}, writes = [], logs = [], stored = {};
+  const events = {}, writes = [], logs = [], stored = {}, timers = new Map();
+  let timerId = 0;
   const form = {
     action: 'http://fixture.example/submit', password: true, attributes: {}, banners: [],
-    getAttribute(name) { return name === 'action' ? this.action : this.attributes[name]; },
+    getAttribute(name) { return name === 'action' ? this.action : this.attributes[name] ?? null; },
     setAttribute(name, value) { this.attributes[name] = value; },
     removeAttribute(name) { delete this.attributes[name]; },
     querySelector(selector) { return selector === 'input[type="password"]' ? (this.password ? {} : null) : this.banners[0] ?? null; },
@@ -23,16 +24,20 @@ function content({ ready = true, privacy = false, url = 'https://fixture.example
   };
   const controls = { write: async data => Object.assign(stored, plain(data)), scripts: [] };
   const document = {
-    readyState: ready ? 'complete' : 'loading', body: {}, cookie: '',
+    readyState: ready ? 'complete' : 'loading', body: {}, cookie: '', URL: url, baseURI: url,
     addEventListener(name, fn) { events[name] = fn; },
     querySelectorAll(selector) {
       if (selector === 'form') return [form];
+      if (selector === 'button, input') return form.password ? [{ tagName: 'INPUT', type: 'password', form }] : [];
       if (selector === 'script' || selector === 'script[src]') return controls.scripts;
       return []; // Password presence is a form fixture; no password value is supplied.
     },
     createElement() { return { style: {}, setAttribute() {} }; },
   };
-  const context = vm.createContext({ document, URL, setTimeout, clearTimeout,
+  form.ownerDocument = document;
+  const context = vm.createContext({ document, URL,
+    setTimeout(fn) { timers.set(++timerId, fn); return timerId; },
+    clearTimeout(id) { timers.delete(id); },
     window: { location: new URL(url) },
     console: { log: (...args) => logs.push(args), error: (...args) => logs.push(args) },
     browser: {
@@ -41,10 +46,11 @@ function content({ ready = true, privacy = false, url = 'https://fixture.example
         onMessage: { addListener(fn) { events.message = fn; } } },
       storage: { local: { set(data) { writes.push(plain(data)); return controls.write(data); } } },
     },
-    MutationObserver: class { constructor(fn) { events.mutation = fn; } observe() {} },
+    MutationObserver: class { constructor(fn) { events.mutation = fn; } observe() {} disconnect() {} },
   });
   vm.runInContext(source, context, { filename: 'content-script.js' });
   return { events, writes, logs, stored, controls, form, context,
+    async flushDynamic() { const pending = [...timers.values()]; timers.clear(); for (const fn of pending) await fn(); await tick(); },
     refresh: () => events.message(message, sender) };
 }
 
@@ -79,6 +85,20 @@ test('refresh preserves warnings, recreates removed banners, and clears obsolete
   assert.equal(view.stored['forms_fixture.example'].insecureForms, 1);
 });
 
+test('an unsupported destination persists unavailable and clears the popup score on refresh', async () => {
+  const page = content(); await tick();
+  page.form.action = 'mailto:fixture@example.invalid';
+  const view = popup();
+  view.controls.storage = async () => ({ ...view.stored, ...page.stored });
+  view.controls.scan = async () => page.refresh();
+  await view.context.refreshData();
+  assert.equal(page.stored['forms_fixture.example'], false);
+  assert.equal(page.form.banners.length, 0);
+  assert.equal(view.nodes['score-text'].textContent, '—');
+  assert.match(view.nodes['forms-body'].innerHTML, /unavailable/);
+  assert.deepEqual(page.logs, []);
+});
+
 test('concurrent refreshes serialize writes and retry after storage failure without logging page data', async () => {
   const view = content(); await tick();
   const write = deferred(); let attempts = 0;
@@ -109,7 +129,7 @@ test('only exact popup messages can request scans; unknown channels do not consu
 
 test('the existing form-addition observer invokes the same complete scan path', async () => {
   const view = content(); await tick(); view.controls.scripts = [{ src: 'https://third.example/script.js' }];
-  view.events.mutation([{ addedNodes: [{ nodeType: 1, tagName: 'FORM' }] }]); await tick();
+  view.events.mutation([{ type: 'childList', target: view.context.document.body }]); await view.flushDynamic();
   assert.equal(view.writes.length, 2);
   assert.equal(view.stored['security_data_fixture.example'].thirdPartyScripts, 1);
   assert.equal(view.stored['forms_fixture.example'].insecurePasswordForms, 1);
@@ -179,7 +199,7 @@ test('private and unknown content contexts keep warnings local without any persi
     assert.equal(view.form.banners.length, 1);
     view.form.banners[0].remove(); assert.equal((await view.refresh()).ok, true);
     assert.equal(view.form.banners.length, 1);
-    view.events.mutation([{ addedNodes: [{ nodeType: 1, tagName: 'FORM' }] }]); await tick();
+    view.events.mutation([{ type: 'childList', target: view.context.document.body }]); await view.flushDynamic();
     assert.equal(view.writes.length, 0); assert.deepEqual(view.stored, { preference: { enabled: true } });
     assert.deepEqual(view.logs, []);
   }

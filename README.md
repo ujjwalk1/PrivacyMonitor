@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D08 implementation is present, including per-tab header capture. Partial D09 unifies local scan/refresh; partial D10 adds privacy guards. Content-record migration and old-data cleanup remain pending. The local tests, local lint,
+**Development status:** D01–D08 implementation is present, including per-tab header capture. Partial D09 unifies local scan/refresh; partial D10 adds privacy guards. D11 corrects form destination resolution; D12 adds bounded dynamic monitoring. Content-record migration and old-data cleanup remain pending. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features included through D08, with partial D09 and D10
+## Features implemented through D12 (acceptance pending)
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -61,6 +61,21 @@ private popup content observations remain incomplete pending D09. Existing store
 rows are not yet removed because D09's migration is unfinished.
 [Safeguards and remaining cleanup](docs/PRIVATE_HANDLING.md).
 
+**D11 — Form destination resolution:** relative actions use the document base;
+missing/empty actions use the document URL. Associated submit-button overrides,
+including external and image controls, are checked independently. HTTP pages with
+HTTPS destinations are classified by the destination. Unsupported routes make form
+observations unavailable instead of awarding a complete score. Automated fixtures
+pass; native Firefox acceptance remains pending.
+[Rules, JavaScript limits, and browser fixture](docs/FORM_DESTINATIONS.md).
+
+**D12 — Dynamic monitoring:** form/password additions, removals, destination and
+ownership changes, and base changes now update findings through coalesced scans.
+Warnings repair without duplication; shared password handlers avoid a retained
+registry of old fields. Mutation bursts and slow writes do not build a scan backlog.
+Automated checks pass; native Firefox acceptance remains pending.
+[Bounds, limits, and browser checks](docs/DYNAMIC_MONITORING.md).
+
 ### Existing monitoring features
 
 - **Password feedback:** local checks for length, character variety, and common
@@ -69,8 +84,8 @@ rows are not yet removed because D09's migration is unfinished.
   HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and
   Permissions-Policy. Header values are not evaluated for effectiveness.
 - **Form warnings:** scans form destinations for HTTP and adds a warning to
-  detected HTTP password forms. Dynamic content and destination resolution have
-  known limitations.
+  detected HTTP password forms. These are possible markup destinations, not
+  observed submissions; JavaScript and dynamic changes have known limitations.
 - **Page counts:** cookies accessible through `document.cookie`, script elements,
   and scripts whose hostname differs from the page. These counts are not a cookie
   inspector or tracker classification system.
@@ -148,6 +163,8 @@ PrivacyMonitor/
 ├── docs/
 │   ├── ANALYSIS_RECORDS.md    # D07 record/message contract and migration boundaries
 │   ├── PRIVATE_HANDLING.md    # Partial D10 safeguards and cleanup prerequisites
+│   ├── FORM_DESTINATIONS.md   # D11 resolution rules, limits, and browser fixture
+│   ├── DYNAMIC_MONITORING.md  # D12 observer bounds, lifecycle, and browser checks
 │   ├── SCAN_REFRESH.md        # Partial D09 and remaining migration/browser checks
 │   ├── HEADER_LIFECYCLE.md    # D08 correlation rules and Firefox acceptance checks
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>D11 form destination fixture</title>
+  <script>
+    // Fixed synthetic base choices only; never load resources from these hosts.
+    const mode = new URL(location.href).searchParams.get('base');
+    if (mode === 'http' || mode === 'https') {
+      const base = document.createElement('base');
+      base.href = mode + '://base.example.invalid/root/';
+      document.head.appendChild(base);
+    }
+    // Inspect warnings; never send the fixture's form data anywhere.
+    document.addEventListener('submit', event => event.preventDefault());
+  </script>
+  <style>
+    body { font: 16px system-ui; margin: 24px; max-width: 900px; }
+    form, section { padding: 12px; border: 1px solid #999; margin: 16px 0; }
+    label { display: block; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>D11 form destination fixture</h1>
+  <p>Use a disposable Firefox profile with breach lookup off. Leave password fields empty.
+    This page cancels submissions. Warnings describe possible markup destinations, not observed requests.</p>
+  <p>Reload this URL with <code>?base=http</code>, <code>?base=https</code>, or no query.
+    See <code>docs/FORM_DESTINATIONS.md</code> for expected counts.</p>
+  <form id="relative" action="../send">
+    <strong>Relative action</strong><label>Password <input type="password"></label><button>Submit</button>
+  </form>
+  <form id="empty" action="">
+    <strong>Empty action</strong><label>Password <input type="password"></label><button>Submit</button>
+  </form>
+  <form id="missing">
+    <strong>Missing action</strong><label>Password <input type="password"></label><button>Submit</button>
+  </form>
+  <form id="https" action="https://secure.example.invalid/send">
+    <strong>HTTPS action</strong><label>Password <input type="password"></label><button>Submit</button>
+  </form>
+  <form id="override" action="https://secure.example.invalid/send">
+    <strong>HTTP button override</strong><label>Password <input type="password"></label>
+    <button formaction="http://other.example.invalid/send">Submit</button>
+  </form>
+  <form id="external" action="https://secure.example.invalid/send"><strong>External controls below</strong></form>
+  <section>
+    <label>External password <input form="external" type="password"></label>
+    <button form="external" formaction="http://other.example.invalid/send">External submit</button>
+  </section>
+  <form id="disabled" action="https://secure.example.invalid/send">
+    <strong>Disabled override</strong><label>Password <input type="password"></label>
+    <fieldset disabled><button formaction="http://other.example.invalid/send">Disabled submit</button></fieldset>
+  </form>
+  <form id="dialog" method="dialog" action="http://other.example.invalid/send">
+    <strong>Dialog method</strong><label>Password <input type="password"></label><button>Close</button>
+  </form>
+</body>
+</html>

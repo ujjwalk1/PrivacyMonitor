@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>D12 dynamic form fixture</title>
+  <style>
+    body { font: 16px system-ui; margin: 24px; max-width: 900px; }
+    button { margin: 4px; padding: 8px; }
+    form { border: 1px solid #888; margin: 20px 0; padding: 16px; }
+    label { display: block; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>D12 dynamic form fixture</h1>
+  <p>Use a disposable Firefox profile with breach lookup off. Never enter real passwords.
+    Submissions are canceled. Changes should update warnings after about half a second
+    without pressing popup Refresh. Reopen the popup to see updated counts.</p>
+  <div id="controls">
+    <button type="button" id="add">Add password field</button>
+    <button type="button" id="remove">Remove last field</button>
+    <button type="button" id="type">Toggle last field type</button>
+    <button type="button" id="action">Toggle HTTP/HTTPS action</button>
+    <button type="button" id="base">Toggle HTTP/HTTPS base</button>
+    <button type="button" id="banner">Remove warning</button>
+    <button type="button" id="burst">Run 2,000 action changes (ends HTTP)</button>
+    <button type="button" id="form">Remove/reinsert form</button>
+  </div>
+  <p id="status" role="status">Initial state: HTTPS action, no password fields, no warning.</p>
+  <form id="fixture" action="https://destination.example.invalid/send">
+    <strong>Dynamic form</strong><div id="fields"></div>
+    <button type="submit">Submit (canceled)</button>
+  </form>
+  <script>
+    const form = document.getElementById('fixture');
+    const fields = document.getElementById('fields');
+    const status = document.getElementById('status');
+    document.addEventListener('submit', event => event.preventDefault());
+    document.getElementById('controls').addEventListener('click', event => {
+      const last = fields.lastElementChild;
+      switch (event.target.id) {
+        case 'add': {
+          const label = document.createElement('label'); label.textContent = 'Synthetic password ';
+          const input = document.createElement('input'); input.type = 'password';
+          label.appendChild(input); fields.appendChild(label); break;
+        }
+        case 'remove': last?.remove(); break;
+        case 'type': if (last) { const input = last.querySelector('input'); input.type = input.type === 'password' ? 'text' : 'password'; } break;
+        case 'action': form.action = form.getAttribute('action').startsWith('http:')
+          ? 'https://destination.example.invalid/send' : 'http://destination.example.invalid/send'; break;
+        case 'base': {
+          let base = document.querySelector('base');
+          if (!base) { base = document.createElement('base'); document.head.appendChild(base); }
+          base.href = base.getAttribute('href')?.startsWith('http:') ? 'https://base.example.invalid/' : 'http://base.example.invalid/';
+          form.setAttribute('action', 'send'); break;
+        }
+        case 'banner': form.querySelector('[data-pm-banner]')?.remove(); break;
+        case 'burst': for (let i = 0; i < 2000; i++) form.action = i % 2 ? 'http://destination.example.invalid/' : 'https://destination.example.invalid/'; break;
+        case 'form': if (form.isConnected) form.remove(); else document.body.appendChild(form); break;
+        default: return;
+      }
+      status.textContent = `Form ${form.isConnected ? 'attached' : 'removed'}; action: ${form.getAttribute('action')}; password fields: ${fields.querySelectorAll('input[type="password"]').length}.`;
+    });
+  </script>
+</body>
+</html>

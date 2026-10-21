@@ -5,9 +5,9 @@ and native Firefox acceptance are still outstanding. Do not mark D09 complete.
 
 ## Implemented
 
-`content-script.js` owns one `analyzePage()` path for startup, the existing form
-addition observer, and popup refresh. It collects the existing page/form findings,
-maintains password listeners and warnings, and awaits one storage write containing
+`content-script.js` owns one `analyzePage()` path for startup, dynamic monitoring,
+and popup refresh. It collects the existing page/form findings,
+maintains password feedback and warnings, and awaits one storage write containing
 both legacy records in normal contexts. Partial D10 skips persistence in private/unknown
 contexts while keeping warnings local; see [PRIVATE_HANDLING.md](PRIVATE_HANDLING.md). Scans are serialized within that document; a rejected write
 does not prevent a later retry. No raw failure details are logged.
@@ -27,8 +27,10 @@ reload after installation; refresh does not inject a second scanner.
 
 Existing form banners are preserved; a removed banner is recreated even if its
 marker remains. A banner is removed when the shared scan finds that the form no
-longer has an HTTP password destination. Form destination rules and the existing
-observer's coverage otherwise remain unchanged for D11–D12.
+longer has an HTTP password destination. D11 now resolves base URLs and submitter
+overrides; unsupported routes produce an unavailable aggregate. See
+[FORM_DESTINATIONS.md](FORM_DESTINATIONS.md). D12 adds bounded observation of relevant
+attributes, base changes, and additions/removals; see [DYNAMIC_MONITORING.md](DYNAMIC_MONITORING.md).
 
 ## Remaining D09 work
 

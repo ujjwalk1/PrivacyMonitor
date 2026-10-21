@@ -2,30 +2,9 @@
 // Handles: password strength UI, page security analysis, insecure form detection
 
 let isInitialized = false;
-let passwordInputs = new Set();
+let activePasswordInput = null;
+let passwordFeedbackTimer = null;
 let indicator = null;
-
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
-
-function throttle(func, delay) {
-  let timeoutId;
-  let lastExecTime = 0;
-  return function (...args) {
-    const currentTime = Date.now();
-    if (currentTime - lastExecTime > delay) {
-      func.apply(this, args);
-      lastExecTime = currentTime;
-    } else {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func.apply(this, args);
-        lastExecTime = Date.now();
-      }, delay - (currentTime - lastExecTime));
-    }
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Password strength
@@ -68,7 +47,7 @@ function checkPasswordStrength(password) {
 }
 
 function getOrCreateIndicator() {
-  if (!indicator) {
+  if (!indicator || !indicator.isConnected) {
     indicator = document.createElement('div');
     indicator.id = 'pm-password-indicator';
     indicator.style.cssText = `
@@ -89,54 +68,81 @@ function getOrCreateIndicator() {
   return indicator;
 }
 
-const positionIndicator = throttle((ind, input) => {
+function positionIndicator(ind, input) {
   const rect = input.getBoundingClientRect();
-  const scrollTop  = window.pageYOffset  || document.documentElement.scrollTop;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  ind.style.top  = (rect.bottom + scrollTop  + 5) + 'px';
-  ind.style.left = (rect.left   + scrollLeft)     + 'px';
-}, 100);
-
-function addPasswordListeners(input) {
-  if (passwordInputs.has(input)) return;
-  passwordInputs.add(input);
-
-  const ind = getOrCreateIndicator();
-
-  input.addEventListener('focus', () => {
-    ind.style.display = 'block';
-    positionIndicator(ind, input);
-  });
-
-  input.addEventListener('blur', () => {
-    setTimeout(() => { ind.style.display = 'none'; }, 200);
-  });
-
-  const handleInput = throttle((e) => {
-    const password = e.target.value;
-    if (password.length === 0) { ind.style.display = 'none'; return; }
-
-    const result = checkPasswordStrength(password);
-    ind.innerHTML = `
-      <div style="font-weight:bold;color:${result.color};">
-        Password Strength: ${result.strength}
-      </div>
-      <div style="margin-top:4px;">
-        ${result.feedback.length > 0
-          ? '<strong>Suggestions:</strong><br>' +
-            result.feedback.slice(0, 3).map(f => '• ' + f).join('<br>')
-          : '✓ Strong password!'}
-      </div>
-    `;
-    ind.style.display = 'block';
-    positionIndicator(ind, input);
-  }, 300);
-
-  input.addEventListener('input', handleInput);
+  ind.style.top = (rect.bottom + scrollTop + 5) + 'px';
+  ind.style.left = (rect.left + scrollLeft) + 'px';
 }
 
-function findPasswordInputs() {
-  document.querySelectorAll('input[type="password"]').forEach(addPasswordListeners);
+function isLivePasswordInput(input) {
+  return input?.isConnected && input.tagName === 'INPUT' && input.type === 'password';
+}
+
+function clearPasswordFeedback() {
+  clearTimeout(passwordFeedbackTimer);
+  passwordFeedbackTimer = null;
+  activePasswordInput = null;
+  if (indicator) {
+    indicator.style.display = 'none';
+    indicator.innerHTML = '';
+  }
+}
+
+function renderPasswordFeedback() {
+  const input = activePasswordInput;
+  if (!isLivePasswordInput(input)) { clearPasswordFeedback(); return; }
+  const ind = getOrCreateIndicator();
+  // Read only the current field, synchronously; never retain a value or input event.
+  if (!input.value) { ind.style.display = 'none'; ind.innerHTML = ''; return; }
+  const result = checkPasswordStrength(input.value);
+  ind.innerHTML = `
+    <div style="font-weight:bold;color:${result.color};">Password Strength: ${result.strength}</div>
+    <div style="margin-top:4px;">
+      ${result.feedback.length > 0
+        ? '<strong>Suggestions:</strong><br>' + result.feedback.slice(0, 3).map(f => '• ' + f).join('<br>')
+        : '✓ Strong password!'}
+    </div>`;
+  ind.style.display = 'block';
+  positionIndicator(ind, input);
+}
+
+function reconcilePasswordFeedback() {
+  if (activePasswordInput && !isLivePasswordInput(activePasswordInput)) clearPasswordFeedback();
+  if (indicator && !indicator.isConnected) {
+    indicator = null;
+    if (activePasswordInput) renderPasswordFeedback();
+  }
+  // A focused text input may have become a password input since its focus event.
+  if (!activePasswordInput && isLivePasswordInput(document.activeElement)) {
+    activePasswordInput = document.activeElement;
+    renderPasswordFeedback();
+  }
+}
+
+function setupPasswordListeners() {
+  // Delegation covers inserted/reinserted fields without a per-node registry.
+  document.addEventListener('focusin', event => {
+    clearPasswordFeedback();
+    if (!isLivePasswordInput(event.target)) return;
+    activePasswordInput = event.target;
+    renderPasswordFeedback();
+  }, true);
+  document.addEventListener('focusout', event => {
+    if (event.target === activePasswordInput) clearPasswordFeedback();
+  }, true);
+  document.addEventListener('input', event => {
+    if (!isLivePasswordInput(event.target)) {
+      if (event.target === activePasswordInput) clearPasswordFeedback();
+      return;
+    }
+    if (event.target !== activePasswordInput || passwordFeedbackTimer !== null) return;
+    passwordFeedbackTimer = setTimeout(() => {
+      passwordFeedbackTimer = null;
+      renderPasswordFeedback();
+    }, 300);
+  }, true);
 }
 
 // ---------------------------------------------------------------------------
@@ -145,23 +151,19 @@ function findPasswordInputs() {
 
 const WARN_ATTR = 'data-pm-warned';
 
-function isInsecureAction(form) {
-  const action = form.getAttribute('action');
-
-  // Explicit http:// action
-  if (action && /^http:\/\//i.test(action)) return true;
-
-  // No action (submits to current URL) but page itself is HTTP
-  if (!action && window.location.protocol === 'http:') return true;
-
-  // Relative path on an HTTP page
-  if (action && !/^https?:\/\//i.test(action) && window.location.protocol === 'http:') return true;
-
-  return false;
-}
-
-function hasPasswordField(form) {
-  return form.querySelector('input[type="password"]') !== null;
+function resolveFormDestination(form, submitter = null) {
+  // Attribute presence matters: an empty override does not inherit the form action.
+  const method = submitter?.getAttribute('formmethod') ?? form.getAttribute('method');
+  if (method?.toLowerCase() === 'dialog') return 'none';
+  const action = submitter?.getAttribute('formaction') ?? form.getAttribute('action');
+  const owner = form.ownerDocument;
+  try {
+    // Missing/empty actions use the document URL, independently of <base>.
+    const destination = new URL(action == null || action === '' ? owner.URL : action, owner.baseURI);
+    if (destination.protocol === 'http:') return 'http';
+    if (destination.protocol === 'https:') return 'https';
+  } catch (_) { /* Do not retain or log invalid destination URLs. */ }
+  return 'unknown';
 }
 
 function injectFormWarning(form) {
@@ -187,7 +189,7 @@ function injectFormWarning(form) {
   banner.innerHTML = `
     <span style="font-size:16px;">⚠️</span>
     <span>
-      <strong>Insecure Form:</strong> This form submits over HTTP.
+      <strong>Insecure Form:</strong> This form can submit over HTTP.
       Your data (including passwords) may be visible to attackers.
     </span>
   `;
@@ -200,21 +202,43 @@ function analyzeInsecureForms() {
   const forms = document.querySelectorAll('form');
   let insecureCount = 0;
   let insecurePasswordForms = 0;
+  let hasUnknownDestination = false;
+  const associated = new Map();
+  // Native form ownership includes external controls and excludes controls owned
+  // by another form. Query input images too: form.elements omits them.
+  document.querySelectorAll('button, input').forEach(control => {
+    if (!control.form) return;
+    if (!associated.has(control.form)) associated.set(control.form, []);
+    associated.get(control.form).push(control);
+  });
 
   forms.forEach(form => {
-    if (isInsecureAction(form)) {
+    const controls = associated.get(form) ?? [];
+    const destinations = [resolveFormDestination(form)];
+    controls.forEach(control => {
+      const isSubmitter = control.type === 'submit' ||
+        (control.tagName === 'INPUT' && control.type === 'image');
+      if (isSubmitter && !control.matches(':disabled')) {
+        destinations.push(resolveFormDestination(form, control));
+      }
+    });
+    if (destinations.includes('unknown')) hasUnknownDestination = true;
+    if (destinations.includes('http')) {
       insecureCount++;
-      if (hasPasswordField(form)) {
+      if (controls.some(control => control.tagName === 'INPUT' && control.type === 'password')) {
         insecurePasswordForms++;
         injectFormWarning(form);
         return;
       }
     }
-    // A changed form must not keep an obsolete warning after an explicit refresh.
+    // Both automatic scans and explicit refresh remove obsolete warnings.
     form.querySelectorAll('[data-pm-banner]').forEach(banner => banner.remove());
     form.removeAttribute(WARN_ATTR);
   });
 
+  // The legacy contract has no per-route unknown state. Fail the aggregate closed
+  // rather than awarding a complete score from only the resolvable destinations.
+  if (hasUnknownDestination) return false;
   return {
     insecureForms: insecureCount, insecurePasswordForms,
     pageIsHttps: window.location.protocol === 'https:', timestamp: Date.now(),
@@ -254,9 +278,20 @@ const contentApi = typeof browser !== 'undefined' ? browser : chrome;
 let analysisQueue = Promise.resolve();
 function analyzePage() {
   const run = analysisQueue.then(async () => {
-    findPasswordInputs();
-    const basicData = analyzePageSecurity();
-    const formData = analyzeInsecureForms();
+    clearTimeout(dynamicTimer);
+    dynamicTimer = null;
+    dynamicDirty = false;
+    let basicData, formData;
+    // A full scan supersedes pending records. Disconnect only during synchronous
+    // DOM work so our banners cannot feed the observer; reconnect before storage.
+    mutationObserver?.disconnect();
+    try {
+      reconcilePasswordFeedback();
+      basicData = analyzePageSecurity();
+      formData = analyzeInsecureForms();
+    } finally {
+      mutationObserver?.observe(document, OBSERVER_OPTIONS);
+    }
     // Keep page warnings local in private/unknown contexts; never use persistent scan storage.
     if (contentApi.extension?.inIncognitoContext !== false) return;
     await contentApi.storage.local.set({
@@ -290,32 +325,56 @@ contentApi.runtime.onMessage.addListener((message, sender) => {
 // Mutation observer (watch for dynamic content)
 // ---------------------------------------------------------------------------
 
-const debouncedFindInputs = throttle(findPasswordInputs, 1000);
-const debouncedFormCheck  = throttle(scheduleAnalysis, 2000);
+const OBSERVER_OPTIONS = {
+  childList: true, subtree: true, attributes: true,
+  attributeFilter: ['action', 'method', 'formaction', 'formmethod', 'form', 'type', 'disabled', 'id', 'href'],
+};
+const DYNAMIC_SCAN_DELAY = 500;
+let mutationObserver = null;
+let dynamicTimer = null;
+let dynamicInFlight = false;
+let dynamicDirty = false;
+
+function scheduleDynamicAnalysis() {
+  dynamicDirty = true;
+  if (dynamicTimer !== null || dynamicInFlight) return;
+  dynamicTimer = setTimeout(async () => {
+    dynamicTimer = null;
+    dynamicInFlight = true;
+    dynamicDirty = false;
+    try { await analyzePage(); } catch (_) { /* Retry on the next change/refresh. */ }
+    finally {
+      dynamicInFlight = false;
+      if (dynamicDirty) scheduleDynamicAnalysis();
+    }
+  }, DYNAMIC_SCAN_DELAY);
+}
+
+function affectsFormMonitoring(mutation) {
+  // Feedback changes only this root's innerHTML. Attribute filtering excludes
+  // position/style updates. Removing the root itself still triggers recovery.
+  if (mutation.target === indicator) return false;
+  if (mutation.type === 'childList') return true;
+  const tag = mutation.target?.tagName;
+  const name = mutation.attributeName;
+  // Any element's ID can affect native form association when IDs collide.
+  if (name === 'id') return true;
+  if (tag === 'FORM') return ['action', 'method', 'id'].includes(name);
+  if (tag === 'INPUT' || tag === 'BUTTON') {
+    return ['formaction', 'formmethod', 'form', 'type', 'disabled'].includes(name);
+  }
+  if (tag === 'FIELDSET') return name === 'disabled';
+  if (tag === 'BASE') return name === 'href';
+  return false;
+}
 
 function setupMutationObserver() {
-  const observer = new MutationObserver((mutations) => {
-    let checkInputs = false;
-    let checkForms  = false;
-
-    for (const mutation of mutations) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType !== 1) continue;
-        if (node.tagName === 'INPUT' || (node.querySelector && node.querySelector('input[type="password"]'))) {
-          checkInputs = true;
-        }
-        if (node.tagName === 'FORM' || (node.querySelector && node.querySelector('form'))) {
-          checkForms = true;
-        }
-      }
-      if (checkInputs && checkForms) break;
-    }
-
-    if (checkInputs) debouncedFindInputs();
-    if (checkForms)  debouncedFormCheck();
+  mutationObserver = new MutationObserver((mutations) => {
+    // No subtree queries or retained records/nodes in this callback. Large batches
+    // conservatively schedule one scan instead of walking an unbounded list.
+    if (mutations.length > 64 || mutations.some(affectsFormMonitoring)) scheduleDynamicAnalysis();
   });
-
-  observer.observe(document.body, { childList: true, subtree: true });
+  // analyzePage starts observing the whole document (including <head>/<base>).
 }
 
 // ---------------------------------------------------------------------------
@@ -326,8 +385,9 @@ function initialize() {
   if (isInitialized) return;
   isInitialized = true;
 
-  scheduleAnalysis();
+  setupPasswordListeners();
   setupMutationObserver();
+  scheduleAnalysis();
 }
 
 if (document.readyState === 'loading') {
