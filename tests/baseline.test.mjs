@@ -45,10 +45,11 @@ test('content script waits for the document and initializes once on an empty fix
     addEventListener: (...args) => events.push(args),
     querySelectorAll: () => [],
   };
-  vm.runInNewContext(source('content-script.js'), {
+  vm.runInNewContext(source('settings.js') + '\n' + source('content-script.js'), {
     document, URL, console, setTimeout, clearTimeout,
     window: { location: new URL('https://fixture.example/') },
-    browser: { extension: { inIncognitoContext: false }, runtime: { onMessage: { addListener() {} } }, storage: { local: { set: value => writes.push(plain(value)) } } },
+    browser: { extension: { inIncognitoContext: false }, runtime: { onMessage: { addListener() {} } },
+      storage: { onChanged: { addListener() {} }, local: { get: async () => ({}), set: value => writes.push(plain(value)) } } },
     MutationObserver: class { disconnect() {} observe(...args) { observations.push(args); } },
   });
   assert.equal(writes.length, 0);

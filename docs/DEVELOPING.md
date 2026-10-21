@@ -9,6 +9,11 @@ bundling step, or runtime dependency. The original local working folder is not a
 Git checkout; its updates use the GitHub connection. A fresh clone has normal
 Git history. See the [repository overview](../README.md) for the layout.
 
+Partial D13 adds the on-page settings page and persistent display controls; see
+[SETTINGS.md](SETTINGS.md). Site exclusions and native settings/restart acceptance
+remain pending. The package now includes 13 runtime files, including the settings
+schema and options page/scripts.
+
 ## Recoverable baseline
 
 `checkpoints/pre-d01-2026-09-29.zip` contains every original top-level file,
@@ -44,7 +49,7 @@ It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
 validation remain outstanding for the assigned later manifest/release days.
 
 Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the ten paths in `tools/extension-files.json`, then verifies each
+includes only the 13 paths in `tools/extension-files.json`, then verifies each
 archive entry against the source SHA-256. Development files, checkpoints, and the
 unrelated image are excluded. Add future extension assets to that list when needed.
 The ZIP is a local unsigned development artifact, not a submission-ready release.

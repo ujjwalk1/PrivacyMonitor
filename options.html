@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Monitor — Settings</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; color: #172033; background: #f5f7fa; margin: 0; }
+    main { max-width: 600px; margin: 32px auto; padding: 24px; background: white; border-radius: 12px; }
+    h1 { margin-top: 0; font-size: 1.6rem; }
+    fieldset { border: 1px solid #b9c3d0; border-radius: 6px; padding: 16px; }
+    label { display: block; margin: 12px 0; }
+    input { margin-right: 8px; }
+    button { font: inherit; padding: 8px 14px; margin: 12px 8px 0 0; cursor: pointer; }
+    :focus-visible { outline: 3px solid #315dd6; outline-offset: 3px; }
+    #settings-status { min-height: 3em; }
+    .note { color: #465267; }
+    @media (max-width: 650px) { main { margin: 12px; padding: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Privacy Monitor settings</h1>
+    <p>Choose which hints appear on web pages. Your choices are saved on this device and apply to open pages.</p>
+    <form id="settings-form">
+      <fieldset id="display-controls" disabled>
+        <legend>On-page hints</legend>
+        <label><input type="checkbox" id="password-feedback">Show password-strength feedback</label>
+        <label><input type="checkbox" id="form-warnings">Show HTTP password-form warnings</label>
+      </fieldset>
+      <button type="submit" id="save-settings" disabled>Save settings</button>
+      <button type="button" id="restore-defaults" disabled>Restore defaults</button>
+    </form>
+    <p id="settings-status" role="status" aria-live="polite">Loading settings…</p>
+    <p class="note">These controls hide or show on-page hints. Page scanning and popup findings continue.
+      Site exclusions are not available yet.</p>
+    <p class="note">Manage optional breach lookup in the extension popup or Firefox add-on permissions.
+      Saving these settings does not enable breach lookup or change its consent.</p>
+  </main>
+  <script src="settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

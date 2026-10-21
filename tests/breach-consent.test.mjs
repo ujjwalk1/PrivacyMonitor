@@ -8,7 +8,7 @@ const state = view => view.nodes['breach-section'].attributes['data-state'];
 const ready = view => {
   assert.equal(view.nodes['score-text'].textContent, '100');
   assert.equal(view.nodes['loading-screen'].attributes['data-state'], 'ready');
-  assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
 };
 const empty = { ok: true, json: async () => [] };
 
@@ -25,8 +25,8 @@ test('fresh installation and repeated opens send nothing, while local checks and
   view.controls.requestPermission = () => assert.fail('Opening must not prompt for consent');
   await view.context.loadAllData(); await view.context.loadAllData();
   ready(view); assert.equal(state(view), 'disabled');
-  assert.equal(view.nodes['breach-enable'].disabled, false);
-  assert.equal(view.nodes['breach-disable'].disabled, true);
+  assert.equal((view.nodes['breach-enable'].attributes['aria-disabled'] === 'true'), false);
+  assert.equal((view.nodes['breach-disable'].attributes['aria-disabled'] === 'true'), true);
   await view.context.refreshData(); view.advanceTime(600); await flush();
   ready(view); assert.equal(view.calls.fetch, 0);
   assert.equal(view.nodes['breach-none'].style.display, 'none');
@@ -74,7 +74,7 @@ test('unsupported, failed, or malformed permission reads fail closed while prese
     const view = popup(); view.controls.getPermissions = read;
     await view.context.loadAllData();
     assert.equal(state(view), expected); assert.equal(view.calls.fetch, 0); ready(view);
-    assert.equal(view.nodes['breach-enable'].disabled, true);
+    assert.equal((view.nodes['breach-enable'].attributes['aria-disabled'] === 'true'), true);
   }
   const view = popup(); delete view.context.browser.permissions;
   await view.context.loadAllData();
@@ -137,23 +137,23 @@ test('failed removal is disclosed and blocks this popup until a successful retry
     await view.context.loadAllData(); assert.equal(view.calls.fetch, 1); ready(view);
     view.controls.removePermission = async () => { view.permissions.data_collection = []; return true; };
     await view.context.setBreachLookupEnabled(false);
-    assert.equal(view.nodes['breach-enable'].disabled, false);
+    assert.equal((view.nodes['breach-enable'].attributes['aria-disabled'] === 'true'), false);
   }
 });
 
 test('consent control remains available on unsupported pages without triggering a lookup', async () => {
   const view = popup(); view.controls.query = async () => [{ url: 'about:config' }];
   await view.context.loadAllData(); await flush();
-  assert.equal(view.nodes['breach-enable'].disabled, false);
+  assert.equal((view.nodes['breach-enable'].attributes['aria-disabled'] === 'true'), false);
   await view.context.setBreachLookupEnabled(true);
-  assert.equal(view.nodes['breach-disable'].disabled, false);
+  assert.equal((view.nodes['breach-disable'].attributes['aria-disabled'] === 'true'), false);
   assert.equal(view.calls.fetch, 0);
 });
 
 test('granting consent in Firefox updates the control without claiming lookup is off or starting a request', async () => {
   const view = popup(); await view.context.loadAllData();
   view.permissions.data_collection = ['browsingActivity']; view.emitPermission('added'); await flush();
-  assert.equal(view.nodes['breach-disable'].disabled, false);
+  assert.equal((view.nodes['breach-disable'].attributes['aria-disabled'] === 'true'), false);
   assert.equal(state(view), 'not-run'); assert.equal(view.calls.fetch, 0); ready(view);
   assert.match(view.nodes['breach-error'].textContent, /has not run since consent changed/);
   view.finishFetch(empty); await view.context.loadAllData();

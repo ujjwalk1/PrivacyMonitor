@@ -23,13 +23,18 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content-script.js"]
+      "js": ["settings.js", "content-script.js"]
     }
   ],
 
   "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Privacy Monitor"
+  },
+
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
   },
 
   "browser_specific_settings": {

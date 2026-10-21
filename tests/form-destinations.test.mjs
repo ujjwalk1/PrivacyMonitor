@@ -16,6 +16,8 @@ function fixture({ url = 'https://page.example/path/page', base = url } = {}) {
     browser: { runtime: { onMessage: { addListener() {} } } },
   });
   vm.runInContext(source, context);
+  // Resolver-only fixture: display preferences are already verified/enabled.
+  vm.runInContext('displaySettings = { passwordFeedback: true, formWarnings: true }', context);
   function form(attributes = {}) {
     const item = { ownerDocument: document, attributes: { ...attributes }, banners: [],
       getAttribute(name) { return this.attributes[name] ?? null; },

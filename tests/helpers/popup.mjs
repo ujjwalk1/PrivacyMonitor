@@ -18,6 +18,7 @@ export function popup(headerData = {
   const nodes = Object.fromEntries([...html.matchAll(/\bid="([^"]+)"/g)].map(([, id]) => [id, {
     style: {}, attributes: {}, textContent: '', innerHTML: '',
     setAttribute(name, value) { this.attributes[name] = value; },
+    getAttribute(name) { return this.attributes[name] ?? null; },
     insertAdjacentHTML(position, value) { this.innerHTML += value; },
   }]));
   const errors = [];

@@ -44,10 +44,12 @@ function content({ ready = true, privacy = false, url = 'https://fixture.example
       extension: { inIncognitoContext: privacy },
       runtime: { id: sender.id, getURL: path => `moz-extension://fixture/${path}`,
         onMessage: { addListener(fn) { events.message = fn; } } },
-      storage: { local: { set(data) { writes.push(plain(data)); return controls.write(data); } } },
+      storage: { onChanged: { addListener() {} }, local: {
+        get: async () => ({}), set(data) { writes.push(plain(data)); return controls.write(data); } } },
     },
     MutationObserver: class { constructor(fn) { events.mutation = fn; } observe() {} disconnect() {} },
   });
+  vm.runInContext(readFileSync(new URL('../settings.js', import.meta.url), 'utf8'), context);
   vm.runInContext(source, context, { filename: 'content-script.js' });
   return { events, writes, logs, stored, controls, form, context,
     async flushDynamic() { const pending = [...timers.values()]; timers.clear(); for (const fn of pending) await fn(); await tick(); },
@@ -151,7 +153,7 @@ test('popup-to-content refresh waits for persistence and renders the same scan w
   assert.equal(view.calls.scan, 1); assert.equal(view.calls.storage, 1);
   assert.equal(view.nodes['score-text'].textContent, '80');
   assert.equal(page.form.banners.length, 1);
-  assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
 });
 
 test('missing, malformed, or failed scan replies never trigger a stale read or score', async () => {
@@ -162,7 +164,7 @@ test('missing, malformed, or failed scan replies never trigger a stale read or s
     assert.equal(view.calls.storage, 0); assert.equal(view.calls.fetch, 0);
     assert.equal(view.nodes['score-text'].textContent, '—');
     assert.equal(view.nodes['loading-screen'].attributes['data-state'], 'unavailable');
-    assert.equal(view.nodes['refresh'].disabled, false);
+    assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
   }
 });
 

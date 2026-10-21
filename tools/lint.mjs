@@ -19,11 +19,15 @@ for (const file of files) {
 const popup = manifest.browser_action.default_popup;
 const popupScripts = [...read(popup).matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)]
   .map(match => match[1]);
+const options = manifest.options_ui?.page;
+const optionsScripts = options ? [...read(options).matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["']/gi)]
+  .map(match => match[1]) : [];
 const references = [
   ...manifest.background.scripts,
   ...manifest.content_scripts.flatMap(entry => entry.js),
   popup,
   ...popupScripts,
+  ...(options ? [options, ...optionsScripts] : []),
 ];
 for (const file of references) {
   assert.ok(files.includes(file), `Manifest/popup reference missing from package: ${file}`);

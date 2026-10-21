@@ -33,8 +33,8 @@ function renderBreachConsent(kind, message) {
     'consent-error': 'Could not check consent. Lookup stays off; local checks still work. Reopen the popup to try again.',
     checking: 'Checking consent…',
   };
-  document.getElementById('breach-enable').disabled = consentBusy || consentBlocked || kind !== 'disabled';
-  document.getElementById('breach-disable').disabled = consentBusy || (kind !== 'enabled' && !consentBlocked);
+  setActionUnavailable('breach-enable', consentBusy || consentBlocked || kind !== 'disabled');
+  setActionUnavailable('breach-disable', consentBusy || (kind !== 'enabled' && !consentBlocked));
   document.getElementById('breach-consent-status').textContent = message || messages[kind];
 }
 
@@ -51,7 +51,7 @@ function invalidateBreachConsent() {
 }
 
 async function setBreachLookupEnabled(enabled) {
-  if (consentBusy || (enabled && consentKind !== 'disabled')) return;
+  if (actionUnavailable(enabled ? 'breach-enable' : 'breach-disable') || consentBusy || (enabled && consentKind !== 'disabled')) return;
   consentBusy = true;
   consentBlocked = true; // Stop transmission immediately, before any permission promise settles.
   invalidateBreachConsent();
@@ -102,12 +102,14 @@ function updateScoreRing(score, emptyLabel = 'Incomplete') {
   const arc = document.getElementById('score-arc');
   const text = document.getElementById('score-text');
   const lbl  = document.getElementById('score-label');
+  const summary = document.getElementById('score-summary');
 
   if (score === null) {
     arc.setAttribute('stroke-dashoffset', '100');
     arc.setAttribute('stroke', '#9ca3af');
     text.textContent = '—';
     lbl.textContent = emptyLabel;
+    summary.setAttribute('aria-label', `Technical observation score: ${emptyLabel.toLowerCase()}. No score available.`);
     return;
   }
 
@@ -117,6 +119,7 @@ function updateScoreRing(score, emptyLabel = 'Incomplete') {
   arc.setAttribute('stroke', color);
   text.textContent = String(score);
   lbl.textContent  = label;
+  summary.setAttribute('aria-label', `Technical observation score: ${score} out of 100, ${label}.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -127,6 +130,15 @@ function show(id) { document.getElementById(id).style.display = ''; }
 function hide(id) { document.getElementById(id).style.display = 'none'; }
 function showFlex(id) { document.getElementById(id).style.display = 'flex'; }
 function showBlock(id) { document.getElementById(id).style.display = 'block'; }
+
+// Keep native buttons focusable across async state changes. ARIA alone does not
+// block activation, so both action handlers check this state before doing work.
+function setActionUnavailable(id, unavailable) {
+  document.getElementById(id).setAttribute('aria-disabled', String(unavailable));
+}
+function actionUnavailable(id) {
+  return document.getElementById(id).getAttribute('aria-disabled') === 'true';
+}
 
 function renderOverall(kind, message) {
   const labels = { loading: 'Loading', incomplete: 'Incomplete', unavailable: 'Unavailable',
@@ -142,7 +154,8 @@ function renderOverall(kind, message) {
   document.getElementById('status-message').textContent = message || messages[kind];
   document.getElementById('status-spinner').style.display = kind === 'loading' ? 'block' : 'none';
   document.getElementById('main-content').style.display = ['ready', 'incomplete'].includes(kind) ? 'block' : 'none';
-  document.getElementById('refresh').disabled = ['loading', 'unsupported'].includes(kind);
+  document.getElementById('main-content').setAttribute('aria-busy', String(kind === 'loading'));
+  setActionUnavailable('refresh', ['loading', 'unsupported'].includes(kind));
   if (kind !== 'ready') updateScoreRing(null, labels[kind]);
 }
 
@@ -162,6 +175,7 @@ function resetView() {
 }
 
 function resetBreaches() {
+  document.getElementById('breach-status').textContent = '';
   document.getElementById('breach-section').setAttribute('data-state', 'loading');
   for (const id of ['breach-none', 'breach-list', 'breach-error']) hide(id);
   document.getElementById('breach-list').innerHTML = '';
@@ -244,6 +258,7 @@ function renderBreaches(result) {
     document.getElementById('breach-error').textContent =
       `${messages[kind] || 'Breach lookup unavailable.'} No conclusion can be drawn.`;
     showBlock('breach-error');
+    document.getElementById('breach-status').textContent = document.getElementById('breach-error').textContent;
     return;
   }
 
@@ -254,12 +269,14 @@ function renderBreaches(result) {
 
   if (kind === 'empty') {
     showFlex('breach-none');
+    document.getElementById('breach-status').textContent = `No breach records returned for this domain. ${document.getElementById('breach-cache-note').textContent}`;
     return;
   }
 
   const list = document.getElementById('breach-list');
   list.style.display = 'flex';
   const { breaches } = result;
+  document.getElementById('breach-status').textContent = `${breaches.length} historical breach record${breaches.length === 1 ? '' : 's'} returned. ${breaches.length > 3 ? 'Showing the three most recent. ' : ''}${document.getElementById('breach-cache-note').textContent}`;
 
   // Show up to 3 most recent breaches
   const recent = [...breaches]
@@ -399,7 +416,9 @@ async function loadAllData() {
     renderHeaders(local.headers);
     renderForms(local.forms);
     const kind = local.kind === 'ready' && score !== null ? 'ready' : 'incomplete';
-    renderOverall(kind);
+    renderOverall(kind, kind === 'ready'
+      ? `Local observations loaded. Technical observation score: ${score} out of 100, ${getScoreStyle(score).label}. This score is not a safety guarantee.`
+      : undefined);
     if (kind === 'ready') updateScoreRing(score);
     if (tab.incognito !== false) {
       renderOverall('incomplete', tab.incognito === true
@@ -414,6 +433,7 @@ async function loadAllData() {
       document.getElementById('breach-section').setAttribute('data-state', 'not-run');
       hide('breach-loading');
       document.getElementById('breach-error').textContent = 'Breach lookup not run: page observations are missing or unavailable.';
+      document.getElementById('breach-status').textContent = document.getElementById('breach-error').textContent;
       showBlock('breach-error');
       return;
     }
@@ -434,11 +454,12 @@ async function loadAllData() {
 // ---------------------------------------------------------------------------
 
 async function refreshData() {
+  if (actionUnavailable('refresh')) return;
   const version = ++loadVersion;
   resetView();
   const btn = document.getElementById('refresh');
-  btn.textContent = '⏳ Refreshing…';
-  btn.disabled = true;
+  btn.textContent = 'Refreshing…';
+  setActionUnavailable('refresh', true);
 
   try {
     const [tab] = await api.tabs.query({ active: true, currentWindow: true });
@@ -446,7 +467,7 @@ async function refreshData() {
     const page = PrivacyMonitorPopupState.page(tab);
     if (page.kind !== 'supported') {
       renderOverall(page.kind);
-      btn.textContent = '🔄 Refresh Analysis';
+      btn.textContent = 'Refresh Analysis';
       return;
     }
     document.getElementById('current-domain').textContent = page.hostname;
@@ -457,14 +478,14 @@ async function refreshData() {
     if (reply?.channel !== 'privacy-monitor.scan' || reply.version !== 1 || reply.ok !== true) {
       throw new Error('Scan unavailable');
     }
-    btn.textContent = '🔄 Refresh Analysis';
+    btn.textContent = 'Refresh Analysis';
     await loadAllData();
 
   } catch (err) {
     if (version !== loadVersion) return;
     renderOverall('unavailable', 'Analysis unavailable. Firefox could not scan this page. Access may be restricted; try an ordinary HTTP or HTTPS page.');
-    btn.textContent = '🔄 Refresh Analysis';
-    btn.disabled = false;
+    btn.textContent = 'Refresh Analysis';
+    setActionUnavailable('refresh', false);
   }
 }
 
@@ -477,4 +498,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('breach-enable').addEventListener('click', () => setBreachLookupEnabled(true));
   document.getElementById('breach-disable').addEventListener('click', () => setBreachLookupEnabled(false));
   document.getElementById('refresh').addEventListener('click', refreshData);
+  document.getElementById('open-settings').addEventListener('click', async () => {
+    const error = document.getElementById('settings-error');
+    error.hidden = true;
+    try { await api.runtime.openOptionsPage(); }
+    catch {
+      error.textContent = 'Could not open settings. Open Privacy Monitor preferences from Firefox’s add-ons page.';
+      error.hidden = false;
+    }
+  });
 });

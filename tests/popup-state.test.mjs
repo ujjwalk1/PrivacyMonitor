@@ -71,7 +71,7 @@ test('unsupported tabs skip storage, scan messages, and breach requests on load 
   await view.context.loadAllData(); await view.context.refreshData();
   assert.equal(state(view), 'unsupported');
   assert.equal(view.nodes['score-label'].textContent, 'Unsupported');
-  assert.equal(view.nodes['refresh'].disabled, true);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), true);
   assert.deepEqual(view.calls, { storage: 0, scan: 0, fetch: 0 });
 });
 
@@ -85,7 +85,7 @@ test('tab/storage failures are visible and hide old successful results', async (
     assert.equal(view.nodes['score-label'].textContent, 'Unavailable');
     assert.match(view.nodes['status-message'].textContent, /unavailable/);
     assert.equal(view.nodes['status-spinner'].style.display, 'none');
-    assert.equal(view.nodes['refresh'].disabled, false);
+    assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
   }
 });
 
@@ -190,7 +190,7 @@ test('failed refresh reports unavailable instead of retaining old green results'
   assert.equal(state(view), 'unavailable');
   assert.equal(view.nodes['score-text'].textContent, '—');
   assert.match(view.nodes['status-message'].textContent, /restricted/);
-  assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
 });
 
 test('successful refresh awaits the scan acknowledgement and subsequent read without a fixed delay', async () => {
@@ -200,10 +200,10 @@ test('successful refresh awaits the scan acknowledgement and subsequent read wit
   view.controls.storage = () => { reading.resolve(); return storage.promise; };
   const refresh = view.context.refreshData(); await requested.promise;
   assert.equal(state(view), 'loading'); assert.equal(view.calls.storage, 0);
-  assert.equal(view.nodes['refresh'].disabled, true);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), true);
   scan.resolve({ channel: 'privacy-monitor.scan', version: 1, ok: true }); await reading.promise;
-  assert.equal(state(view), 'loading'); assert.equal(view.nodes['refresh'].disabled, true);
+  assert.equal(state(view), 'loading'); assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), true);
   storage.resolve(view.stored); await refresh;
-  assert.equal(state(view), 'ready'); assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal(state(view), 'ready'); assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
   assert.equal(view.timers.length, 0);
 });

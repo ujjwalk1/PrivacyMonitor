@@ -77,7 +77,8 @@ function positionIndicator(ind, input) {
 }
 
 function isLivePasswordInput(input) {
-  return input?.isConnected && input.tagName === 'INPUT' && input.type === 'password';
+  return displaySettings?.passwordFeedback === true && input?.isConnected &&
+    input.tagName === 'INPUT' && input.type === 'password';
 }
 
 function clearPasswordFeedback() {
@@ -227,8 +228,10 @@ function analyzeInsecureForms() {
       insecureCount++;
       if (controls.some(control => control.tagName === 'INPUT' && control.type === 'password')) {
         insecurePasswordForms++;
-        injectFormWarning(form);
-        return;
+        if (displaySettings?.formWarnings === true) {
+          injectFormWarning(form);
+          return;
+        }
       }
     }
     // Both automatic scans and explicit refresh remove obsolete warnings.
@@ -275,9 +278,42 @@ function analyzePageSecurity() {
 // One scan path for startup, the existing observer, and explicit popup refresh.
 // Legacy storage remains a temporary adapter until the rest of D09 is migrated.
 const contentApi = typeof browser !== 'undefined' ? browser : chrome;
+let displaySettings = null;
+let settingsReady = null;
+function initializeDisplaySettings() {
+  let revision = 0;
+  contentApi.storage.onChanged.addListener((changes, area) => {
+    const key = PrivacyMonitorSettings.KEY;
+    if (area !== 'local' || !Object.hasOwn(changes, key)) return;
+    revision++;
+    const next = PrivacyMonitorSettings.normalize(changes[key].newValue);
+    if (JSON.stringify(next) === JSON.stringify(displaySettings)) return;
+    displaySettings = next;
+    // Disable hints immediately even if a previous scan is awaiting storage.
+    mutationObserver?.disconnect();
+    try {
+      if (next?.passwordFeedback !== true) {
+        clearPasswordFeedback();
+        indicator?.remove();
+        indicator = null;
+      }
+      if (next?.formWarnings !== true) {
+        document.querySelectorAll('[data-pm-banner]').forEach(banner => banner.remove());
+        document.querySelectorAll('form').forEach(form => form.removeAttribute(WARN_ATTR));
+      }
+    } finally { mutationObserver?.observe(document, OBSERVER_OPTIONS); }
+    scheduleDynamicAnalysis();
+  });
+  const initialRevision = revision;
+  return PrivacyMonitorSettings.read(contentApi).then(value => {
+    // A late startup read must not undo a newer preference event.
+    if (revision === initialRevision) displaySettings = value;
+  });
+}
 let analysisQueue = Promise.resolve();
 function analyzePage() {
   const run = analysisQueue.then(async () => {
+    await settingsReady;
     clearTimeout(dynamicTimer);
     dynamicTimer = null;
     dynamicDirty = false;
@@ -387,6 +423,7 @@ function initialize() {
 
   setupPasswordListeners();
   setupMutationObserver();
+  settingsReady = initializeDisplaySettings();
   scheduleAnalysis();
 }
 

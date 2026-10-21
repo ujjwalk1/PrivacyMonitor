@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../../content-script.js', import.meta.url), 'utf8');
-export async function dynamicContent({ privacy = false } = {}) {
+export async function dynamicContent({ privacy = false, preferences, readSettings } = {}) {
   const timers = new Map(), events = {}, writes = [], logs = [];
   let now = 0, timerId = 0, observer, document, queries = 0;
   const settle = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
@@ -102,7 +102,8 @@ export async function dynamicContent({ privacy = false } = {}) {
     const base = document.querySelector('base[href]');
     return base ? new URL(base.getAttribute('href'), document.URL).href : document.URL;
   } });
-  const controls = { write: async () => {} };
+  const controls = { write: async () => {}, preferences, readSettings };
+  let storageChanged;
   const context = vm.createContext({ document, URL,
     setTimeout(fn, delay) { timers.set(++timerId, { fn, due: now + delay }); return timerId; },
     clearTimeout(id) { timers.delete(id); },
@@ -110,13 +111,16 @@ export async function dynamicContent({ privacy = false } = {}) {
     console: { log: (...args) => logs.push(args), error: (...args) => logs.push(args) },
     browser: { extension: { inIncognitoContext: privacy },
       runtime: { onMessage: { addListener() {} } },
-      storage: { local: { set(data) { writes.push(JSON.parse(JSON.stringify(data))); return controls.write(data); } } } },
+      storage: { onChanged: { addListener(fn) { storageChanged = fn; } }, local: {
+        get: async key => controls.readSettings ? controls.readSettings(key) : { [key]: controls.preferences },
+        set(data) { writes.push(JSON.parse(JSON.stringify(data))); return controls.write(data); } } } },
     MutationObserver: class {
       constructor(callback) { observer = this; this.callback = callback; this.records = []; }
       observe(target, options) { this.target = target; this.options = options; this.connected = true; }
       disconnect() { this.connected = false; this.records = []; }
     },
   });
+  vm.runInContext(readFileSync(new URL('../../settings.js', import.meta.url), 'utf8'), context);
   vm.runInContext(source, context); await settle();
   const create = (tag, attributes = {}, parent = document.body) => {
     const node = new Element(tag); for (const [name, value] of Object.entries(attributes)) node.setAttribute(name, value);
@@ -137,6 +141,10 @@ export async function dynamicContent({ privacy = false } = {}) {
     now = end; await settle();
   }
   return { context, document, controls, writes, logs, timers, events, observer, create, fire, advance, settle,
+    changeSettings(value, area = 'local') {
+      if (area === 'local') controls.preferences = value;
+      storageChanged({ privacy_monitor_display_settings_v1: { newValue: value } }, area);
+    },
     get queries() { return queries; },
     forms: () => writes.at(-1)?.['forms_fixture.example'],
     bannerCount: form => form.querySelectorAll('[data-pm-banner]').length,

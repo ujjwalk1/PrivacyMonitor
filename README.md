@@ -4,7 +4,7 @@ A Firefox Manifest V2 extension for observing page connections, security-header
 presence, HTTP form destinations, and cookie/script counts, with local password
 strength feedback and a separate historical breach lookup.
 
-**Development status:** D01–D08 implementation is present, including per-tab header capture. Partial D09 unifies local scan/refresh; partial D10 adds privacy guards. D11 corrects form destination resolution; D12 adds bounded dynamic monitoring. Content-record migration and old-data cleanup remain pending. The local tests, local lint,
+**Development status:** D01–D08 implementation is present, including per-tab header capture. Partial D09 unifies local scan/refresh; partial D10 adds privacy guards. D11 corrects form destination resolution; D12 adds bounded dynamic monitoring. Partial D13 adds on-page display settings; site exclusions remain unimplemented. Content-record migration and old-data cleanup remain pending. The local tests, local lint,
 package verification, and mocked popup wording review pass. Installed-Firefox
 acceptance is still pending; this is not a submission-ready release. The manifest
 version remains `1.1`.
@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features implemented through D12 (acceptance pending)
+## Features implemented through D14 (partial D09/D10/D13; acceptance pending)
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -76,6 +76,18 @@ registry of old fields. Mutation bursts and slow writes do not build a scan back
 Automated checks pass; native Firefox acceptance remains pending.
 [Bounds, limits, and browser checks](docs/DYNAMIC_MONITORING.md).
 
+**D13 — Partial on-page settings:** a compact settings page saves controls for
+password-strength feedback and HTTP password-form warnings, and applies changes
+to open pages. These control visible hints; analysis and popup findings continue.
+Site exclusions are not implemented. Native settings/restart checks remain pending.
+[Implemented portion and exact remainder](docs/SETTINGS.md).
+
+**D14 — Popup accessibility:** semantic headings, visible keyboard focus, stable
+button order, higher-contrast status text, accessible score descriptions, and
+polite result announcements. Automated checks and mocked browser keyboard checks
+pass; installed-Firefox and screen-reader acceptance remain pending.
+[Behavior and native acceptance checklist](docs/POPUP_ACCESSIBILITY.md).
+
 ### Existing monitoring features
 
 - **Password feedback:** local checks for length, character variety, and common
@@ -127,7 +139,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The package command creates `dist/privacy-monitor-1.1.zip`, containing only the
-ten extension files listed in [tools/extension-files.json](tools/extension-files.json),
+13 extension files listed in [tools/extension-files.json](tools/extension-files.json),
 and verifies their contents against the source. It is an unsigned development
 package. Local lint checks syntax and package references; it is not Mozilla's
 add-on validator.
@@ -156,6 +168,9 @@ PrivacyMonitor/
 ├── background.js              # D08 navigation-scoped response-header capture
 ├── breach-service.js          # Transient shared lookup, cache, and rate-limit timing
 ├── content-script.js          # Page, password, and form observations
+├── settings.js                # Partial D13 display-preference schema and reader
+├── options.html               # On-page settings UI
+├── options.js                 # Persistent display controls
 ├── popup.html                 # Popup markup and styles
 ├── popup.js                   # Popup loading, rendering, and refresh
 ├── popup-state.js             # Observation-to-display state mapping
@@ -165,6 +180,7 @@ PrivacyMonitor/
 │   ├── PRIVATE_HANDLING.md    # Partial D10 safeguards and cleanup prerequisites
 │   ├── FORM_DESTINATIONS.md   # D11 resolution rules, limits, and browser fixture
 │   ├── DYNAMIC_MONITORING.md  # D12 observer bounds, lifecycle, and browser checks
+│   ├── SETTINGS.md            # Partial D13 settings, limits, and exclusion remainder
 │   ├── SCAN_REFRESH.md        # Partial D09 and remaining migration/browser checks
 │   ├── HEADER_LIFECYCLE.md    # D08 correlation rules and Firefox acceptance checks
 │   ├── DEVELOPING.md           # Commands, recovery, and Firefox checklist

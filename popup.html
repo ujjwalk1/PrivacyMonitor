@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <title>Privacy Monitor</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -75,6 +76,7 @@
     }
 
     .section-title {
+      margin: 0;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -97,8 +99,8 @@
     .metric-label { color: #666; }
     .metric-value { font-weight: 600; }
 
-    .good    { color: #16a34a; }
-    .warning { color: #d97706; }
+    .good    { color: #15803d; }
+    .warning { color: #b45309; }
     .danger  { color: #dc2626; }
     .muted   { color: #6b7280; }
 
@@ -215,7 +217,23 @@
     }
 
     .refresh-btn:hover { background: #2d2d4e; }
-    .refresh-btn:disabled { opacity: 0.55; cursor: default; }
+    button[aria-disabled="true"] { cursor: default; }
+    .refresh-btn[aria-disabled="true"] { background: #4b5563; }
+    button:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation: none; }
+      .score-ring .fill, .refresh-btn { transition: none; }
+    }
 
     #loading-screen {
       padding: 12px 16px;
@@ -241,11 +259,11 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <h1>🔒 Privacy Monitor</h1>
+      <h1><span aria-hidden="true">🔒</span> Privacy Monitor</h1>
       <div class="domain" id="current-domain">Loading…</div>
     </div>
-    <div class="score-ring-wrap" title="Technical observation score, not a safety guarantee. Historical breaches do not affect this number.">
-      <svg class="score-ring" viewBox="0 0 36 36">
+    <div class="score-ring-wrap" role="img" id="score-summary" aria-label="Technical observation score: loading." aria-describedby="score-description" title="Technical observation score, not a safety guarantee. Historical breaches do not affect this number.">
+      <svg class="score-ring" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
         <circle class="bg"   cx="18" cy="18" r="15.9"/>
         <circle class="fill" id="score-arc" cx="18" cy="18" r="15.9"
                 stroke="#4ade80"
@@ -259,17 +277,18 @@
               font-size="4.5" fill="rgba(255,255,255,0.7)"
               style="font-family:sans-serif;">/100</text>
       </svg>
-      <div class="score-label" id="score-label">Score</div>
+      <div class="score-label" id="score-label" aria-hidden="true">Score</div>
     </div>
   </div>
+  <p id="score-description" class="sr-only">This score is not a safety guarantee. Historical breaches do not affect this number.</p>
 
-  <div id="loading-screen" role="status" aria-live="polite" data-state="loading">
-    <div id="status-spinner" class="spinner" style="width:20px;height:20px;border-width:3px;margin:0 auto 8px;"></div>
+  <div id="loading-screen" role="status" aria-live="polite" aria-atomic="true" data-state="loading">
+    <div id="status-spinner" class="spinner" aria-hidden="true" style="width:20px;height:20px;border-width:3px;margin:0 auto 8px;"></div>
     <div id="status-message">Loading observations…</div>
   </div>
 
   <div class="section" style="margin:12px;" aria-labelledby="breach-consent-title">
-    <div class="section-title" id="breach-consent-title">Optional breach lookup</div>
+    <h2 class="section-title" id="breach-consent-title">Optional breach lookup</h2>
     <div class="section-body">
       <p id="breach-disclosure" style="margin:0 0 10px;">
         If enabled, opening or refreshing this popup uses a result cached for up to 10 minutes
@@ -279,18 +298,19 @@
         password, cookie value, or local score is included. This does not check
         whether your personal account was breached. Local checks work without it.
       </p>
-      <button id="breach-enable" type="button" aria-describedby="breach-disclosure" disabled>Enable breach lookup</button>
-      <button id="breach-disable" type="button" disabled>Disable breach lookup</button>
-      <p id="breach-consent-status" role="status" aria-live="polite">Checking consent…</p>
+      <button id="breach-enable" type="button" aria-describedby="breach-disclosure breach-consent-status" aria-disabled="true">Enable breach lookup</button>
+      <button id="breach-disable" type="button" aria-describedby="breach-consent-status" aria-disabled="true">Disable breach lookup</button>
+      <p id="breach-consent-status" role="status" aria-live="polite" aria-atomic="true">Checking consent…</p>
     </div>
   </div>
 
-  <div id="main-content">
+  <div id="breach-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <main id="main-content" aria-busy="true">
     <div class="content">
 
       <!-- Connection -->
       <div class="section">
-        <div class="section-title">🌐 Connection</div>
+        <h2 class="section-title"><span aria-hidden="true">🌐</span> Connection</h2>
         <div class="section-body">
           <div class="metric">
             <span class="metric-label">Protocol</span>
@@ -305,12 +325,12 @@
 
       <!-- Security Headers -->
       <div class="section">
-        <div class="section-title">
-          🛡️ Security Headers
+        <h2 class="section-title">
+          <span aria-hidden="true">🛡️</span> Security Headers
           <span class="tag-new">New</span>
-        </div>
+        </h2>
         <div id="headers-loading" class="loading-row">
-          <div class="spinner"></div> Checking headers…
+          <div class="spinner" aria-hidden="true"></div> Checking headers…
         </div>
         <div id="headers-grid" class="header-grid" style="display:none;"></div>
         <div id="headers-error" style="display:none;" class="loading-row">
@@ -320,13 +340,13 @@
 
       <!-- Data Breach -->
       <div class="section" id="breach-section" data-state="loading">
-        <div class="section-title">
-          🔓 Historical Breaches
+        <h2 class="section-title">
+          <span aria-hidden="true">🔓</span> Historical Breaches
           <span class="tag-new">New</span>
-        </div>
+        </h2>
         <p id="breach-cache-note" class="muted" style="display:none;font-size:11px;"></p>
         <div id="breach-loading" class="loading-row">
-          <div class="spinner"></div> Checking breach database…
+          <div class="spinner" aria-hidden="true"></div> Checking breach database…
         </div>
         <div id="breach-none" class="no-breaches" style="display:none;">
           No breach records returned for this domain.
@@ -339,19 +359,19 @@
 
       <!-- Forms -->
       <div class="section" id="forms-section">
-        <div class="section-title">
-          📋 Form Security
+        <h2 class="section-title">
+          <span aria-hidden="true">📋</span> Form Security
           <span class="tag-new">New</span>
-        </div>
+        </h2>
         <div id="forms-loading" class="loading-row">
-          <div class="spinner"></div> Scanning forms…
+          <div class="spinner" aria-hidden="true"></div> Scanning forms…
         </div>
         <div id="forms-body" style="display:none;"></div>
       </div>
 
       <!-- Privacy -->
       <div class="section">
-        <div class="section-title">🍪 Privacy Analysis</div>
+        <h2 class="section-title"><span aria-hidden="true">🍪</span> Privacy Analysis</h2>
         <div class="section-body">
           <div class="metric">
             <span class="metric-label">Cookies</span>
@@ -370,8 +390,10 @@
 
     </div><!-- /content -->
 
-  </div><!-- /main-content -->
-  <button id="refresh" class="refresh-btn" disabled>🔄 Refresh Analysis</button>
+  </main><!-- /main-content -->
+  <button id="refresh" type="button" class="refresh-btn" aria-disabled="true" aria-describedby="status-message">Refresh Analysis</button>
+  <button id="open-settings" type="button" class="refresh-btn">On-page settings</button>
+  <div role="status" aria-live="polite" aria-atomic="true"><p id="settings-error" hidden></p></div>
 
   <script src="scoring.js"></script>
   <script src="popup-state.js"></script>

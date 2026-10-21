@@ -12,7 +12,7 @@ function checkFinal(view, expected) {
   assert.equal(view.nodes['breach-loading'].style.display, 'none');
   assert.equal(view.nodes['score-text'].textContent, '100');
   assert.equal(view.nodes['loading-screen'].attributes['data-state'], 'ready');
-  assert.equal(view.nodes['refresh'].disabled, false);
+  assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), false);
   assert.equal(view.timers.length, 0, 'Settled requests must remove their deadline');
   assert.deepEqual(view.errors, []);
   if (expected !== 'empty' && expected !== 'results') {
