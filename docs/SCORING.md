@@ -72,4 +72,4 @@ Run `node --test tests/*.test.mjs` for score boundaries, deductions, invalid/mis
 inputs, breach independence, and mocked popup integration. Live Firefox checks
 remain separate: load the extension, check the new script loads without errors,
 confirm local scoring before breach completion, and inspect complete/incomplete
-score rendering. Record results in [PROGRESS.md](../PROGRESS.md).
+score rendering. Record results in [PROGRESS.md](development/PROGRESS.md).

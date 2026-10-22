@@ -158,4 +158,4 @@ Native Firefox checks remain pending. In a disposable profile:
    works, and extension reload empties the new store. Run automatic navigation/close
    checks using the separate D08 checklist; manual seeding is only a contract fixture.
 5. Record Firefox version, message results, console errors, and exact pass/fail in
-   [PROGRESS.md](../PROGRESS.md), carrying outstanding D01–D06 checks forward.
+   [PROGRESS.md](development/PROGRESS.md), carrying outstanding D01–D06 checks forward.

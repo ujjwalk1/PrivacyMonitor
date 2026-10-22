@@ -71,6 +71,6 @@ Pending in a disposable Firefox profile:
    for install/update prompts. Temporary loading silently grants install-time
    permissions but shows runtime prompts; it does not prove the install UI.
    Record version, request counts, console errors, and exact results in
-   [PROGRESS.md](../PROGRESS.md), carrying D01–D04 browser checks forward.
+   [PROGRESS.md](development/PROGRESS.md), carrying D01–D04 browser checks forward.
 
 D05 remains open until installed-Firefox acceptance is recorded.

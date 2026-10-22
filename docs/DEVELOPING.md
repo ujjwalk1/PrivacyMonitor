@@ -1,88 +1,50 @@
-# Privacy Monitor local development
+# Local development
 
-D01 preserved the five v1.1 extension files in place; D02 adds the local scoring
-module documented in [SCORING.md](SCORING.md). D03's popup states, D04's breach
-outcomes/timeout, and local preview fixtures are documented in [POPUP_STATES.md](POPUP_STATES.md).
-D05 consent and its Firefox checklist are in [BREACH_CONSENT.md](BREACH_CONSENT.md). D06 caching/backoff and browser checks are in [BREACH_CACHE.md](BREACH_CACHE.md). D07's record/message foundation is in [ANALYSIS_RECORDS.md](ANALYSIS_RECORDS.md).
-D08's navigation/header correlation and native acceptance checklist are in [HEADER_LIFECYCLE.md](HEADER_LIFECYCLE.md). Partial D09's shared scan/refresh and remaining migration are in [SCAN_REFRESH.md](SCAN_REFRESH.md). Partial D10 safeguards and cleanup prerequisites are in [PRIVATE_HANDLING.md](PRIVATE_HANDLING.md). There is no framework,
-bundling step, or runtime dependency. The original local working folder is not a
-Git checkout; its updates use the GitHub connection. A fresh clone has normal
-Git history. See the [repository overview](../README.md) for the layout.
+The extension uses plain JavaScript and Firefox MV2. Runtime files remain at the repository root. No framework, bundling or runtime dependency installation is required.
 
-Partial D13 adds the on-page settings page and persistent display controls; see
-[SETTINGS.md](SETTINGS.md). Site exclusions and native settings/restart acceptance
-remain pending. D15 adds three local SVGs and popup theme/reflow improvements;
-see [POPUP_PRESENTATION.md](POPUP_PRESENTATION.md). The package now includes
-16 runtime files, including the settings schema, options page/scripts and icons.
+## Commands
 
-## Recoverable baseline
+Use Node.js 24 and Windows PowerShell 5.1+ or PowerShell 7. Node 24.19.0 was used for the presentation verification.
 
-`checkpoints/pre-d01-2026-09-29.zip` contains every original top-level file,
-including the plan, progress log, and unrelated image. The adjacent
-`pre-d01-2026-09-29.sha256.json` records each original file's SHA-256.
-To recover, extract the archive into a **new empty directory** and compare the
-extracted files with the hashes. Copy back only the files you intend to restore;
-do not extract over ongoing work. Keep these checkpoints when starting Git later.
-These archives and hashes are local recovery files, excluded from GitHub.
-For repository users, the unchanged extension baseline is recoverable from
-[commit 8c3b240](https://github.com/ujjwalk1/PrivacyMonitor/tree/8c3b240cfa46a57e373a5ece8325a84b4fc66486).
-
-## Local commands (Windows PowerShell)
-
-Prerequisites: Node.js 24 LTS on PATH and Windows PowerShell 5.1+ (or PowerShell 7).
-Verified here with Node 24.19.0. No npm install or network access is required.
-Run from the repository root (all command/file paths below are relative to it):
-
-```powershell
+~~~powershell
 node --test tests/*.test.mjs
 node tools/lint.mjs
+node tools/check-docs.mjs
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
-```
+~~~
 
-The tests exercise mocked background header events, content-script initialization,
-popup boot registration, scoring, popup state transitions, breach outcomes/timeouts,
-score/breach separation, and per-tab header isolation across navigation, redirects,
-delayed events, errors, and tab closure. They
-do not simulate a full browser or validate the breach API or all existing
-behaviors. Local lint checks JavaScript syntax,
-the MV2 manifest basics, and that manifest/popup file references are packaged.
-It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
-validation remain outstanding for the assigned later manifest/release days.
+Tests exercise mocked browser, DOM and service behavior. Local lint checks syntax, MV2 basics and manifest/popup/options/image references against the package allowlist. It is not Mozilla add-on validation. The documentation checker validates local inline Markdown links and heading anchors; it does not fetch external sites.
 
-Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the 16 paths in `tools/extension-files.json`, then verifies each
-archive entry against the source SHA-256. Development files, checkpoints, and the
-unrelated image are excluded. Add future extension assets to that list when needed.
-The ZIP is a local unsigned development artifact, not a submission-ready release.
+Packaging writes `dist/privacy-monitor-1.1.zip`, replacing that generated archive on repeated runs. It includes the 16 paths in [extension-files.json](../tools/extension-files.json) and compares archive-entry SHA-256 values with the source. Tests, documentation, presentation notes, checkpoints and unrelated files are excluded. The artifact is unsigned.
 
 ## Load and check in Firefox
 
-Firefox 156.0.1 is installed on this machine; no tested minimum version has been
-selected. These steps follow [Mozilla temporary installation instructions](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/).
+No tested minimum Firefox version has been selected. Use a disposable desktop Firefox profile and record the actual version. Follow [Mozilla's temporary-installation guide](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/):
 
-1. Use a disposable Firefox test profile. Open `about:debugging`, select
-   **This Firefox**, then **Load Temporary Add-on** and select this folder's
-   `manifest.json` (or the built ZIP).
-2. Check that Privacy & Security Monitor appears without installation errors.
-   Open its **Inspect** console and check for startup errors.
-3. After loading the add-on, visit/reload an ordinary HTTPS page. Open the extension
-   through the toolbar extensions menu. Confirm the domain, connection, header,
-   form, and privacy sections render, and record any console errors.
-4. On a disposable HTTP password-form fixture, type only dummy text and confirm the
-   password feedback and HTTP form warning appear. Do not submit the form. Check
-   the popup's Refresh Analysis button and record the outcome.
-5. Record Firefox version, pages/fixtures, and exact pass/fail results in
-   [PROGRESS.md](../PROGRESS.md). Reload the temporary add-on after source edits, then reload the
-   page. Temporary installation ends when Firefox restarts.
+1. Open `about:debugging` → **This Firefox** → **Load Temporary Add-on** and select the root `manifest.json` or generated ZIP.
+2. Confirm installation, inspect the background console and record startup errors.
+3. Reload an ordinary HTTP/HTTPS page after loading. Open the popup and inspect observations. Missing captures may be incomplete.
+4. Keep breach lookup off for local fixtures. Use only dummy passwords. Check warnings, dynamic updates and refresh.
+5. Record native results and Firefox/OS versions in [the verification record](development/VERIFICATION.md), then update [progress](development/PROGRESS.md).
 
-Current development behavior: breach lookup is off until Firefox consent is granted.
-Once enabled, opening/refreshing an analyzed page's popup reuses a fresh result or
-sends a normal tab’s hostname to Have I Been Pwned when retry timing permits. Private/unknown contexts are blocked. D05's consent checklist is linked above. New scan summaries omit URLs; older stored data still awaits D10 cleanup after D09 migration. Use non-sensitive test pages
-and a disposable profile.
+Temporary installation ends at browser restart. Reload the add-on after source changes, then reload the page. Temporary installation is not equivalent to signed-install/restart testing.
 
-Browser acceptance is still pending. Passing mocked tests and byte-identical
-packaging does not establish that the extension loads or works in Firefox.
-For D08, reload the add-on with its new `webNavigation` permission and run the
-[header lifecycle checklist](HEADER_LIFECYCLE.md#native-firefox-acceptance-pending).
-Mozilla's [web-ext reference](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)
-documents optional future browser/lint tooling; D01 requires no global tool install.
+## Controlled pages and preview
+
+~~~powershell
+node tests/popup-preview.mjs
+~~~
+
+Open `http://127.0.0.1:4179/` for synthetic popup states, `/presentation.html` for theme/reflow previews, `/form-destinations.html` for destination cases, or `/dynamic-forms.html` for dynamic form controls. Use the complete URL with the same host/port for each route. Stop with Ctrl+C.
+
+The popup preview substitutes browser APIs and breach data; the form fixture pages are ordinary local pages on which a separately installed extension can run. Neither server startup nor preview rendering proves installed Firefox behavior. See the [demo runbook](presentation/DEMO.md).
+
+## Architecture and unfinished work
+
+See [ARCHITECTURE.md](ARCHITECTURE.md). Headers use transient tab/navigation records; content summaries still use hostname storage. D09 must finish migration before D10 removes obsolete rows. D13 display preferences exist, but site exclusions do not. Native acceptance remains pending. Current [verification](development/VERIFICATION.md) separates actual checks from prior mock-preview evidence.
+
+## Recovery and history
+
+The reviewed baseline is [8c3b240](https://github.com/ujjwalk1/PrivacyMonitor/tree/8c3b240cfa46a57e373a5ece8325a84b4fc66486). Inspect an old commit in a separate checkout rather than overwriting active files.
+
+The original local `priv-mon-new` folder contains recovery archives ignored by Git; a fresh clone does not require them. The presentation reorganization was performed in the separate `PrivacyMonitor-presentation` checkout. License and runtime files were preserved. See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution expectations.

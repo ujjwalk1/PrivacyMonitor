@@ -127,7 +127,7 @@ API); do not treat its console as a clean Firefox result. Next, temporarily load
 the current `manifest.json` in a disposable Firefox profile using [DEVELOPING.md](DEVELOPING.md).
 Check an ordinary page, `about:config`, a page without scan records, and a denied
 refresh. Confirm no stale success, readable scrolling, and no popup-console
-errors. Record exact results in [PROGRESS.md](../PROGRESS.md); D01/D02 Firefox checks remain open.
+errors. Record exact results in [PROGRESS.md](development/PROGRESS.md); D01/D02 Firefox checks remain open.
 For D04, also open the six synthetic preview cases in Firefox and verify the
 eight-second timeout, message wrapping, and unchanged local score. Then check the
 installed popup's response/abort behavior and console on a disposable test page;
