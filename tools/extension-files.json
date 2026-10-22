@@ -1,5 +1,8 @@
 [
   "manifest.json",
+  "icon.svg",
+  "icon-light.svg",
+  "icon-dark.svg",
   "background.js",
   "analysis-records.js",
   "analysis-background.js",

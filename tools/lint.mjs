@@ -28,6 +28,10 @@ const references = [
   popup,
   ...popupScripts,
   ...(options ? [options, ...optionsScripts] : []),
+  ...Object.values(manifest.icons || {}),
+  ...Object.values(manifest.browser_action.default_icon || {}),
+  ...(manifest.browser_action.theme_icons || []).flatMap(icon => [icon.light, icon.dark]),
+  ...[...read(popup).matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map(match => match[1]),
 ];
 for (const file of references) {
   assert.ok(files.includes(file), `Manifest/popup reference missing from package: ${file}`);

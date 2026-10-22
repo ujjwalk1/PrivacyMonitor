@@ -1,5 +1,7 @@
 // Browser-only synthetic fixture. Loaded by popup-preview.mjs, never the extension.
 const previewCase = new URL(location.href).searchParams.get('case');
+const previewHostname = previewCase === 'long-content'
+  ? `${'long-subdomain-'.repeat(4)}.${'another-label-'.repeat(4)}.fixture.example` : 'fixture.example';
 const headerNames = ['CSP', 'HSTS', 'X-Frame-Options', 'X-Content-Type-Options', 'Referrer-Policy', 'Permissions-Policy'];
 const previewData = {
   'security_data_fixture.example': { protocol: 'https:', httpsOnly: true, cookies: 0, scripts: 2, thirdPartyScripts: 1 },
@@ -17,14 +19,22 @@ if (previewCase === 'warnings') {
   previewData['headers_fixture.example'] = { present: {}, missing: headerNames };
   previewData['forms_fixture.example'] = { insecureForms: 1, insecurePasswordForms: 1 };
 }
+if (previewCase === 'long-content') {
+  previewData['security_data_fixture.example'].cookies = 1234567890123;
+  previewData['forms_fixture.example'] = { insecureForms: 10, insecurePasswordForms: 5 };
+  for (const key of Object.keys(previewData)) {
+    previewData[key.replace('fixture.example', previewHostname)] = previewData[key];
+    delete previewData[key];
+  }
+}
 // Consent controls are synthetic too: no real browser permission prompt is opened.
 let previewConsent = !['consent-off', 'consent-denied', 'consent-unsupported'].includes(previewCase);
 const previewPermissionEvents = { added: [], removed: [] };
 window.browser = {
   runtime: { sendMessage: async message => ({ channel: message.channel, version: 1, ok: true, kind: 'record',
-    record: { schemaVersion: 1, tabId: message.tabId, page: { hostname: 'fixture.example', protocol: 'https:' },
+    record: { schemaVersion: 1, tabId: message.tabId, page: { hostname: previewHostname, protocol: 'https:' },
       observations: { headers: previewCase === 'incomplete' ? { kind: 'not-observed', data: null } :
-        { kind: 'observed', data: Object.fromEntries(PrivacyMonitorPopupState.local({headerData: previewData['headers_fixture.example']}).headers.map(({name,kind}) => [name,kind])) } } } }),
+        { kind: 'observed', data: Object.fromEntries(PrivacyMonitorPopupState.local({headerData: previewData[`headers_${previewHostname}`]}).headers.map(({name,kind}) => [name,kind])) } } } }),
     getBackgroundPage: async () => {
     if (previewCase === 'breach-cached') await window.PrivacyMonitorBreachService.lookup('fixture.example', { incognito: false });
     return window;
@@ -46,7 +56,7 @@ window.browser = {
     onRemoved: { addListener: fn => previewPermissionEvents.removed.push(fn) },
   },
   tabs: { sendMessage: async () => { throw new Error('Synthetic restricted-page failure'); }, query: async () => previewCase === 'loading' ? new Promise(() => {})
-    : [{ id: 1, incognito: false, url: previewCase === 'unsupported' ? 'about:config' : 'https://fixture.example/' }] },
+    : [{ id: 1, incognito: false, url: previewCase === 'unsupported' ? 'about:config' : `https://${previewHostname}/` }] },
   storage: { local: { get: async () => {
     if (previewCase === 'unavailable') throw new Error('Synthetic storage failure');
     return previewCase === 'incomplete' ? {} : previewData;
@@ -63,7 +73,9 @@ window.fetch = async (_url, { signal } = {}) => {
   }
   if (previewCase === 'breach-rate-limited') return new Response(null, { status: 429, headers: { 'Retry-After': '120' } });
   if (previewCase === 'breach-malformed') return new Response('{invalid JSON');
-  const records = previewCase === 'breach-results'
+  const records = previewCase === 'long-content'
+    ? Array.from({ length: 4 }, () => ({ Name: 'LongHistoricalRecord'.repeat(8), BreachDate: '2000-01-01', PwnCount: 1234567890, DataClasses: ['LongDataClass'.repeat(10)] }))
+    : previewCase === 'breach-results'
     ? [{ Name: 'Historical fixture', BreachDate: '2000-01-01', PwnCount: 1000, DataClasses: ['Email addresses'] }]
     : [];
   return new Response(JSON.stringify(records), { headers: { 'Content-Type': 'application/json' } });

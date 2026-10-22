@@ -295,7 +295,7 @@ function renderBreaches(result) {
 
   if (breaches.length > 3) {
     list.insertAdjacentHTML('beforeend',
-      `<div style="font-size:11px;color:#b45309;padding:2px 0;">
+      `<div class="breach-more">
         + ${breaches.length - 3} more breach${breaches.length - 3 > 1 ? 'es' : ''}
       </div>`
     );

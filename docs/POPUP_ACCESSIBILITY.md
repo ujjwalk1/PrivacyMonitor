@@ -5,6 +5,10 @@ This changes the existing popup, without redesigning it or changing analysis,
 scoring, permissions, storage, or network behavior. D13 site exclusions remain
 unfinished and are independent of this presentation work.
 
+D15 later adds themed native-button styling and a responsive dark palette;
+see [POPUP_PRESENTATION.md](POPUP_PRESENTATION.md). The D14 evidence below records
+the original D14 session; its native acceptance remains open.
+
 ## Implemented behavior
 
 - English document language, page title, one main heading and six section headings.

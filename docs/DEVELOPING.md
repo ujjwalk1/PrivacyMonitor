@@ -11,8 +11,9 @@ Git history. See the [repository overview](../README.md) for the layout.
 
 Partial D13 adds the on-page settings page and persistent display controls; see
 [SETTINGS.md](SETTINGS.md). Site exclusions and native settings/restart acceptance
-remain pending. The package now includes 13 runtime files, including the settings
-schema and options page/scripts.
+remain pending. D15 adds three local SVGs and popup theme/reflow improvements;
+see [POPUP_PRESENTATION.md](POPUP_PRESENTATION.md). The package now includes
+16 runtime files, including the settings schema, options page/scripts and icons.
 
 ## Recoverable baseline
 
@@ -49,7 +50,7 @@ It is **not** Mozilla add-on validation; `web-ext lint` and compatibility/policy
 validation remain outstanding for the assigned later manifest/release days.
 
 Packaging writes `dist/privacy-monitor-1.1.zip` (replaced on repeat runs). It
-includes only the 13 paths in `tools/extension-files.json`, then verifies each
+includes only the 16 paths in `tools/extension-files.json`, then verifies each
 archive entry against the source SHA-256. Development files, checkpoints, and the
 unrelated image are excluded. Add future extension assets to that list when needed.
 The ZIP is a local unsigned development artifact, not a submission-ready release.

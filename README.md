@@ -13,7 +13,7 @@ version remains `1.1`.
 [Popup states](docs/POPUP_STATES.md) · [Current progress](PROGRESS.md) ·
 [Daily plan](DAILY_PLAN.md)
 
-## Features implemented through D14 (partial D09/D10/D13; acceptance pending)
+## Features implemented through D15 (partial D09/D10/D13; acceptance pending)
 
 | Day | Implemented additions | Verification and limits |
 | --- | --- | --- |
@@ -88,6 +88,12 @@ polite result announcements. Automated checks and mocked browser keyboard checks
 pass; installed-Firefox and screen-reader acceptance remain pending.
 [Behavior and native acceptance checklist](docs/POPUP_ACCESSIBILITY.md).
 
+**D15 — Popup presentation and icons:** light/dark palettes, wrapping for long
+hostnames and results, responsive layout, spaced consent controls, and small local
+SVG extension/toolbar icons. Tests and local theme/reflow previews pass; native
+Firefox theme, toolbar, zoom and popup checks remain pending.
+[Presentation evidence and pending checks](docs/POPUP_PRESENTATION.md).
+
 ### Existing monitoring features
 
 - **Password feedback:** local checks for length, character variety, and common
@@ -139,7 +145,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/package.ps1
 ```
 
 The package command creates `dist/privacy-monitor-1.1.zip`, containing only the
-13 extension files listed in [tools/extension-files.json](tools/extension-files.json),
+16 extension files listed in [tools/extension-files.json](tools/extension-files.json),
 and verifies their contents against the source. It is an unsigned development
 package. Local lint checks syntax and package references; it is not Mozilla's
 add-on validator.
@@ -153,6 +159,8 @@ node tests/popup-preview.mjs
 Open `http://127.0.0.1:4179/` and stop the server with Ctrl+C when finished.
 The [preview guide](docs/POPUP_STATES.md#verification-and-next-browser-check)
 explains its mocked APIs and limitations.
+For D15's light/dark, icon, long-content and zoom-simulation fixtures, open
+`http://127.0.0.1:4179/presentation.html`.
 
 ## Repository layout
 
@@ -163,6 +171,7 @@ PrivacyMonitor/
 ├── DAILY_PLAN.md               # Sequenced work plan; proposed work is not completed work
 ├── PROGRESS.md                 # Current handoff and pending acceptance checks
 ├── manifest.json              # Firefox MV2 entry point
+├── icon*.svg                  # Local default/light/dark extension icons
 ├── analysis-records.js        # D07 record schema, store, and read-only message contract
 ├── analysis-background.js     # D07 store/listener initialization
 ├── background.js              # D08 navigation-scoped response-header capture

@@ -3,6 +3,7 @@
   "name": "Privacy & Security Monitor",
   "version": "1.1",
   "description": "Monitor password strength, security headers, data breaches, and insecure forms",
+  "icons": { "48": "icon.svg", "96": "icon.svg" },
 
   "permissions": [
     "activeTab",
@@ -28,6 +29,11 @@
   ],
 
   "browser_action": {
+    "default_icon": { "16": "icon.svg", "32": "icon.svg" },
+    "theme_icons": [
+      { "light": "icon-light.svg", "dark": "icon-dark.svg", "size": 16 },
+      { "light": "icon-light.svg", "dark": "icon-dark.svg", "size": 32 }
+    ],
     "default_popup": "popup.html",
     "default_title": "Privacy Monitor"
   },

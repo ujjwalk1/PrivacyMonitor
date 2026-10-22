@@ -82,6 +82,33 @@ test('popup text colors meet 4.5:1 on their declared backgrounds; focus meets 3:
   }
 });
 
+test('dark popup text and keyboard focus retain contrast on every authored surface', () => {
+  const darkCss = css.slice(css.indexOf('@media (prefers-color-scheme: dark)'));
+  assert.ok(darkCss.includes('body {'));
+  const declarations = new Map();
+  for (const [, selectors, body] of darkCss.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+    for (const selector of selectors.split(',').map(s => s.trim())) {
+      declarations.set(selector, Object.fromEntries(body.split(';').filter(s => s.includes(':'))
+        .map(s => s.split(':').map(part => part.trim()))));
+    }
+  }
+  const value = (selector, property) => declarations.get(selector)?.[property] || color(selector, property);
+  const check = (selector, surface) => {
+    const ratio = contrast(rgb(value(selector, 'color')), rgb(value(surface, 'background')));
+    assert.ok(ratio >= 4.5, `${selector} on ${surface}: ${ratio}`);
+  };
+  check('body', 'body'); check('#loading-screen', 'body');
+  for (const selector of ['.section-title', '.metric-label', '.muted', '.loading-row', '.no-breaches', '.good', '.warning', '.danger', '.breach-more']) check(selector, '.section');
+  for (const selector of ['.pill-present', '.pill-missing', '.pill-unknown', '.form-warning', '.tag-new', '.refresh-btn', '.consent-actions button']) check(selector, selector);
+  for (const selector of ['.breach-item .breach-name', '.breach-item .breach-meta']) check(selector, '.breach-item');
+  for (const state of [':hover', '[aria-disabled="true"]']) {
+    check('.refresh-btn', `.refresh-btn${state}`);
+    check(`.consent-actions button${state === ':hover' ? '' : state}`, `.consent-actions button${state === ':hover' ? state : ''}`);
+  }
+  const focus = rgb(value('button:focus-visible', 'outline-color'));
+  for (const surface of ['body', '.section']) assert.ok(contrast(focus, rgb(value(surface, 'background'))) >= 3);
+});
+
 test('score has a complete accessible name, textual ratings, and no stale numeric result', () => {
   const view = popup();
   assert.match(html, /id="score-summary"[^>]*aria-label=[^>]*aria-describedby="score-description"/);

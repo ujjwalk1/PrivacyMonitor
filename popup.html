@@ -2,16 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy Monitor</title>
   <style>
     * { box-sizing: border-box; }
+    :root { color-scheme: light dark; }
 
     body {
       width: 320px;
+      max-width: 100%;
       padding: 0;
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 13px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
       background: #f0f2f5;
       color: #333;
     }
@@ -23,7 +28,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
+    .header > :first-child { min-width: 0; flex: 1 1 160px; }
+    .app-icon { width: 20px; height: 20px; vertical-align: middle; }
 
     .header h1 {
       margin: 0;
@@ -36,14 +45,12 @@
       font-size: 11px;
       opacity: 0.65;
       margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 200px;
+      overflow-wrap: anywhere;
     }
 
     /* Score ring */
     .score-ring-wrap {
+      flex: 0 0 64px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -80,6 +87,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
       padding: 9px 12px 7px;
       font-weight: 600;
       font-size: 12px;
@@ -94,10 +102,12 @@
       justify-content: space-between;
       align-items: center;
       padding: 3px 0;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .metric-label { color: #666; }
-    .metric-value { font-weight: 600; }
+    .metric-value { font-weight: 600; margin-left: auto; text-align: right; }
 
     .good    { color: #15803d; }
     .warning { color: #b45309; }
@@ -217,6 +227,20 @@
     }
 
     .refresh-btn:hover { background: #2d2d4e; }
+    .consent-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .consent-actions button {
+      font: inherit;
+      padding: 6px 8px;
+      border: 1px solid #6b7280;
+      border-radius: 4px;
+      background: #f0f2f5;
+      color: #333;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      cursor: pointer;
+    }
+    .consent-actions button:hover { background: #e5e7eb; }
+    .consent-actions button[aria-disabled="true"] { color: #4b5563; border-style: dashed; }
     button[aria-disabled="true"] { cursor: default; }
     .refresh-btn[aria-disabled="true"] { background: #4b5563; }
     button:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
@@ -242,6 +266,9 @@
     }
 
     #main-content { display: none; }
+    #breach-cache-note { margin: 8px 12px 0; }
+    #settings-error { margin: 0 12px 12px; }
+    .breach-more { font-size: 11px; color: #b45309; padding: 2px 0; }
 
     .tag-new {
       font-size: 9px;
@@ -252,6 +279,35 @@
       font-weight: 700;
       text-transform: uppercase;
     }
+    @media (max-width: 260px) {
+      .header { flex-wrap: wrap; }
+      .header > :first-child { width: 100%; }
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #111827; color: #e5e7eb; }
+      .section { background: #1f2937; }
+      .section-title { color: #e5e7eb; border-bottom-color: #374151; }
+      .metric-label, .muted, .loading-row, .no-breaches, #loading-screen { color: #cbd5e1; }
+      .good { color: #86efac; }
+      .warning, .breach-more { color: #fcd34d; }
+      .danger { color: #fca5a5; }
+      .pill-present { background: #14532d; color: #bbf7d0; }
+      .pill-missing { background: #7f1d1d; color: #fecaca; }
+      .pill-unknown { background: #374151; color: #e5e7eb; }
+      .breach-item { background: #431407; }
+      .breach-item .breach-name { color: #fed7aa; }
+      .breach-item .breach-meta { color: #ffedd5; }
+      .form-warning { background: #422006; color: #fde68a; }
+      .tag-new { background: #1e3a8a; color: #dbeafe; }
+      .refresh-btn { background: #334155; }
+      .refresh-btn:hover { background: #475569; }
+      .refresh-btn[aria-disabled="true"] { background: #374151; }
+      .consent-actions button { background: #374151; color: #f3f4f6; border-color: #9ca3af; }
+      .consent-actions button:hover { background: #4b5563; }
+      .consent-actions button[aria-disabled="true"] { color: #cbd5e1; }
+      button:focus-visible { outline-color: #93c5fd; }
+      .spinner { border-color: #4b5563; border-top-color: #cbd5e1; }
+    }
   </style>
 </head>
 <body>
@@ -259,7 +315,7 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <h1><span aria-hidden="true">🔒</span> Privacy Monitor</h1>
+      <h1><img class="app-icon" src="icon-light.svg" alt="" width="20" height="20"> Privacy Monitor</h1>
       <div class="domain" id="current-domain">Loading…</div>
     </div>
     <div class="score-ring-wrap" role="img" id="score-summary" aria-label="Technical observation score: loading." aria-describedby="score-description" title="Technical observation score, not a safety guarantee. Historical breaches do not affect this number.">
@@ -298,8 +354,10 @@
         password, cookie value, or local score is included. This does not check
         whether your personal account was breached. Local checks work without it.
       </p>
-      <button id="breach-enable" type="button" aria-describedby="breach-disclosure breach-consent-status" aria-disabled="true">Enable breach lookup</button>
-      <button id="breach-disable" type="button" aria-describedby="breach-consent-status" aria-disabled="true">Disable breach lookup</button>
+      <div class="consent-actions">
+        <button id="breach-enable" type="button" aria-describedby="breach-disclosure breach-consent-status" aria-disabled="true">Enable breach lookup</button>
+        <button id="breach-disable" type="button" aria-describedby="breach-consent-status" aria-disabled="true">Disable breach lookup</button>
+      </div>
       <p id="breach-consent-status" role="status" aria-live="polite" aria-atomic="true">Checking consent…</p>
     </div>
   </div>
