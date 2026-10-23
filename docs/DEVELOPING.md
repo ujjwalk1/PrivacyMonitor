@@ -19,7 +19,7 @@ Packaging writes `dist/privacy-monitor-1.1.zip`, replacing that generated archiv
 
 ## Load and check in Firefox
 
-No tested minimum Firefox version has been selected. Use a disposable desktop Firefox profile and record the actual version. Follow [Mozilla's temporary-installation guide](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/):
+The declared minimum is Firefox desktop 142.0, a conservative floor for built-in consent compatibility. It has not yet passed native minimum-version acceptance. See the [manifest audit and Mozilla validation command](MANIFEST.md). Use a disposable desktop Firefox profile and record the actual version. Follow [Mozilla's temporary-installation guide](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/):
 
 1. Open `about:debugging` → **This Firefox** → **Load Temporary Add-on** and select the root `manifest.json` or generated ZIP.
 2. Confirm installation, inspect the background console and record startup errors.

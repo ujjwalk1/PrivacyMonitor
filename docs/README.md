@@ -5,6 +5,7 @@ Start with the [product README](../README.md), [architecture](ARCHITECTURE.md), 
 ## Technical references
 
 - [Local development and Firefox loading](DEVELOPING.md)
+- [Manifest, permissions and Firefox compatibility audit](MANIFEST.md)
 - [Scoring](SCORING.md) and [popup states](POPUP_STATES.md)
 - [Breach consent](BREACH_CONSENT.md) and [cache/backoff](BREACH_CACHE.md)
 - [Analysis records](ANALYSIS_RECORDS.md) and [header lifecycle](HEADER_LIFECYCLE.md)

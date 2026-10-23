@@ -1,6 +1,6 @@
 # Privacy and permissions
 
-This describes the source reviewed at the D15 implementation (`ce3647a`). It is not an audit or a claim of completed release acceptance.
+This describes the current implementation, including the manifest permission and compatibility review. It is not an independent security audit or a claim of completed release acceptance.
 
 ## Local processing
 
@@ -30,13 +30,10 @@ Without the consent API, lookup stays off. Native Firefox consent/revocation and
 
 | Permission or declaration | Actual role / limitation |
 | --- | --- |
-| HTTP/HTTPS host access and broad content-script matches | Enables page observations and request-header monitoring on permitted pages; Firefox can restrict particular pages. |
+| HTTP/HTTPS host access and matching content scripts | Enables automatic page observations, tab URL access and main-frame response-header monitoring on permitted HTTP/HTTPS pages, even with the popup closed; Firefox can restrict particular pages. |
 | `webRequest` | Observes main-frame response-header presence. Does not block requests. |
 | `webNavigation` | Resets and correlates results with navigation. |
 | `storage` | Display settings and legacy content summaries. |
-| `activeTab` | Retained declaration; the current popup queries the active tab. Its necessity alongside broad host access is not yet audited. |
-| `cookies` | Retained but the current code does not call the cookies API; counts use `document.cookie`. |
-| `scripting` | Retained from earlier code; refresh now sends a message instead of injecting a second scanner. |
 | Optional `browsingActivity` data collection | Firefox-owned consent used for the external hostname lookup; required collection is declared `none`. |
 
-D16's permission/minimum-version/identifier audit is future work. Settings are display controls, not site exclusions or host-access controls. The manifest and permissions were not changed for the presentation.
+The manifest omits unused `cookies`, `scripting` and redundant `activeTab` permissions, restricts content-script matches to HTTP/HTTPS, and declares Firefox desktop 142+ for built-in consent. The existing add-on ID is retained. The website-access prompt remains broad because monitoring is continuous. Settings are display controls, not site exclusions or host-access controls. See the [manifest audit](MANIFEST.md) for evidence and pending native checks.

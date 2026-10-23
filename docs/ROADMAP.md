@@ -12,7 +12,7 @@ This page describes future work, not shipped features or promised dates. The [de
 
 ## Later planned beta work
 
-D16–D20 cover manifest/permission compatibility, release documentation, a Firefox acceptance matrix, prioritized regression repairs and submission preparation. This presentation update improves documentation at the user's request; it does not mark D17 complete or start a release submission.
+Manifest and permission changes are implemented; native compatibility validation remains pending (see the [audit](MANIFEST.md)). Release preparation includes documentation, a Firefox acceptance matrix, prioritized regression repairs and submission materials. Signing and publication remain separate release steps.
 
 ## Longer-term possibilities
 

@@ -53,3 +53,17 @@ In the separate checkout, run `node tests/popup-preview.mjs`. In a disposable Fi
 ## Native rehearsal results
 
 Not performed by this documentation session. Add date, environment, exact steps, actual observations and pass/fail here after rehearsal. Expected demo values are not substitutes for observed results.
+
+## D16 manifest verification — 2026-10-23
+
+This entry supersedes only the manifest-validation pending item above. The earlier presentation record remains historical. D16 acceptance is still open; no native Firefox check was performed.
+
+- Starting commit: `b6c5e1ed82887e1f5ecb934305cf87c3cb156285`, clean separate checkout. Original workspace untouched. Runtime JavaScript, license and the 16-file package allowlist are unchanged.
+- Environment: Node **24.22.1**, PowerShell on Windows; installed Firefox executable reports **158.0.1** (inventory only). No test of minimum Firefox 142 was performed.
+- Existing regression suite: **162 passed, 0 failed, 0 skipped**. Local syntax/manifest-reference checks pass. Rebuilt final minimum-142 package: **16 entries, all SHA-256 values match source**.
+- Mozilla **web-ext 10.8.0 / addons-linter 10.14.0** scanned the unpacked package, with configuration discovery disabled. Ordinary lint exits **0**, with **0 errors, 0 notices, 7 warnings**. Minimum 142.0 and stable ID are recognized. The trial minimum 140 caused an additional Android-consent compatibility warning; choosing conservative minimum 142 removed it.
+- Strict `--warnings-as-errors` exits **1** for the seven inherited `UNSAFE_VAR_ASSIGNMENT` warnings. The starting-commit package has precisely the same warning codes/files/lines/columns. None were suppressed. Locations: content-script.js:101; popup.js:227,286,297,311,318,325. Review/remediation is pending, not evidence of a confirmed exploit.
+- Documentation links: **163 local links across 28 Markdown files**; local anchors checked. `git diff --check` passes.
+- No native installation, permissions, file/restricted-page, minimum-version, consent, private-session or restart checks were performed. No real breach request was made, no dependencies were added to the repository, and no commit was pushed.
+
+Next exact action: run `node tests/popup-preview.mjs` in the separate checkout, temporarily load its manifest into a disposable Firefox profile, reload `http://127.0.0.1:4179/dynamic-forms.html`, and record actual tab/domain access, form-count transitions and Refresh Analysis. Complete the [D16 browser checklist and warning follow-up](../MANIFEST.md#pending-browser-acceptance) before claiming acceptance; do not begin D17.

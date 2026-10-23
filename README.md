@@ -131,6 +131,8 @@ A 0–100 composite score based solely on local observations. See [Security Scor
 
 ### Manual / Developer Install (Firefox Desktop)
 
+Requires Firefox desktop **142 or later**. This compatibility floor covers built-in optional breach consent; native Firefox validation is still pending. See the [manifest audit](docs/MANIFEST.md).
+
 1. Clone or download the repository:
    ```bash
    git clone https://github.com/ujjwalk1/PrivacyMonitor.git
@@ -269,25 +271,24 @@ Cookie counts, third-party script counts, and breach history do **not** affect t
 
 | Permission | Current role |
 |---|---|
-| `activeTab` | Retained declaration; the popup queries the active tab. Necessity alongside broad host access awaits the permission audit |
 | `storage` | Store display preferences and content scan summaries |
 | `webRequest` | Observe HTTP response headers on page load |
 | `webNavigation` | Track committed navigations to correlate header evidence to the correct tab/page |
-| `scripting` | Retained but unused; popup refresh now sends a message to the existing content script (audit pending) |
-| `cookies` | Retained from earlier implementation; not used by the current scanner (audit pending) |
-| `http://*/*` `https://*/*` | Required host access for `webRequest` to observe navigations across all sites |
+| `http://*/*` `https://*/*` | Continuous HTTP/HTTPS page scanning, tab URL access and main-frame response-header observation; Firefox restricted pages remain inaccessible |
 | `browsingActivity` *(optional data-collection permission)* | Enables the HIBP breach lookup; requested at runtime via Firefox consent prompt |
+
+Monitoring starts on permitted HTTP/HTTPS page loads, before the popup opens. The broad website-access prompt is expected; display settings do not revoke host access. The extension does not request `cookies`, `scripting` or `activeTab` permissions. Cookie counts still use `document.cookie`, and refresh messages the existing content script. See the [permission and compatibility audit](docs/MANIFEST.md).
 
 ---
 
 ## Development
 
 ### Requirements
-- **Firefox** desktop (no tested minimum version established yet)
+- **Firefox** desktop 142+ (declared API minimum; native acceptance pending)
 - **Node.js 24** for tests and tooling
 - **PowerShell 5.1+** (Windows) or **PowerShell 7** for packaging
 
-No dependencies to install. No bundler or transpilation step.
+No runtime dependencies to install. No bundler or transpilation step. Optional Mozilla validation uses pinned development tooling; see the [manifest audit](docs/MANIFEST.md#repeat-mozilla-validation).
 
 ### Running checks
 ```bash
@@ -335,11 +336,11 @@ This section separates **committed near-term work** (taken from the repository's
 
 ### Near-term: finish the current milestone
 
-- **D09 — Content record migration**: Bind content-script observations (connection, forms, privacy counts) to the background per-tab record store, removing same-hostname tab sharing in legacy storage
-- **D10 — Legacy storage cleanup**: Remove obsolete hostname-keyed scan rows after migration; preserve preferences; verify retry and private-session behaviour
-- **D13 — Site exclusions**: One exclusion policy across scanning, headers, password UI, breach lookup and popup readers, with cancellation and stale-result rejection
-- **D01–D15 — Native Firefox acceptance**: Outstanding screen-reader, theme, zoom, restart, consent-flow and integration checks
-- **D16–D20 — Release preparation**: Manifest and permission compatibility review (including the unused `cookies` and `scripting` permissions), release documentation, a Firefox acceptance matrix, regression repairs and Mozilla Add-ons submission preparation
+- **Content record migration**: Bind content-script observations (connection, forms, privacy counts) to the background per-tab record store, removing same-hostname tab sharing in legacy storage
+- **Legacy storage cleanup**: Remove obsolete hostname-keyed scan rows after migration; preserve preferences; verify retry and private-session behaviour
+- **Site exclusions**: One exclusion policy across scanning, headers, password UI, breach lookup and popup readers, with cancellation and stale-result rejection
+- **Native Firefox acceptance**: Outstanding screen-reader, theme, zoom, restart, consent-flow and integration checks
+- **Release preparation**: Permission and compatibility changes are implemented, with native validation pending; remaining work includes release documentation, a Firefox acceptance matrix, regression repairs and Mozilla Add-ons submission preparation
 
 ---
 
@@ -414,10 +415,10 @@ This section separates **committed near-term work** (taken from the repository's
 - Cookie counts use `document.cookie` and exclude HttpOnly cookies
 - Third-party script detection is hostname comparison only — no tracker classification is implemented
 - Form inspection covers only accessible top-level document markup; JavaScript-controlled submissions, shadow DOM trees, and cross-origin frames are outside coverage
-- Same-hostname tab sharing remains in content summaries until D09 migration is complete; legacy storage rows from earlier versions may contain full URLs or earlier private observations. Targeted cleanup remains pending
+- Same-hostname tab sharing remains in content summaries until content-record migration is complete; legacy storage rows from earlier versions may contain full URLs or earlier private observations. Targeted cleanup remains pending
 - Breach errors and empty responses do not confirm a domain has never been breached; the extension checks the domain, not individual email addresses or passwords
 - Private browsing tabs produce incomplete popup results; breach lookup is unavailable in private contexts
-- `cookies` and `scripting` permissions are declared but not used by the current scanner (permission audit pending)
+- Firefox desktop 142+ is the declared minimum; minimum-version installation and native consent acceptance remain pending
 
 ---
 

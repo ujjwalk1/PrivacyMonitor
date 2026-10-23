@@ -4,6 +4,13 @@ This records source changes, not signed releases. The manifest remains version 1
 
 ## Unreleased — development beta
 
+### Firefox compatibility and permissions
+
+- Set the minimum Firefox desktop version to 142.0 and retained the existing add-on identity.
+- Removed unused `cookies` and `scripting` permissions and redundant `activeTab` access.
+- Restricted content-script injection to supported HTTP/HTTPS pages.
+- Documented continuous website monitoring and the remaining validation work. Mozilla validation reports no errors and seven inherited rendering warnings; native Firefox checks remain pending.
+
 ### Repository presentation
 
 - Added a product-focused README, architecture/privacy references, contributor guidance and a separate roadmap.
