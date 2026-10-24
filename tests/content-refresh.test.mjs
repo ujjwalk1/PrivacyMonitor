@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import vm from 'node:vm';
+import { webcrypto } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { popup, deferred } from './helpers/popup.mjs';
 
@@ -10,7 +11,7 @@ const sender = { id: 'fixture-extension', url: 'moz-extension://fixture/popup.ht
 const tick = () => new Promise(resolve => setImmediate(resolve));
 const plain = value => JSON.parse(JSON.stringify(value));
 
-function content({ ready = true, privacy = false, url = 'https://fixture.example/' } = {}) {
+function content({ ready = true, privacy = false, url = 'https://fixture.example/', crypto = webcrypto } = {}) {
   const events = {}, writes = [], logs = [], stored = {}, timers = new Map();
   let timerId = 0;
   const form = {
@@ -35,7 +36,7 @@ function content({ ready = true, privacy = false, url = 'https://fixture.example
     createElement() { return { style: {}, setAttribute() {} }; },
   };
   form.ownerDocument = document;
-  const context = vm.createContext({ document, URL,
+  const context = vm.createContext({ document, URL, crypto,
     setTimeout(fn) { timers.set(++timerId, fn); return timerId; },
     clearTimeout(id) { timers.delete(id); },
     window: { location: new URL(url) },
@@ -92,6 +93,7 @@ test('an unsupported destination persists unavailable and clears the popup score
   page.form.action = 'mailto:fixture@example.invalid';
   const view = popup();
   view.controls.storage = async () => ({ ...view.stored, ...page.stored });
+  view.controls.identity = (tabId, request) => page.events.message(request, sender);
   view.controls.scan = async () => page.refresh();
   await view.context.refreshData();
   assert.equal(page.stored['forms_fixture.example'], false);
@@ -143,6 +145,7 @@ test('popup-to-content refresh waits for persistence and renders the same scan w
   const view = popup(); const write = deferred(), started = deferred();
   page.controls.write = async data => { started.resolve(); await write.promise; Object.assign(page.stored, plain(data)); };
   view.controls.storage = async () => ({ ...view.stored, ...page.stored });
+  view.controls.identity = (tabId, request) => page.events.message(request, sender);
   view.controls.scan = async (tabId, request, options) => {
     assert.equal(tabId, 1); assert.deepEqual(plain(options), { frameId: 0 });
     return page.events.message(request, sender);
@@ -205,4 +208,59 @@ test('private and unknown content contexts keep warnings local without any persi
     assert.equal(view.writes.length, 0); assert.deepEqual(view.stored, { preference: { enabled: true } });
     assert.deepEqual(view.logs, []);
   }
+});
+
+test('document identity is stable across scans, distinct across documents, and read-only on HTTP', async () => {
+  const first = content({ url: 'http://fixture.example/' }), second = content({ url: 'http://fixture.example/' });
+  await tick();
+  const request = { ...message, type: 'identity' };
+  const a = await first.events.message(request, sender), b = await second.events.message(request, sender);
+  assert.match(a.sourceToken, /^[a-f0-9]{32}$/);
+  assert.notEqual(a.sourceToken, b.sourceToken);
+  assert.equal(first.writes.length, 1, 'Identity does not rescan or persist');
+  for (const key of ['security_data_fixture.example', 'forms_fixture.example']) {
+    assert.equal(first.stored[key].sourceToken, a.sourceToken);
+  }
+  await first.refresh();
+  assert.equal((await first.events.message(request, sender)).sourceToken, a.sourceToken);
+  assert.equal(first.stored['forms_fixture.example'].sourceToken, a.sourceToken);
+});
+
+test('identity rejects unauthorized, malformed, unready, private and unavailable-crypto contexts', async () => {
+  const request = { ...message, type: 'identity' }, view = content({ ready: false });
+  assert.equal((await view.events.message(request, sender)).error, 'not-ready');
+  for (const untrusted of [undefined, { ...sender, id: 'other' }, { ...sender, url: 'https://fixture.example/' },
+    { ...sender, url: sender.url + '#suffix' }, { ...sender, tab: { id: 1 } }]) {
+    assert.equal((await view.events.message(request, untrusted)).error, 'forbidden');
+  }
+  for (const invalid of [{ ...request, version: 2 }, { ...request, sourceToken: 'caller-token' }]) {
+    assert.equal((await view.events.message(invalid, sender)).error, 'invalid-request');
+  }
+  for (const options of [{ privacy: true }, { privacy: null }, { crypto: null },
+    { crypto: { getRandomValues() { throw new Error('Unavailable'); } } }]) {
+    const page = content(options); await tick();
+    const reply = await page.events.message(request, sender);
+    assert.equal(reply.ok, false); assert.equal(reply.error, 'identity-unavailable');
+    assert.equal(reply.sourceToken, undefined);
+    assert.equal(page.form.banners.length, 1, 'Local warnings remain usable');
+  }
+});
+
+test('real content producers sharing storage cannot mix another document into the popup score', async () => {
+  const a = content(), b = content();
+  a.form.action = 'https://fixture.example/submit';
+  await tick();
+  const view = popup(), shared = { ...view.stored, ...a.stored };
+  a.controls.write = async data => Object.assign(shared, plain(data));
+  b.controls.write = async data => Object.assign(shared, plain(data));
+  view.controls.storage = async () => ({ ...shared });
+  view.controls.identity = (tabId, request, options) => {
+    assert.equal(tabId, 1); assert.deepEqual(plain(options), { frameId: 0 });
+    return a.events.message(request, sender);
+  };
+  view.controls.scan = (tabId, request) => a.events.message(request, sender);
+  await view.context.loadAllData(); assert.equal(view.nodes['score-text'].textContent, '100');
+  await b.refresh();
+  await view.context.loadAllData(); assert.equal(view.nodes['score-text'].textContent, '—');
+  await view.context.refreshData(); assert.equal(view.nodes['score-text'].textContent, '100');
 });

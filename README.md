@@ -3,7 +3,7 @@
 A dependency-free Firefox browser extension that brings connection security, HTTP response header observations, insecure form warnings, optional data breach lookup, and local password feedback into a single popup.
 
 **Development beta · Firefox Manifest V2 · GPL-3.0**
-The current manifest version is 1.1. This is an unsigned development build for temporary installation. A signed Mozilla Add-ons release is planned after validation; this repository does not establish a submitted or approved release. Native Firefox acceptance remains pending; see [verification](docs/development/VERIFICATION.md).
+The extension version is 1.1 (Manifest V2). This is an unsigned development build for temporary installation. A signed Mozilla Add-ons release is planned after validation; this repository does not establish a submitted or approved release. Native Firefox acceptance remains pending; see [verification](docs/development/VERIFICATION.md).
 
 ---
 
@@ -15,6 +15,7 @@ The current manifest version is 1.1. This is an unsigned development build for t
 - [Project Structure](#project-structure)
 - [How It Works](#how-it-works)
 - [Security Score](#security-score)
+- [Privacy and Data Handling](#privacy-and-data-handling)
 - [Permissions](#permissions)
 - [Development](#development)
 - [Roadmap](#roadmap)
@@ -28,7 +29,7 @@ The current manifest version is 1.1. This is an unsigned development build for t
 ## What It Does
 
 ### 🌐 Connection Security
-Detects whether the current page is served over HTTP or HTTPS and displays the result prominently in the popup with a clear secure / not secure status.
+Detects whether the current page is served over HTTP or HTTPS and displays the result prominently in the popup with an HTTP/HTTPS status. HTTPS describes the connection scheme; it does not establish that a site is trustworthy.
 
 ---
 
@@ -69,10 +70,10 @@ Provides local feedback while typing into password fields in accessible top-leve
 - Scores on length (8+ and 12+ character thresholds), lowercase, uppercase, digits, and special characters
 - Detects common weak patterns: `123`, `abc`, `password`, `qwerty`
 - Color-coded label: Very Weak / Weak / Medium / Strong, with specific improvement suggestions
-- Password values are read transiently — never stored or transmitted
+- Privacy Monitor reads password values transiently and does not store, log or transmit them; this does not prevent the website from reading its own inputs
 - Input updates are coalesced with a 300 ms timer; one shared indicator is reused across supported inputs
 
-Password feedback and form warning banners can be toggled in **Settings**.
+The strength label is a simple local heuristic, not a measured cracking time or a check against breached passwords. Password feedback and form warning banners can be toggled in **Settings**.
 
 ---
 
@@ -92,13 +93,13 @@ Checks the current page's hostname against the [Have I Been Pwned](https://havei
 
 When enabled:
 - The page hostname (never the full URL, credentials, or referrer) is sent to HIBP; the service also receives the connection IP address
-- Successful results are cached in background memory for 10 minutes
+- Successful results are reusable for 10 minutes; expired entries are pruned on a later permitted lookup, not by a deletion timer
 - A maximum of 4 concurrent lookups and 32 cached hosts are maintained
 - Rate-limit responses use `Retry-After` when valid, with exponential fallback backoff; retries are user-triggered
-- Disabling the feature clears all cached results and cancels pending work
+- Successful consent revocation clears cached results and cancels pending work; a request already received by the service cannot be retracted
 - Private browsing and unknown privacy contexts cannot use this feature
 
-A breach result is shown separately from the security score and does not affect the numeric score.
+A breach result is shown separately from the security score and does not affect the numeric score. The exact page hostname is queried without parent-domain normalization; a subdomain can return different results from its parent. When consent is enabled, localhost, IP addresses and internal hostnames are not excluded. Keep lookup off on pages whose hostname you do not want to share. See [Privacy and Data Handling](#privacy-and-data-handling).
 
 ---
 
@@ -108,7 +109,7 @@ A dedicated options page (accessible from the popup) lets you:
 - Toggle password strength feedback on/off
 - Toggle in-page form warning banners on/off
 
-Settings are stored under a versioned key (`privacy_monitor_display_settings_v1`) and propagate to the content script via a storage change event.
+Settings are stored under a versioned key (`privacy_monitor_display_settings_v1`) and propagate to the content script via a storage change event. These controls hide feedback and banners; they do not stop scanning, erase saved observations, disable breach lookup or exclude a website.
 
 ---
 
@@ -154,7 +155,7 @@ Not yet published. Watch this repository for updates.
 
 ## Using the Extension
 
-**Viewing analysis:** Click the toolbar icon on any HTTP/HTTPS page. If the popup shows incomplete data, reload the page first.
+**Viewing analysis:** Click the toolbar icon on a permitted HTTP/HTTPS page. If the score is incomplete, check which section is unavailable and reload the page. A hard refresh can help when cached responses omit header evidence, but cannot resolve restricted pages or every missing observation.
 
 **Refreshing:** Click **Refresh Analysis** to re-run the content script scan on the current page. This does not reload the page and does not recapture response headers — reload the page for fresh header evidence.
 
@@ -233,7 +234,7 @@ User opens popup
         └─► popup.js
               Queries active tab context
               Requests per-tab header record via analysis-background.js message listener
-              Reads hostname-keyed content summary from local storage
+              Reads saved content summaries only when their document marker matches the current page
               Passes data through popup-state.js (display-state mapping)
               Calculates score via scoring.js (returns null if observations incomplete)
               Renders all sections with explicit incomplete/unavailable/error states
@@ -264,6 +265,19 @@ Cookie counts, third-party script counts, and breach history do **not** affect t
 | 40–59 | Fair |
 | 0–39 | Poor |
 | — | Incomplete (observations missing) |
+
+---
+
+## Privacy and Data Handling
+
+Local checks run without breach consent. Privacy Monitor contains no analytics, telemetry or developer-operated collection endpoint; its only application-defined service request is the optional Have I Been Pwned hostname lookup.
+
+- **Saved on this device:** display preferences and normal-context content summaries indexed by hostname, including counts, protocol flags, timestamps and a random document marker. Summaries have no automatic expiry or global row cap. Same-host tabs, schemes and containers can overwrite each other's rows, but the popup rejects summaries whose marker does not match the current document. Older saved rows are not automatically cleaned up.
+- **Kept in background memory:** bounded tab/header records and optional breach results. Closing the popup does not clear these caches. Breach results become stale after ten minutes but may remain in memory until a later permitted lookup, eviction, consent clearing or background restart.
+- **Sent only after breach consent:** the exact page hostname to Have I Been Pwned, with normal connection metadata such as your IP address and the extension’s configured User-Agent. No password, cookie value, page path/query, form contents or score is included. Closing the popup does not cancel an already-started request.
+- **Your controls:** disable breach lookup separately from display settings. Restoring display defaults does not erase observations; there is currently no clear-history control or site-exclusion setting. Private or unknown contexts skip new persistent scan writes and breach lookups, but earlier stored data is not retroactively removed.
+
+Read the [privacy statement](docs/PRIVACY.md) for retention, consent-failure handling, shared-cache boundaries and the external service’s policy.
 
 ---
 
@@ -410,14 +424,17 @@ This section separates **committed near-term work** (taken from the repository's
 
 ## Known Limitations
 
-- Does not function on internal browser pages (`about:`, `moz-extension:`, `chrome:`)
-- Headers are captured only on full page loads — reload the tab after installing the extension to get header data; a popup-triggered refresh does not recapture headers
+- An observation tool, not comprehensive protection: no request blocking, malware/phishing detection, certificate inspection or guarantee that a form submission is safe
+- Does not analyze local-file or internal browser pages (`file:`, `about:`, `moz-extension:`, `chrome:`); Firefox can also restrict otherwise ordinary web pages
+- Headers are captured only on full page loads; missing captures and 304 responses can leave evidence unavailable. Reload after installation; a popup-triggered refresh does not recapture headers. Presence does not prove a policy value is effective
 - Cookie counts use `document.cookie` and exclude HttpOnly cookies
 - Third-party script detection is hostname comparison only — no tracker classification is implemented
 - Form inspection covers only accessible top-level document markup; JavaScript-controlled submissions, shadow DOM trees, and cross-origin frames are outside coverage
-- Same-hostname tab sharing remains in content summaries until content-record migration is complete; legacy storage rows from earlier versions may contain full URLs or earlier private observations. Targeted cleanup remains pending
+- Same-hostname tabs can still overwrite content summaries until content-record migration is complete. The popup rejects another document's or untagged summaries and shows Incomplete; use Refresh Analysis to collect the current page again. Reload pages after updating the extension if their content script is unavailable or outdated. Legacy rows may contain full URLs or earlier private observations; targeted cleanup remains pending
 - Breach errors and empty responses do not confirm a domain has never been breached; the extension checks the domain, not individual email addresses or passwords
-- Private browsing tabs produce incomplete popup results; breach lookup is unavailable in private contexts
+- Private browsing and unknown-context tabs produce incomplete popup results; breach lookup is unavailable in these contexts
+- Local counts do not change score weights, but missing or invalid counts can still keep the popup incomplete; a high score is not a safety guarantee
+- Display settings do not stop analysis or exclude sites; there is no built-in control to erase accumulated observations
 - Firefox desktop 142+ is the declared minimum; minimum-version installation and native consent acceptance remain pending
 
 ---
@@ -446,7 +463,9 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history. Summary:
 
 ## License
 
-GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.
+GNU General Public License v3.0 — see [LICENSE](LICENSE) for the extension source license. Existing license text and notices are preserved.
+
+Breach information is provided by [Have I Been Pwned](https://haveibeenpwned.com), whose breach API data is offered under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/); see its [API license terms](https://haveibeenpwned.com/API/v3#License). Privacy Monitor displays selected fields from up to three records, ordered by breach date, and omits other returned fields. This data attribution is separate from the source-code license.
 
 ---
 
@@ -457,4 +476,4 @@ GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.
 
 ---
 
-**🔒 Stay secure, stay private.**
+Privacy Monitor helps you inspect observable signals. It does not certify a website’s safety.

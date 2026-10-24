@@ -4,6 +4,13 @@ This records source changes, not signed releases. The manifest remains version 1
 
 ## Unreleased — development beta
 
+### Analysis reliability and privacy disclosure
+
+- Reject saved page summaries belonging to another document, preventing mixed scores across tabs on the same hostname. Refresh Analysis can restore the current page's findings; full per-tab content storage remains pending.
+- Add controlled local acceptance fixtures and regression coverage for document identity, navigation during loading, refresh recovery and private contexts.
+- Clarify local retention, optional hostname transmission, display controls and limitations; include visible breach-data attribution.
+- Automated checks pass; native Firefox acceptance remains open. These changes are not a signed release.
+
 ### Firefox compatibility and permissions
 
 - Set the minimum Firefox desktop version to 142.0 and retained the existing add-on identity.

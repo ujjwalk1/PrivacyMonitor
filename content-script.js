@@ -1,6 +1,16 @@
 // Privacy Monitor — content script
 // Handles: password strength UI, page security analysis, insecure form detection
 
+// Random document provenance only; never derived from a URL or field value.
+// getRandomValues is also available to content scripts on HTTP pages.
+const contentSourceToken = (() => {
+  try {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  } catch { return null; }
+})();
+
 let isInitialized = false;
 let activePasswordInput = null;
 let passwordFeedbackTimer = null;
@@ -331,8 +341,8 @@ function analyzePage() {
     // Keep page warnings local in private/unknown contexts; never use persistent scan storage.
     if (contentApi.extension?.inIncognitoContext !== false) return;
     await contentApi.storage.local.set({
-      [`security_data_${window.location.hostname}`]: basicData,
-      [`forms_${window.location.hostname}`]: formData,
+      [`security_data_${window.location.hostname}`]: { ...basicData, sourceToken: contentSourceToken },
+      [`forms_${window.location.hostname}`]: formData === false ? false : { ...formData, sourceToken: contentSourceToken },
     });
   });
   // Serialize writes so an earlier scan cannot finish after a later scan in this document.
@@ -351,9 +361,14 @@ contentApi.runtime.onMessage.addListener((message, sender) => {
   if (sender?.id !== contentApi.runtime.id || sender?.url !== contentApi.runtime.getURL('popup.html') || sender?.tab) {
     return reply({ ok: false, error: 'forbidden' });
   }
-  if (message.version !== 1 || message.type !== 'refresh' ||
+  if (message.version !== 1 || !['refresh', 'identity'].includes(message.type) ||
       Object.keys(message).length !== 3) return reply({ ok: false, error: 'invalid-request' });
   if (!isInitialized) return reply({ ok: false, error: 'not-ready' });
+  if (message.type === 'identity') {
+    return reply(contentApi.extension?.inIncognitoContext === false && contentSourceToken
+      ? { ok: true, sourceToken: contentSourceToken }
+      : { ok: false, error: 'identity-unavailable' });
+  }
   return analyzePage().then(() => reply({ ok: true }), () => reply({ ok: false, error: 'scan-unavailable' }));
 });
 

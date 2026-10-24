@@ -24,7 +24,7 @@ flowchart TD
   Events[Firefox navigation and request events] --> Headers[Background header correlation]
   Headers --> Records[Transient per-tab records]
   Records -->|validated runtime get message| Popup[Popup]
-  Legacy -->|normal tab only| Popup
+  Legacy -->|normal tab and matching document marker| Popup
   Popup -->|top-frame refresh message and acknowledgement| Content
   Popup --> State[State mapper and pure scorer]
   Popup -->|getBackgroundPage; consent and context checks| Breach[Breach service]
@@ -37,9 +37,11 @@ This diagram deliberately shows two observation paths. Only headers use the new 
 
 ## Page scanning and refresh
 
-Startup, dynamic rescans and popup refresh call `analyzePage()`. It awaits settings, performs synchronous DOM observations while its own mutation observer is disconnected, reconnects observation, then awaits a combined storage write in a known normal context. A serialized queue preserves within-document write order. This does not isolate separate normal tabs on the same hostname.
+Startup, dynamic rescans and popup refresh call `analyzePage()`. It awaits settings, performs synchronous DOM observations while its own mutation observer is disconnected, reconnects observation, then awaits a combined storage write in a known normal context. A serialized queue preserves within-document write order. Each content-script instance generates a random 128-bit `sourceToken`, stable across rescans, and tags both saved summaries. This does not isolate storage writes from separate normal tabs on the same hostname.
 
 The popup sends `{channel: 'privacy-monitor.scan', version: 1, type: 'refresh'}` through `tabs.sendMessage` to frame 0. The content listener accepts only the extension's popup sender and exact message shape, then acknowledges completed analysis. Failure clears the displayed score. Refresh does not navigate the page or refetch response headers.
+
+Before reading saved summaries and again after retrieving headers, the popup sends the same authenticated message contract with `type: 'identity'` to frame 0. This read-only request returns the current document's token. Only summaries matching both replies are accepted; untagged, foreign or unverifiable evidence is unavailable. A changed identity also invalidates that load's header result. Another tab's write can therefore cause Incomplete, but cannot supply its content findings to the score. Refresh can recover the current document's observations. The token is an internal correlation marker, not a tracking identifier or a replacement for the unfinished background record migration.
 
 Dynamic monitoring observes child changes and relevant form/base attributes. A 500 ms timer, an in-flight flag and a dirty flag coalesce scans; mutation batches above 64 entries schedule one scan without walking every entry. A scan still traverses the document: this is bounded scheduling, not constant-cost scanning. Password events are delegated, with one active-field reference and one feedback timer.
 
@@ -56,9 +58,9 @@ The popup requests `privacy-monitor.analysis` version 1, type `get`, with the ac
 | Data | Location / retention | Current boundary |
 | --- | --- | --- |
 | Display preferences | `storage.local`, `privacy_monitor_display_settings_v1` | Schema version 1; password feedback and form banners default on. Invalid/unreadable settings suppress hints. |
-| Content summaries | `security_data_<hostname>` / `forms_<hostname>` in local storage | New summaries contain counts/flags/timestamps, not full URLs. No implemented TTL or global row cap; same-host tab sharing remains. |
+| Content summaries | `security_data_<hostname>` / `forms_<hostname>` in local storage | New summaries contain counts/flags/timestamps and a random document token, not full URLs. No TTL or global row cap; same-host rows can overwrite each other, but the popup rejects a different document's token. |
 | Header records | Background memory | Maximum 256 tabs; navigation/tab lifecycle resets evidence; background restart clears it. |
-| Breach success results | Background memory | Ten-minute TTL from settlement; 32 hosts, 32,768 JSON characters per cached result; larger successful results are returned but not cached. |
+| Breach success results | Background memory | Ten-minute reuse window from settlement; expired entries are pruned on a later permitted lookup, not a timer. 32 hosts, 32,768 JSON characters per cached result; larger successes display but are not cached. |
 | Pending breach operations | Background memory | Maximum four; same-host operations share work. Eight-second total request/body deadline. |
 | Legacy rows from earlier versions | Local storage | May include full URLs, raw header values or earlier private observations. Targeted cleanup remains pending. |
 

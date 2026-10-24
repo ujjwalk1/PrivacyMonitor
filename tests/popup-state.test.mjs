@@ -72,7 +72,7 @@ test('unsupported tabs skip storage, scan messages, and breach requests on load 
   assert.equal(state(view), 'unsupported');
   assert.equal(view.nodes['score-label'].textContent, 'Unsupported');
   assert.equal((view.nodes['refresh'].attributes['aria-disabled'] === 'true'), true);
-  assert.deepEqual(view.calls, { storage: 0, scan: 0, fetch: 0 });
+  assert.deepEqual(view.calls, { storage: 0, scan: 0, fetch: 0, identity: 0 });
 });
 
 test('tab/storage failures are visible and hide old successful results', async () => {
@@ -114,7 +114,7 @@ test('empty storage shows incomplete sections and no false form/header/count suc
 
 test('partial records retain available headers but never invent missing form/count evidence', async () => {
   const view = popup(); settle(view);
-  view.stored['forms_fixture.example'] = {};
+  view.stored['forms_fixture.example'] = { sourceToken: view.stored['security_data_fixture.example'].sourceToken };
   delete view.stored['security_data_fixture.example'].thirdPartyScripts;
   await view.context.loadAllData();
   assert.equal(state(view), 'incomplete');

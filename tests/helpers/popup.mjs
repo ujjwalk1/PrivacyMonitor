@@ -22,10 +22,11 @@ export function popup(headerData = {
     insertAdjacentHTML(position, value) { this.innerHTML += value; },
   }]));
   const errors = [];
+  const sourceToken = 'a'.repeat(32);
   const stored = {
-    'security_data_fixture.example': { httpsOnly: true, protocol: 'https:', cookies: 0, scripts: 0, thirdPartyScripts: 0 },
+    'security_data_fixture.example': { sourceToken, httpsOnly: true, protocol: 'https:', cookies: 0, scripts: 0, thirdPartyScripts: 0 },
     'headers_fixture.example': headerData,
-    'forms_fixture.example': { insecureForms: 0, insecurePasswordForms: 0 },
+    'forms_fixture.example': { sourceToken, insecureForms: 0, insecurePasswordForms: 0 },
   };
   let lastStored = stored;
   const response = deferred();
@@ -41,10 +42,11 @@ export function popup(headerData = {
     removePermission: async () => { permissions.data_collection = []; emitPermission('removed'); return true; },
     query: async () => [{ id: 1, url: 'https://fixture.example/', incognito: false }],
     storage: async () => stored,
+    identity: async () => ({ channel: 'privacy-monitor.scan', version: 1, ok: true, sourceToken }),
     fetch: () => response.promise,
     scan: async () => ({ channel: 'privacy-monitor.scan', version: 1, ok: true }),
   };
-  const calls = { storage: 0, fetch: 0, scan: 0 };
+  const calls = { storage: 0, fetch: 0, scan: 0, identity: 0 };
   const timers = [];
   let clock = 0;
   function advanceTime(ms) {
@@ -70,7 +72,9 @@ export function popup(headerData = {
         onRemoved: { addListener: fn => permissionEvents.removed.push(fn) },
       },
       tabs: { query: (...args) => controls.query(...args),
-        sendMessage: (...args) => { calls.scan++; return controls.scan(...args); } },
+        sendMessage: (...args) => {
+          if (args[1]?.type === 'identity') { calls.identity++; return controls.identity(...args); }
+          calls.scan++; return controls.scan(...args); } },
       storage: { local: { get: (...args) => { calls.storage++; return Promise.resolve(controls.storage(...args)).then(result => { lastStored = result; return result; }); } } },
     },
     document: {

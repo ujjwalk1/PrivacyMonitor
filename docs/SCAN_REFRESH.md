@@ -32,13 +32,35 @@ overrides; unsupported routes produce an unavailable aggregate. See
 [FORM_DESTINATIONS.md](FORM_DESTINATIONS.md). D12 adds bounded observation of relevant
 attributes, base changes, and additions/removals; see [DYNAMIC_MONITORING.md](DYNAMIC_MONITORING.md).
 
+## Document provenance guard (D19, partial)
+
+The listener also accepts `type: 'identity'` under the same channel, version,
+exact-field and popup-sender checks. It returns `ok: true` and `sourceToken`
+only when initialized in a known normal context and its random document token is
+available; otherwise it returns `not-ready` or `identity-unavailable`. This
+request neither rescans nor writes storage. Tokens use 16 random bytes, are
+stable across scans in one content-script instance, and change in another
+document. They contain no URL or field value.
+
+The popup requests identity before reading storage and after retrieving headers.
+Both replies and each summary's token must match before using that summary.
+Missing, malformed, rejected, untagged or foreign evidence stays unavailable.
+A changed identity during the load invalidates headers as well. Private/unknown
+contexts request no identity and read no shared summaries.
+
+This is a bounded regression safeguard, not the full D09 migration. A second
+same-host tab can still overwrite storage, causing Incomplete in the first;
+Refresh Analysis can restore its own observations. Reload pages after extension
+updates if their old content scripts cannot answer the identity request. Old
+stored rows are rejected, not deleted.
+
 ## Remaining D09 work
 
 The temporary adapter still writes `security_data_<hostname>` and
 `forms_<hostname>` in normal contexts; the normal-tab popup still reads them.
 Partial D10 omits URLs from new writes and blocks private writes/legacy reads, but
 older rows may retain full URLs. Serialization is per document and does **not** prevent races between
-same-host tabs or documents. Header observations remain on D08's separate record
+same-host tabs or documents. The D19 guard prevents consuming another document's summaries but does not preserve separate results. Header observations remain on D08's separate record
 path. Whole-popup tab/navigation isolation and full private-session acceptance
 remain pending. The scan message is a temporary popup-to-content command, not a new write
 operation in the D07 background contract. Permissions and dependencies are unchanged.
@@ -60,6 +82,8 @@ fixture, awaited/serialized writes, retry after failure, warning preservation,
 recreation/removal, sender/request validation, observer reuse, invalid replies,
 and superseded loads. Existing popup tests check loading until the read completes
 and unavailable on message failure. Fixtures use no external service or passwords.
+
+The D19 checks in `tests/content-provenance.test.mjs` cover mismatched/untagged data, identity failures, navigation during loading, refresh recovery, and no private/unknown identity reads. `tests/content-refresh.test.mjs` also exercises two actual content-script instances sharing storage, token lifetime, HTTP collection, and identity authorization/failure paths in mocked browser contexts.
 
 Native Firefox checks remain pending. In a disposable profile with breach lookup
 off, load root `manifest.json`, reload a controlled HTTP password-form fixture,

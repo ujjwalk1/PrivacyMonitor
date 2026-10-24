@@ -379,6 +379,20 @@ async function fetchHeaderData(tab, hostname) {
   } catch { return false; }
 }
 
+// A hostname storage key is shared by tabs. Only the active top-frame document
+// can authorize its saved summaries; unavailable identity must fail closed.
+async function readContentIdentity(tab) {
+  if (tab.incognito !== false) return null;
+  try {
+    const reply = await api.tabs.sendMessage(tab.id, {
+      channel: 'privacy-monitor.scan', version: 1, type: 'identity',
+    }, { frameId: 0 });
+    return reply?.channel === 'privacy-monitor.scan' && reply.version === 1 &&
+      reply.ok === true && typeof reply.sourceToken === 'string' &&
+      /^[a-f0-9]{32}$/.test(reply.sourceToken) ? reply.sourceToken : null;
+  } catch { return null; }
+}
+
 async function loadAllData() {
   const version = ++loadVersion;
   resetView();
@@ -394,6 +408,9 @@ async function loadAllData() {
     const { hostname } = page;
     document.getElementById('current-domain').textContent = hostname;
 
+    const sourceBefore = await readContentIdentity(tab);
+    if (version !== loadVersion) return;
+
     // Legacy rows may belong to a normal tab on the same host. Never read them for private/unknown tabs.
     const stored = tab.incognito === false ? await api.storage.local.get([
       `security_data_${hostname}`,
@@ -402,12 +419,21 @@ async function loadAllData() {
     if (version !== loadVersion) return;
     if (!stored || typeof stored !== 'object' || Array.isArray(stored)) throw new Error('Invalid observations');
 
-    const headerData = await fetchHeaderData(tab, hostname);
+    let headerData = await fetchHeaderData(tab, hostname);
     if (version !== loadVersion) return;
+    const sourceAfter = await readContentIdentity(tab);
+    if (version !== loadVersion) return;
+    const sameDocument = sourceBefore !== null && sourceBefore === sourceAfter;
+    // Do not combine old page summaries with headers retrieved across navigation.
+    if (sourceBefore !== sourceAfter) headerData = false;
+    const ownSummary = value => {
+      if (value == null || value === false) return value;
+      return sameDocument && value.sourceToken === sourceAfter ? value : false;
+    };
     const data = {
-      basicData: stored[`security_data_${hostname}`],
+      basicData: ownSummary(stored[`security_data_${hostname}`]),
       headerData,
-      formData: stored[`forms_${hostname}`],
+      formData: ownSummary(stored[`forms_${hostname}`]),
     };
     const local = PrivacyMonitorPopupState.local(data);
     const score = PrivacyMonitorScoring.calculateSecurityScore(data);

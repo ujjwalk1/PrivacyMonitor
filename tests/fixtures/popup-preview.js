@@ -27,6 +27,11 @@ if (previewCase === 'long-content') {
     delete previewData[key];
   }
 }
+// Synthetic document identity follows the same provenance gate as real content.
+const previewSourceToken = 'a'.repeat(32);
+for (const [key, value] of Object.entries(previewData)) {
+  if (/^(security_data_|forms_)/.test(key) && value && typeof value === 'object') value.sourceToken = previewSourceToken;
+}
 // Consent controls are synthetic too: no real browser permission prompt is opened.
 let previewConsent = !['consent-off', 'consent-denied', 'consent-unsupported'].includes(previewCase);
 const previewPermissionEvents = { added: [], removed: [] };
@@ -55,7 +60,10 @@ window.browser = {
     onAdded: { addListener: fn => previewPermissionEvents.added.push(fn) },
     onRemoved: { addListener: fn => previewPermissionEvents.removed.push(fn) },
   },
-  tabs: { sendMessage: async () => { throw new Error('Synthetic restricted-page failure'); }, query: async () => previewCase === 'loading' ? new Promise(() => {})
+  tabs: { sendMessage: async (_tabId, message) => {
+    if (message.type === 'identity') return { channel: 'privacy-monitor.scan', version: 1, ok: true, sourceToken: previewSourceToken };
+    throw new Error('Synthetic restricted-page failure');
+  }, query: async () => previewCase === 'loading' ? new Promise(() => {})
     : [{ id: 1, incognito: false, url: previewCase === 'unsupported' ? 'about:config' : `https://${previewHostname}/` }] },
   storage: { local: { get: async () => {
     if (previewCase === 'unavailable') throw new Error('Synthetic storage failure');

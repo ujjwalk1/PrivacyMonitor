@@ -244,6 +244,8 @@
     button[aria-disabled="true"] { cursor: default; }
     .refresh-btn[aria-disabled="true"] { background: #4b5563; }
     button:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+    .service-attribution a { color: inherit; text-decoration: underline; }
+    .service-attribution a:focus-visible { outline: 3px solid currentColor; outline-offset: 2px; }
     .sr-only {
       position: absolute;
       width: 1px;
@@ -347,18 +349,21 @@
     <h2 class="section-title" id="breach-consent-title">Optional breach lookup</h2>
     <div class="section-body">
       <p id="breach-disclosure" style="margin:0 0 10px;">
-        If enabled, opening or refreshing this popup uses a result cached for up to 10 minutes
+        If enabled, opening or refreshing this popup uses a cached result checked within the last 10 minutes
         or sends the page hostname (for example, example.com) to Have I Been Pwned,
         when retry timing allows, to find historical
         breaches. The service also receives your IP address. No page path, query,
         password, cookie value, or local score is included. This does not check
         whether your personal account was breached. Local checks work without it.
+        Localhost, IP addresses and internal hostnames are not excluded from enabled lookups.
       </p>
       <div class="consent-actions">
         <button id="breach-enable" type="button" aria-describedby="breach-disclosure breach-consent-status" aria-disabled="true">Enable breach lookup</button>
         <button id="breach-disable" type="button" aria-describedby="breach-consent-status" aria-disabled="true">Disable breach lookup</button>
       </div>
       <p id="breach-consent-status" role="status" aria-live="polite" aria-atomic="true">Checking consent…</p>
+      <p class="service-attribution">Breach data: <a href="https://haveibeenpwned.com" target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>
+        · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>. Selected fields; up to three records shown by breach date.</p>
     </div>
   </div>
 
