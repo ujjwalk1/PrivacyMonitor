@@ -1,0 +1,3 @@
+vendor/tldts/index.umd.min.js -text
+vendor/tldts/index.umd.min.js.map -text
+vendor/tldts/LICENSE -text

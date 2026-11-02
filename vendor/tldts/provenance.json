@@ -1,0 +1,26 @@
+{
+  "name": "tldts",
+  "version": "7.4.19",
+  "retrievedOn": "2026-11-02",
+  "tarball": "https://registry.npmjs.org/tldts/-/tldts-7.4.19.tgz",
+  "integrity": "sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==",
+  "gitHead": "4ecabd1690a72c8e30dbaeb24502f7355908830b",
+  "license": "MIT",
+  "files": {
+    "index.umd.min.js": {
+      "upstreamPath": "package/dist/index.umd.min.js",
+      "sha256": "2c03300f1d339e370cf244d5b807567487ffe16ccd0c0b9834f314aac1f75ed0",
+      "bytes": 130309
+    },
+    "index.umd.min.js.map": {
+      "upstreamPath": "package/dist/index.umd.min.js.map",
+      "sha256": "cbabb0deb2cbf8c4e4525a65634a272819d8bb272a4581598af53cf1eafeeb52",
+      "bytes": 299037
+    },
+    "LICENSE": {
+      "upstreamPath": "package/LICENSE",
+      "sha256": "c64182d48160db948b6aa97a984f1a32974ce4d2053900361264cd33853796cb",
+      "bytes": 1078
+    }
+  }
+}

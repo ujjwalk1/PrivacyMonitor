@@ -174,3 +174,63 @@ Final D19 checks: **173 local links across 29 Markdown files pass**, including l
 ## D18–D19 publication checkpoint — 2026-10-24
 
 Pre-publication verification: 170 tests pass with zero failures/skips; local runtime lint, 173 documentation links/local anchors and whitespace checks pass. Rebuilt package contains the 16 allowlisted files with source-matching SHA-256 hashes. Existing D17 product/privacy disclosures accompany the D18 fixtures and D19 guard. No new native Firefox result is claimed; all recorded acceptance gaps remain open.
+
+## D21 site/domain foundation — 2026-11-02
+
+**Partial: implemented and tested outside the shipping package.** One agent;
+base `1cef861a3f65db28f70c1477219278a36dbf4c34` with the existing uncommitted D20
+documentation preserved. Shared constraints, D21, PROGRESS, hostname counting,
+manifest/package paths and relevant test helpers were read before editing.
+The beta's stable-record/policy and native acceptance prerequisites remain open.
+
+Added [the shared module contract](../SITE_DOMAINS.md), `lib/site-domains.js`,
+a pinned local tldts 7.4.19 browser bundle, upstream MIT license and complete
+embedded-source map. [Provenance](../../vendor/tldts/NOTICE.md) records source
+revision, retrieval date, archive SHA-512 and individual byte hashes. Downloaded
+the official npm archive and checked its SHA-512 before extracting selected
+files; no package install or lifecycle scripts ran. Three .gitattributes rules
+preserve these upstream bytes across Windows Git checkouts.
+
+The wrapper performs ASCII/IDN/URL normalization and compares registrable domains
+using both ICANN and private rules. Local/IP names use exact canonical identity.
+Distinct hosts without a known boundary produce unknown rather than a guessed
+first-party result. Scheme/port differences are intentionally outside this
+comparison; it does not establish common ownership or a security origin.
+There are no browser/storage/network calls or retained page paths/queries.
+
+### Measured checks
+
+- Focused suite: **7 passed, 0 failed** against the actual vendored parser.
+  Forty fixture rows cover descriptors/comparisons, including subdomains,
+  co.uk/com.au, private tenants, PSL wildcard/exception rules, IDNs, localhost,
+  intranet/.local names and IPv4/IPv6. Additional cases cover malformed/long
+  inputs, unsupported schemes, credentials, omitted URL secrets, missing/broken
+  dependency and offline execution.
+- Full existing suite plus new checks: **177 passed, 0 failed/skipped**.
+- Syntax checks pass for the wrapper and vendor bundle; existing local
+  manifest/reference/runtime lint passes.
+- Vendor hashes match copied upstream bytes; all 13 map entries include source.
+  Git filtered/unfiltered object hashes match for the three protected files,
+  verifying newline conversion will not alter them.
+- Inspected the existing D20 ZIP without rebuilding or replacing it: all
+  **16 entries match current runtime source** and D21 files are excluded.
+  ZIP SHA-256 remains
+  **A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+  Main README, manifest, package allowlist and production JavaScript were not edited.
+
+### Remaining acceptance
+
+No new Firefox session or Mozilla validator run: the helper is not shipped.
+Minimum/current Firefox local-script loading and URL/IDN normalization remain
+pending, as does actual consumer integration. Previously recorded Mozilla
+rendering warnings remain open. D20 draft materials still describe the unchanged
+beta, not a release containing this new dependency.
+
+Next: complete the current beta record/policy acceptance prerequisites; then
+continue D21 by selecting a production consumer, adding script load order,
+package paths and third-party/source-review notices together, and verifying
+that consumer in Firefox. Existing popup script counts and external hostname
+lookup semantics must not be silently changed. D21 is not marked complete;
+no D22 tracker dataset or feature work was started. No commit or push.
+
+Final D21 checks: **203 local links across 34 Markdown files pass**, including heading anchors; whitespace check passes. Of 78 pre-existing files snapshotted at session start, **76 remain byte-identical**; only PROGRESS and this verification log changed. No files are missing. In particular, the main README, original runtime and all pending D20 drafts remain intact. New D21 files are isolated module/vendor/test/documentation assets plus the vendor newline-preservation rules.

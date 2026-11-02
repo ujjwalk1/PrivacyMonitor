@@ -1,0 +1,287 @@
+{
+  "hosts": [
+    [
+      "www.example.co.uk",
+      {
+        "kind": "domain",
+        "hostname": "www.example.co.uk",
+        "domain": "example.co.uk",
+        "publicSuffix": "co.uk"
+      }
+    ],
+    [
+      "a.shop.com.au",
+      {
+        "kind": "domain",
+        "domain": "shop.com.au",
+        "publicSuffix": "com.au"
+      }
+    ],
+    [
+      "cdn.example.com",
+      {
+        "kind": "domain",
+        "domain": "example.com"
+      }
+    ],
+    [
+      "Alice.GITHUB.io.",
+      {
+        "kind": "domain",
+        "hostname": "alice.github.io",
+        "domain": "alice.github.io",
+        "publicSuffix": "github.io",
+        "isPrivate": true
+      }
+    ],
+    [
+      "cdn.alice.github.io",
+      {
+        "kind": "domain",
+        "domain": "alice.github.io",
+        "isPrivate": true
+      }
+    ],
+    [
+      "a.b.ck",
+      {
+        "kind": "domain",
+        "domain": "a.b.ck",
+        "publicSuffix": "b.ck"
+      }
+    ],
+    [
+      "x.www.ck",
+      {
+        "kind": "domain",
+        "domain": "www.ck",
+        "publicSuffix": "ck"
+      }
+    ],
+    [
+      "www.city.kawasaki.jp",
+      {
+        "kind": "domain",
+        "domain": "city.kawasaki.jp"
+      }
+    ],
+    [
+      "BÜCHER.de.",
+      {
+        "kind": "domain",
+        "hostname": "xn--bcher-kva.de",
+        "domain": "xn--bcher-kva.de"
+      }
+    ],
+    [
+      "例子.中国",
+      {
+        "kind": "domain",
+        "hostname": "xn--fsqu00a.xn--fiqs8s",
+        "domain": "xn--fsqu00a.xn--fiqs8s"
+      }
+    ],
+    [
+      "localhost",
+      {
+        "kind": "local",
+        "siteKey": "localhost",
+        "domain": null
+      }
+    ],
+    [
+      "api.localhost",
+      {
+        "kind": "local",
+        "siteKey": "api.localhost",
+        "domain": null
+      }
+    ],
+    [
+      "printer.local",
+      {
+        "kind": "local",
+        "siteKey": "printer.local",
+        "domain": null
+      }
+    ],
+    [
+      "intranet",
+      {
+        "kind": "local",
+        "siteKey": "intranet",
+        "domain": null
+      }
+    ],
+    [
+      "127.1",
+      {
+        "kind": "ip",
+        "hostname": "127.0.0.1",
+        "domain": null
+      }
+    ],
+    [
+      "192.0.2.1",
+      {
+        "kind": "ip",
+        "hostname": "192.0.2.1",
+        "domain": null
+      }
+    ],
+    [
+      "[2001:0db8:0:0::1]",
+      {
+        "kind": "ip",
+        "hostname": "[2001:db8::1]",
+        "domain": null
+      }
+    ],
+    [
+      "co.uk",
+      {
+        "kind": "unknown",
+        "domain": null,
+        "siteKey": null
+      }
+    ],
+    [
+      "github.io",
+      {
+        "kind": "unknown",
+        "domain": null,
+        "siteKey": null,
+        "isPrivate": true
+      }
+    ],
+    [
+      "a.madeupinvalidtld",
+      {
+        "kind": "unknown",
+        "siteKey": null
+      }
+    ]
+  ],
+  "matches": [
+    [
+      "a.example.co.uk",
+      "b.example.co.uk",
+      "same-site",
+      true
+    ],
+    [
+      "a.example.co.uk",
+      "b.other.co.uk",
+      "cross-site",
+      false
+    ],
+    [
+      "example.com",
+      "badexample.com",
+      "cross-site",
+      false
+    ],
+    [
+      "example.com",
+      "example.com.evil.org",
+      "cross-site",
+      false
+    ],
+    [
+      "alice.github.io",
+      "bob.github.io",
+      "cross-site",
+      false
+    ],
+    [
+      "cdn.alice.github.io",
+      "alice.github.io",
+      "same-site",
+      true
+    ],
+    [
+      "a.b.ck",
+      "c.b.ck",
+      "cross-site",
+      false
+    ],
+    [
+      "a.www.ck",
+      "b.www.ck",
+      "same-site",
+      true
+    ],
+    [
+      "BÜCHER.de",
+      "xn--bcher-kva.de.",
+      "same-host",
+      true
+    ],
+    [
+      "127.1",
+      "127.0.0.1",
+      "same-host",
+      true
+    ],
+    [
+      "192.0.2.1",
+      "192.0.2.2",
+      "cross-site",
+      false
+    ],
+    [
+      "[2001:db8::1]",
+      "[2001:0db8:0:0::1]",
+      "same-host",
+      true
+    ],
+    [
+      "[::1]",
+      "127.0.0.1",
+      "cross-site",
+      false
+    ],
+    [
+      "localhost",
+      "LOCALHOST.",
+      "same-host",
+      true
+    ],
+    [
+      "a.localhost",
+      "b.localhost",
+      "cross-site",
+      false
+    ],
+    [
+      "printer.local",
+      "other.printer.local",
+      "cross-site",
+      false
+    ],
+    [
+      "intranet",
+      "intranet",
+      "same-host",
+      true
+    ],
+    [
+      "a.madeupinvalidtld",
+      "b.madeupinvalidtld",
+      "unknown",
+      null
+    ],
+    [
+      "co.uk",
+      "example.co.uk",
+      "unknown",
+      null
+    ],
+    [
+      "google.com",
+      "youtube.com",
+      "cross-site",
+      false
+    ]
+  ]
+}
