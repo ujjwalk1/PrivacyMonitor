@@ -98,5 +98,5 @@ prerequisites described in [PROGRESS](development/PROGRESS.md). Then choose the
 specific production consumer, wire local script order and the package allowlist,
 include third-party notices/source-review materials, and test its real Firefox
 flow. Keep unknown separate from zero-safe/first-party. Do not silently change
-existing count semantics or external hostname disclosure. D22 dataset work has
-not started.
+existing count semantics or external hostname disclosure. The [D22 dataset and adapter](TRACKER_CLASSIFICATION.md) are now available as a
+separate offline foundation, also outside the shipping package.

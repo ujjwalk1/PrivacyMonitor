@@ -1,0 +1,31 @@
+{
+  "included": 542,
+  "comments": 2,
+  "excluded": [
+    {
+      "sourceLine": 10,
+      "rule": "||34.215.155.61^",
+      "reason": "unsupported-host"
+    },
+    {
+      "sourceLine": 12,
+      "rule": "||44.228.85.26^",
+      "reason": "unsupported-host"
+    },
+    {
+      "sourceLine": 229,
+      "rule": "||geotargetly-api-*.com^",
+      "reason": "unsupported-rule"
+    },
+    {
+      "sourceLine": 420,
+      "rule": "||screen13.com^$image",
+      "reason": "unsupported-rule"
+    },
+    {
+      "sourceLine": 489,
+      "rule": "||trx-hub.com^$image",
+      "reason": "unsupported-rule"
+    }
+  ]
+}

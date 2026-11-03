@@ -1,3 +1,5 @@
 vendor/tldts/index.umd.min.js -text
 vendor/tldts/index.umd.min.js.map -text
 vendor/tldts/LICENSE -text
+data/trackers/upstream.txt -text
+data/trackers/*.json text eol=lf

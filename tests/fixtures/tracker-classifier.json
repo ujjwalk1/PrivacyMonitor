@@ -1,0 +1,54 @@
+{
+  "listed": [
+    [
+      "clarity.ms",
+      "||clarity.ms^",
+      "exact"
+    ],
+    [
+      "WWW.Clarity.MS.",
+      "||clarity.ms^",
+      "subdomain"
+    ],
+    [
+      "cdn.sy-d.io",
+      "||cdn.sy-d.io^",
+      "exact"
+    ],
+    [
+      "a.cdn.sy-d.io",
+      "||cdn.sy-d.io^",
+      "subdomain"
+    ],
+    [
+      "googletagmanager.com",
+      "||googletagmanager.com^",
+      "exact"
+    ]
+  ],
+  "unknown": [
+    "example.com",
+    "notclarity.ms",
+    "clarity.ms.example.com",
+    "sy-d.io",
+    "other.sy-d.io",
+    "bücher.de",
+    "xn--bcher-kva.de",
+    "alice.github.io",
+    "bob.github.io",
+    "geotargetly-api-123.com",
+    "screen13.com",
+    "trx-hub.com"
+  ],
+  "unsupported": [
+    "localhost",
+    "sub.localhost",
+    "127.0.0.1",
+    "34.215.155.61",
+    "[::1]",
+    "com",
+    "co.uk",
+    "github.io",
+    "a.unknownsuffixzz"
+  ]
+}

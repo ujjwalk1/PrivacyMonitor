@@ -1,0 +1,2178 @@
+{
+  "schemaVersion": 1,
+  "id": "easyprivacy-general-domains",
+  "revision": "9cfb8e34e18831e751641a37ed6ec8400ffc9218",
+  "retrievedOn": "2026-11-04",
+  "sourceSha256": "4cb9df2a5a02e7e629f94ea4e36785a1051a939b82b563d5290d6db2f28c0dbd",
+  "license": "GPL-3.0-or-later",
+  "domains": [
+    {
+      "domain": "00px.net",
+      "sourceLine": 2
+    },
+    {
+      "domain": "18wosx.ru",
+      "sourceLine": 3
+    },
+    {
+      "domain": "1bliq.io",
+      "sourceLine": 4
+    },
+    {
+      "domain": "1epc8o1tg9zz.com",
+      "sourceLine": 5
+    },
+    {
+      "domain": "26sgmin39.de",
+      "sourceLine": 6
+    },
+    {
+      "domain": "2cnt.net",
+      "sourceLine": 7
+    },
+    {
+      "domain": "2l6ddsmnm.de",
+      "sourceLine": 8
+    },
+    {
+      "domain": "2smt6mfgo.de",
+      "sourceLine": 9
+    },
+    {
+      "domain": "3gl.net",
+      "sourceLine": 11
+    },
+    {
+      "domain": "46rtpw.ru",
+      "sourceLine": 13
+    },
+    {
+      "domain": "4tm4ezb2lqlx.com",
+      "sourceLine": 14
+    },
+    {
+      "domain": "5gtb.com",
+      "sourceLine": 15
+    },
+    {
+      "domain": "6dp0i7.ru",
+      "sourceLine": 16
+    },
+    {
+      "domain": "a3kvau184uea.com",
+      "sourceLine": 17
+    },
+    {
+      "domain": "a47b.com",
+      "sourceLine": 18
+    },
+    {
+      "domain": "a8723.com",
+      "sourceLine": 19
+    },
+    {
+      "domain": "acsbapp.com",
+      "sourceLine": 20
+    },
+    {
+      "domain": "adcontroll.com",
+      "sourceLine": 21
+    },
+    {
+      "domain": "addefend-platform.com",
+      "sourceLine": 22
+    },
+    {
+      "domain": "aditude.cloud",
+      "sourceLine": 23
+    },
+    {
+      "domain": "admaxium.com",
+      "sourceLine": 24
+    },
+    {
+      "domain": "admediasales.com",
+      "sourceLine": 25
+    },
+    {
+      "domain": "admetrics.events",
+      "sourceLine": 26
+    },
+    {
+      "domain": "adnext.co",
+      "sourceLine": 27
+    },
+    {
+      "domain": "adrsbl.io",
+      "sourceLine": 28
+    },
+    {
+      "domain": "adrtx.net",
+      "sourceLine": 29
+    },
+    {
+      "domain": "adscore.com",
+      "sourceLine": 30
+    },
+    {
+      "domain": "adsmeasurement.com",
+      "sourceLine": 31
+    },
+    {
+      "domain": "adspsp.com",
+      "sourceLine": 32
+    },
+    {
+      "domain": "adstk.io",
+      "sourceLine": 33
+    },
+    {
+      "domain": "adultium.com",
+      "sourceLine": 34
+    },
+    {
+      "domain": "advertease.store",
+      "sourceLine": 35
+    },
+    {
+      "domain": "afrdtech.com",
+      "sourceLine": 36
+    },
+    {
+      "domain": "aftership-pixel.com",
+      "sourceLine": 37
+    },
+    {
+      "domain": "aggle.net",
+      "sourceLine": 38
+    },
+    {
+      "domain": "agkn.com",
+      "sourceLine": 39
+    },
+    {
+      "domain": "agma-analytics.de",
+      "sourceLine": 40
+    },
+    {
+      "domain": "aisiteanalytics.com",
+      "sourceLine": 41
+    },
+    {
+      "domain": "allvideometrika.com",
+      "sourceLine": 42
+    },
+    {
+      "domain": "altopd.com",
+      "sourceLine": 43
+    },
+    {
+      "domain": "amspbs.com",
+      "sourceLine": 44
+    },
+    {
+      "domain": "analys.live",
+      "sourceLine": 45
+    },
+    {
+      "domain": "analysis.fi",
+      "sourceLine": 46
+    },
+    {
+      "domain": "analyt.ir",
+      "sourceLine": 47
+    },
+    {
+      "domain": "apeagle.io",
+      "sourceLine": 48
+    },
+    {
+      "domain": "apenterprise.io",
+      "sourceLine": 49
+    },
+    {
+      "domain": "apharponloun.com",
+      "sourceLine": 50
+    },
+    {
+      "domain": "apitiny.net",
+      "sourceLine": 51
+    },
+    {
+      "domain": "apxl.io",
+      "sourceLine": 52
+    },
+    {
+      "domain": "as3.io",
+      "sourceLine": 53
+    },
+    {
+      "domain": "aseads.com",
+      "sourceLine": 54
+    },
+    {
+      "domain": "astarsbuilding.com",
+      "sourceLine": 55
+    },
+    {
+      "domain": "atmtd.com",
+      "sourceLine": 56
+    },
+    {
+      "domain": "audiencetrk.com",
+      "sourceLine": 57
+    },
+    {
+      "domain": "australiarevival.com",
+      "sourceLine": 58
+    },
+    {
+      "domain": "avads.net",
+      "sourceLine": 59
+    },
+    {
+      "domain": "awmonitor.com",
+      "sourceLine": 60
+    },
+    {
+      "domain": "b3mxnuvcer.com",
+      "sourceLine": 61
+    },
+    {
+      "domain": "bfmio.com",
+      "sourceLine": 62
+    },
+    {
+      "domain": "bgalytics.com",
+      "sourceLine": 63
+    },
+    {
+      "domain": "bidgx.com",
+      "sourceLine": 64
+    },
+    {
+      "domain": "bidswitch.net",
+      "sourceLine": 65
+    },
+    {
+      "domain": "bkrtx.com",
+      "sourceLine": 66
+    },
+    {
+      "domain": "bloomreach.co",
+      "sourceLine": 67
+    },
+    {
+      "domain": "bluekai.com",
+      "sourceLine": 68
+    },
+    {
+      "domain": "blueoyster.click",
+      "sourceLine": 69
+    },
+    {
+      "domain": "bmtrcs.com",
+      "sourceLine": 70
+    },
+    {
+      "domain": "bonne-terre-data-layer.com",
+      "sourceLine": 71
+    },
+    {
+      "domain": "bonuscake.ru",
+      "sourceLine": 72
+    },
+    {
+      "domain": "bounceexchange.com",
+      "sourceLine": 73
+    },
+    {
+      "domain": "bouncex.net",
+      "sourceLine": 74
+    },
+    {
+      "domain": "bqstreamer.com",
+      "sourceLine": 75
+    },
+    {
+      "domain": "bringmethehats.com",
+      "sourceLine": 76
+    },
+    {
+      "domain": "briskeagle.io",
+      "sourceLine": 77
+    },
+    {
+      "domain": "briskpelican.io",
+      "sourceLine": 78
+    },
+    {
+      "domain": "broadstreet.ai",
+      "sourceLine": 79
+    },
+    {
+      "domain": "brwsrfrm.com",
+      "sourceLine": 80
+    },
+    {
+      "domain": "btldr.net",
+      "sourceLine": 81
+    },
+    {
+      "domain": "btloader.com",
+      "sourceLine": 82
+    },
+    {
+      "domain": "bx-cloud.com",
+      "sourceLine": 83
+    },
+    {
+      "domain": "bxtag.com",
+      "sourceLine": 84
+    },
+    {
+      "domain": "bydst.com",
+      "sourceLine": 85
+    },
+    {
+      "domain": "c-stat.eu",
+      "sourceLine": 86
+    },
+    {
+      "domain": "cadsuta.net",
+      "sourceLine": 87
+    },
+    {
+      "domain": "cafirebreather.com",
+      "sourceLine": 88
+    },
+    {
+      "domain": "cbdatatracker.com",
+      "sourceLine": 89
+    },
+    {
+      "domain": "cdjbf8trk.com",
+      "sourceLine": 90
+    },
+    {
+      "domain": "cdn-vitals.com",
+      "sourceLine": 91
+    },
+    {
+      "domain": "cdn.sy-d.io",
+      "sourceLine": 92
+    },
+    {
+      "domain": "cdnhst.xyz",
+      "sourceLine": 93
+    },
+    {
+      "domain": "cdnlogs.org",
+      "sourceLine": 94
+    },
+    {
+      "domain": "cdnwidget.com",
+      "sourceLine": 95
+    },
+    {
+      "domain": "ciqtracking.com",
+      "sourceLine": 96
+    },
+    {
+      "domain": "cityrobotflower.com",
+      "sourceLine": 97
+    },
+    {
+      "domain": "ck123.io",
+      "sourceLine": 98
+    },
+    {
+      "domain": "ck4hkyq3myt6.com",
+      "sourceLine": 99
+    },
+    {
+      "domain": "ckies.net",
+      "sourceLine": 100
+    },
+    {
+      "domain": "cland.fyi",
+      "sourceLine": 101
+    },
+    {
+      "domain": "clarity.ms",
+      "sourceLine": 102
+    },
+    {
+      "domain": "clcksrv.com",
+      "sourceLine": 103
+    },
+    {
+      "domain": "clcktrax.com",
+      "sourceLine": 104
+    },
+    {
+      "domain": "clearbitscripts.com",
+      "sourceLine": 105
+    },
+    {
+      "domain": "click360.io",
+      "sourceLine": 106
+    },
+    {
+      "domain": "cliquelead.com",
+      "sourceLine": 107
+    },
+    {
+      "domain": "cloudwp.io",
+      "sourceLine": 108
+    },
+    {
+      "domain": "clrt.ai",
+      "sourceLine": 109
+    },
+    {
+      "domain": "cnna.io",
+      "sourceLine": 110
+    },
+    {
+      "domain": "cntxtfl.com",
+      "sourceLine": 111
+    },
+    {
+      "domain": "confiant-integrations.net",
+      "sourceLine": 112
+    },
+    {
+      "domain": "convead.io",
+      "sourceLine": 113
+    },
+    {
+      "domain": "convertlink.com",
+      "sourceLine": 114
+    },
+    {
+      "domain": "coolretargeting.com",
+      "sourceLine": 115
+    },
+    {
+      "domain": "counter247.live",
+      "sourceLine": 116
+    },
+    {
+      "domain": "cpx.to",
+      "sourceLine": 117
+    },
+    {
+      "domain": "cr-relay.com",
+      "sourceLine": 118
+    },
+    {
+      "domain": "crossengage.io",
+      "sourceLine": 119
+    },
+    {
+      "domain": "crwdcntrl.net",
+      "sourceLine": 120
+    },
+    {
+      "domain": "ctxcollect.com",
+      "sourceLine": 121
+    },
+    {
+      "domain": "cvlb.dev",
+      "sourceLine": 122
+    },
+    {
+      "domain": "cxense.com",
+      "sourceLine": 123
+    },
+    {
+      "domain": "cybba.solutions",
+      "sourceLine": 124
+    },
+    {
+      "domain": "czx5eyk0exbhwp43ya.biz",
+      "sourceLine": 125
+    },
+    {
+      "domain": "da29e6b8-f018-490f-b25f-39a887fc95e7.xyz",
+      "sourceLine": 126
+    },
+    {
+      "domain": "dadalytics.it",
+      "sourceLine": 127
+    },
+    {
+      "domain": "datas3ntinel.com",
+      "sourceLine": 128
+    },
+    {
+      "domain": "dclsrv.com",
+      "sourceLine": 129
+    },
+    {
+      "domain": "ddlnk.net",
+      "sourceLine": 130
+    },
+    {
+      "domain": "demdex.net",
+      "sourceLine": 131
+    },
+    {
+      "domain": "deviceinf.com",
+      "sourceLine": 132
+    },
+    {
+      "domain": "digi-ping.com",
+      "sourceLine": 133
+    },
+    {
+      "domain": "directavenue.tech",
+      "sourceLine": 134
+    },
+    {
+      "domain": "dispatchunique.com",
+      "sourceLine": 135
+    },
+    {
+      "domain": "dkotrack.com",
+      "sourceLine": 136
+    },
+    {
+      "domain": "dlxpix.net",
+      "sourceLine": 137
+    },
+    {
+      "domain": "dm-event.net",
+      "sourceLine": 138
+    },
+    {
+      "domain": "dmepyodjotcuks.com",
+      "sourceLine": 139
+    },
+    {
+      "domain": "dmndfrcstng.com",
+      "sourceLine": 140
+    },
+    {
+      "domain": "dmpxs.com",
+      "sourceLine": 141
+    },
+    {
+      "domain": "domself.de",
+      "sourceLine": 142
+    },
+    {
+      "domain": "doublestat.info",
+      "sourceLine": 143
+    },
+    {
+      "domain": "dspx.tv",
+      "sourceLine": 144
+    },
+    {
+      "domain": "dsspn.com",
+      "sourceLine": 145
+    },
+    {
+      "domain": "dtasrvr.com",
+      "sourceLine": 146
+    },
+    {
+      "domain": "dttrk.com",
+      "sourceLine": 147
+    },
+    {
+      "domain": "dwin1.com",
+      "sourceLine": 148
+    },
+    {
+      "domain": "dwin2.com",
+      "sourceLine": 149
+    },
+    {
+      "domain": "e-ads.com",
+      "sourceLine": 150
+    },
+    {
+      "domain": "e1e.io",
+      "sourceLine": 151
+    },
+    {
+      "domain": "eagle-insight.com",
+      "sourceLine": 152
+    },
+    {
+      "domain": "ecn-ldr.de",
+      "sourceLine": 153
+    },
+    {
+      "domain": "ed-sys.net",
+      "sourceLine": 154
+    },
+    {
+      "domain": "ediemidnightzombies.com",
+      "sourceLine": 155
+    },
+    {
+      "domain": "efreecode.com",
+      "sourceLine": 156
+    },
+    {
+      "domain": "egoi.site",
+      "sourceLine": 157
+    },
+    {
+      "domain": "entail-insights.com",
+      "sourceLine": 158
+    },
+    {
+      "domain": "enterombacerick.com",
+      "sourceLine": 159
+    },
+    {
+      "domain": "enthusiastgaming.net",
+      "sourceLine": 160
+    },
+    {
+      "domain": "epsilondelta.co",
+      "sourceLine": 161
+    },
+    {
+      "domain": "eqy.link",
+      "sourceLine": 162
+    },
+    {
+      "domain": "etop.ro",
+      "sourceLine": 163
+    },
+    {
+      "domain": "eu-1-id5-sync.com",
+      "sourceLine": 164
+    },
+    {
+      "domain": "everesttech.net",
+      "sourceLine": 165
+    },
+    {
+      "domain": "ew3.io",
+      "sourceLine": 166
+    },
+    {
+      "domain": "exfdg.com",
+      "sourceLine": 167
+    },
+    {
+      "domain": "experianmatch.info",
+      "sourceLine": 168
+    },
+    {
+      "domain": "ezstat.ru",
+      "sourceLine": 169
+    },
+    {
+      "domain": "f27tltnd.de",
+      "sourceLine": 170
+    },
+    {
+      "domain": "fairdatacenter.de",
+      "sourceLine": 171
+    },
+    {
+      "domain": "fastemu.co",
+      "sourceLine": 172
+    },
+    {
+      "domain": "fastfinch.co",
+      "sourceLine": 173
+    },
+    {
+      "domain": "fastgull.io",
+      "sourceLine": 174
+    },
+    {
+      "domain": "fasttiger.io",
+      "sourceLine": 175
+    },
+    {
+      "domain": "fdgcore.com",
+      "sourceLine": 176
+    },
+    {
+      "domain": "featuregates.org",
+      "sourceLine": 177
+    },
+    {
+      "domain": "ffbbbdc6d3c353211fe2ba39c9f744cd.com",
+      "sourceLine": 178
+    },
+    {
+      "domain": "ffe390afd658c19dcbf707e0597b846d.de",
+      "sourceLine": 179
+    },
+    {
+      "domain": "floors.dev",
+      "sourceLine": 180
+    },
+    {
+      "domain": "fn-pz.com",
+      "sourceLine": 181
+    },
+    {
+      "domain": "fourtimessmelly.com",
+      "sourceLine": 182
+    },
+    {
+      "domain": "fpapi.io",
+      "sourceLine": 183
+    },
+    {
+      "domain": "fpaudience.com",
+      "sourceLine": 184
+    },
+    {
+      "domain": "fpcdn.io",
+      "sourceLine": 185
+    },
+    {
+      "domain": "fptls.com",
+      "sourceLine": 186
+    },
+    {
+      "domain": "fptls2.com",
+      "sourceLine": 187
+    },
+    {
+      "domain": "fptls3.com",
+      "sourceLine": 188
+    },
+    {
+      "domain": "fptls4.com",
+      "sourceLine": 189
+    },
+    {
+      "domain": "fran.pro",
+      "sourceLine": 190
+    },
+    {
+      "domain": "fservr.com",
+      "sourceLine": 191
+    },
+    {
+      "domain": "fsrv.io",
+      "sourceLine": 192
+    },
+    {
+      "domain": "ftlaunchpad.ai",
+      "sourceLine": 193
+    },
+    {
+      "domain": "funnelserv.systems",
+      "sourceLine": 194
+    },
+    {
+      "domain": "fzlnk.com",
+      "sourceLine": 195
+    },
+    {
+      "domain": "g10102301085.co",
+      "sourceLine": 196
+    },
+    {
+      "domain": "g10300385420.co",
+      "sourceLine": 197
+    },
+    {
+      "domain": "g10498469755.co",
+      "sourceLine": 198
+    },
+    {
+      "domain": "g11686975765.co",
+      "sourceLine": 199
+    },
+    {
+      "domain": "g1188506010.co",
+      "sourceLine": 200
+    },
+    {
+      "domain": "g11885060100.co",
+      "sourceLine": 201
+    },
+    {
+      "domain": "g12083144435.co",
+      "sourceLine": 202
+    },
+    {
+      "domain": "g12281228770.co",
+      "sourceLine": 203
+    },
+    {
+      "domain": "g1386590346.co",
+      "sourceLine": 204
+    },
+    {
+      "domain": "g1584674682.co",
+      "sourceLine": 205
+    },
+    {
+      "domain": "g1584674683.co",
+      "sourceLine": 206
+    },
+    {
+      "domain": "g1584674684.co",
+      "sourceLine": 207
+    },
+    {
+      "domain": "g1782759015.co",
+      "sourceLine": 208
+    },
+    {
+      "domain": "g1782759016.co",
+      "sourceLine": 209
+    },
+    {
+      "domain": "g1980843350.co",
+      "sourceLine": 210
+    },
+    {
+      "domain": "g2575096355.co",
+      "sourceLine": 211
+    },
+    {
+      "domain": "g594253006.co",
+      "sourceLine": 212
+    },
+    {
+      "domain": "g792337340.co",
+      "sourceLine": 213
+    },
+    {
+      "domain": "g792337341.co",
+      "sourceLine": 214
+    },
+    {
+      "domain": "g792337342.co",
+      "sourceLine": 215
+    },
+    {
+      "domain": "g792337343.co",
+      "sourceLine": 216
+    },
+    {
+      "domain": "g8715710740.co",
+      "sourceLine": 217
+    },
+    {
+      "domain": "g8913795075.co",
+      "sourceLine": 218
+    },
+    {
+      "domain": "g9111879410.co",
+      "sourceLine": 219
+    },
+    {
+      "domain": "g9508048080.co",
+      "sourceLine": 220
+    },
+    {
+      "domain": "g9706132415.co",
+      "sourceLine": 221
+    },
+    {
+      "domain": "g990421675.co",
+      "sourceLine": 222
+    },
+    {
+      "domain": "g9904216750.co",
+      "sourceLine": 223
+    },
+    {
+      "domain": "g990421676.co",
+      "sourceLine": 224
+    },
+    {
+      "domain": "gaij.app",
+      "sourceLine": 225
+    },
+    {
+      "domain": "gbqofs.com",
+      "sourceLine": 226
+    },
+    {
+      "domain": "gcprivacy.com",
+      "sourceLine": 227
+    },
+    {
+      "domain": "geoedge.be",
+      "sourceLine": 228
+    },
+    {
+      "domain": "getdeviceinf.com",
+      "sourceLine": 230
+    },
+    {
+      "domain": "getjan.io",
+      "sourceLine": 231
+    },
+    {
+      "domain": "glamipixel.com",
+      "sourceLine": 232
+    },
+    {
+      "domain": "glimr.io",
+      "sourceLine": 233
+    },
+    {
+      "domain": "glookup.info",
+      "sourceLine": 234
+    },
+    {
+      "domain": "go-mpulse.net",
+      "sourceLine": 235
+    },
+    {
+      "domain": "godiciardstia.com",
+      "sourceLine": 236
+    },
+    {
+      "domain": "googleoptimize.com",
+      "sourceLine": 237
+    },
+    {
+      "domain": "googletagmanager.com",
+      "sourceLine": 238
+    },
+    {
+      "domain": "gotoda.co",
+      "sourceLine": 239
+    },
+    {
+      "domain": "greencolumnhealth.com",
+      "sourceLine": 240
+    },
+    {
+      "domain": "gresrv.com",
+      "sourceLine": 241
+    },
+    {
+      "domain": "growth-channel.net",
+      "sourceLine": 242
+    },
+    {
+      "domain": "gsitrix.com",
+      "sourceLine": 243
+    },
+    {
+      "domain": "gw-dv.vip",
+      "sourceLine": 244
+    },
+    {
+      "domain": "hbiq.net",
+      "sourceLine": 245
+    },
+    {
+      "domain": "hdmtools.com",
+      "sourceLine": 246
+    },
+    {
+      "domain": "healthroundprince.com",
+      "sourceLine": 247
+    },
+    {
+      "domain": "heap-api.com",
+      "sourceLine": 248
+    },
+    {
+      "domain": "herbgreencolumn.com",
+      "sourceLine": 249
+    },
+    {
+      "domain": "herbstarsbuilding.com",
+      "sourceLine": 250
+    },
+    {
+      "domain": "hightouch-events.com",
+      "sourceLine": 251
+    },
+    {
+      "domain": "hirsung.de",
+      "sourceLine": 252
+    },
+    {
+      "domain": "histais.com",
+      "sourceLine": 253
+    },
+    {
+      "domain": "hs-analytics.net",
+      "sourceLine": 254
+    },
+    {
+      "domain": "hsadspixel.net",
+      "sourceLine": 255
+    },
+    {
+      "domain": "hsleadflows.net",
+      "sourceLine": 256
+    },
+    {
+      "domain": "htplayground.com",
+      "sourceLine": 257
+    },
+    {
+      "domain": "hzstats.com",
+      "sourceLine": 258
+    },
+    {
+      "domain": "i218435.net",
+      "sourceLine": 259
+    },
+    {
+      "domain": "ibclick.stream",
+      "sourceLine": 260
+    },
+    {
+      "domain": "icg-in.com",
+      "sourceLine": 261
+    },
+    {
+      "domain": "icg-in.info",
+      "sourceLine": 262
+    },
+    {
+      "domain": "iconmediapixel.com",
+      "sourceLine": 263
+    },
+    {
+      "domain": "iconnode.com",
+      "sourceLine": 264
+    },
+    {
+      "domain": "id-ward.com",
+      "sourceLine": 265
+    },
+    {
+      "domain": "identitypxl.app",
+      "sourceLine": 266
+    },
+    {
+      "domain": "idsequoia.ai",
+      "sourceLine": 267
+    },
+    {
+      "domain": "idx.lat",
+      "sourceLine": 268
+    },
+    {
+      "domain": "ilius.net",
+      "sourceLine": 269
+    },
+    {
+      "domain": "impactcdn.com",
+      "sourceLine": 270
+    },
+    {
+      "domain": "impactradius-event.com",
+      "sourceLine": 271
+    },
+    {
+      "domain": "imponestvional.com",
+      "sourceLine": 272
+    },
+    {
+      "domain": "imrworldwide.com",
+      "sourceLine": 273
+    },
+    {
+      "domain": "imzahrwl.xyz",
+      "sourceLine": 274
+    },
+    {
+      "domain": "ineed2s.ro",
+      "sourceLine": 275
+    },
+    {
+      "domain": "infisecure.com",
+      "sourceLine": 276
+    },
+    {
+      "domain": "inmobicdn.net",
+      "sourceLine": 277
+    },
+    {
+      "domain": "innerskinresearch.com",
+      "sourceLine": 278
+    },
+    {
+      "domain": "instantfox.co",
+      "sourceLine": 279
+    },
+    {
+      "domain": "intellimizeio.com",
+      "sourceLine": 280
+    },
+    {
+      "domain": "irs01.com",
+      "sourceLine": 281
+    },
+    {
+      "domain": "itsstats.wp1.site",
+      "sourceLine": 282
+    },
+    {
+      "domain": "jcpclick.com",
+      "sourceLine": 283
+    },
+    {
+      "domain": "jubbie.de",
+      "sourceLine": 284
+    },
+    {
+      "domain": "kit22.com",
+      "sourceLine": 285
+    },
+    {
+      "domain": "klarinsights.net",
+      "sourceLine": 286
+    },
+    {
+      "domain": "krxd.net",
+      "sourceLine": 287
+    },
+    {
+      "domain": "kspotson.de",
+      "sourceLine": 288
+    },
+    {
+      "domain": "ladsp.com",
+      "sourceLine": 289
+    },
+    {
+      "domain": "ldgnrtn.com",
+      "sourceLine": 290
+    },
+    {
+      "domain": "ldnlyap.com",
+      "sourceLine": 291
+    },
+    {
+      "domain": "leadhit.io",
+      "sourceLine": 292
+    },
+    {
+      "domain": "leadsy.ai",
+      "sourceLine": 293
+    },
+    {
+      "domain": "lemonpi.io",
+      "sourceLine": 294
+    },
+    {
+      "domain": "liveyield.com",
+      "sourceLine": 295
+    },
+    {
+      "domain": "lltrck.com",
+      "sourceLine": 296
+    },
+    {
+      "domain": "lmepbq.com",
+      "sourceLine": 297
+    },
+    {
+      "domain": "log.dance",
+      "sourceLine": 298
+    },
+    {
+      "domain": "logicanalytics.io",
+      "sourceLine": 299
+    },
+    {
+      "domain": "logstracker.com",
+      "sourceLine": 300
+    },
+    {
+      "domain": "logtail.com",
+      "sourceLine": 301
+    },
+    {
+      "domain": "loopcybersec.com",
+      "sourceLine": 302
+    },
+    {
+      "domain": "lordofthesuperfrogs.com",
+      "sourceLine": 303
+    },
+    {
+      "domain": "lrkt-in.com",
+      "sourceLine": 304
+    },
+    {
+      "domain": "lsdm.co",
+      "sourceLine": 305
+    },
+    {
+      "domain": "lyfnh.io",
+      "sourceLine": 306
+    },
+    {
+      "domain": "maggieeatstheangel.com",
+      "sourceLine": 307
+    },
+    {
+      "domain": "mapixl.com",
+      "sourceLine": 308
+    },
+    {
+      "domain": "markadver.com",
+      "sourceLine": 309
+    },
+    {
+      "domain": "match2one.net",
+      "sourceLine": 310
+    },
+    {
+      "domain": "matheranalytics.com",
+      "sourceLine": 311
+    },
+    {
+      "domain": "mathilde-ads.com",
+      "sourceLine": 312
+    },
+    {
+      "domain": "matomo3.org",
+      "sourceLine": 313
+    },
+    {
+      "domain": "maxclientstatapi.com",
+      "sourceLine": 314
+    },
+    {
+      "domain": "maxepv.com",
+      "sourceLine": 315
+    },
+    {
+      "domain": "mb-tracking.com",
+      "sourceLine": 316
+    },
+    {
+      "domain": "mbmgivexdvpajr.com",
+      "sourceLine": 317
+    },
+    {
+      "domain": "mcangelus.com",
+      "sourceLine": 318
+    },
+    {
+      "domain": "mdhv.io",
+      "sourceLine": 319
+    },
+    {
+      "domain": "mdstats.info",
+      "sourceLine": 320
+    },
+    {
+      "domain": "measureadv.com",
+      "sourceLine": 321
+    },
+    {
+      "domain": "media-analytic.com",
+      "sourceLine": 322
+    },
+    {
+      "domain": "mediamathrdrt.com",
+      "sourceLine": 323
+    },
+    {
+      "domain": "michiganrobotflower.com",
+      "sourceLine": 324
+    },
+    {
+      "domain": "minstats.xyz",
+      "sourceLine": 325
+    },
+    {
+      "domain": "mirabelanalytics.com",
+      "sourceLine": 326
+    },
+    {
+      "domain": "mitour.de",
+      "sourceLine": 327
+    },
+    {
+      "domain": "mitself.net",
+      "sourceLine": 328
+    },
+    {
+      "domain": "ml-sys.xyz",
+      "sourceLine": 329
+    },
+    {
+      "domain": "mm-api.agency",
+      "sourceLine": 330
+    },
+    {
+      "domain": "mm-uxrv.com",
+      "sourceLine": 331
+    },
+    {
+      "domain": "mnbvpo8trk.com",
+      "sourceLine": 332
+    },
+    {
+      "domain": "mobildev.in",
+      "sourceLine": 333
+    },
+    {
+      "domain": "monicaatron.com",
+      "sourceLine": 334
+    },
+    {
+      "domain": "motu-teamblue.services",
+      "sourceLine": 335
+    },
+    {
+      "domain": "mpstech.space",
+      "sourceLine": 336
+    },
+    {
+      "domain": "mrpdata.net",
+      "sourceLine": 337
+    },
+    {
+      "domain": "msfunction.online",
+      "sourceLine": 338
+    },
+    {
+      "domain": "mt48.net",
+      "sourceLine": 339
+    },
+    {
+      "domain": "mxradon.com",
+      "sourceLine": 340
+    },
+    {
+      "domain": "myangular.life",
+      "sourceLine": 341
+    },
+    {
+      "domain": "mysingleromance.com",
+      "sourceLine": 342
+    },
+    {
+      "domain": "narrativ.com",
+      "sourceLine": 343
+    },
+    {
+      "domain": "native-track.com",
+      "sourceLine": 344
+    },
+    {
+      "domain": "niblewren.co",
+      "sourceLine": 345
+    },
+    {
+      "domain": "nigelmidnightrappers.com",
+      "sourceLine": 346
+    },
+    {
+      "domain": "nimblebird.co",
+      "sourceLine": 347
+    },
+    {
+      "domain": "nimbleswan.io",
+      "sourceLine": 348
+    },
+    {
+      "domain": "nkdyzf.com",
+      "sourceLine": 349
+    },
+    {
+      "domain": "nmgassets.com",
+      "sourceLine": 350
+    },
+    {
+      "domain": "nmgplatform.com",
+      "sourceLine": 351
+    },
+    {
+      "domain": "nmo-ep.nl",
+      "sourceLine": 352
+    },
+    {
+      "domain": "nodals.io",
+      "sourceLine": 353
+    },
+    {
+      "domain": "notifpush.com",
+      "sourceLine": 354
+    },
+    {
+      "domain": "ns1p.net",
+      "sourceLine": 355
+    },
+    {
+      "domain": "nxakpj4ac8gkd53.info",
+      "sourceLine": 356
+    },
+    {
+      "domain": "o1ych4jb.com",
+      "sourceLine": 357
+    },
+    {
+      "domain": "ofgreencolumn.com",
+      "sourceLine": 358
+    },
+    {
+      "domain": "omtrdc.net",
+      "sourceLine": 359
+    },
+    {
+      "domain": "op-mobile.opera.com",
+      "sourceLine": 360
+    },
+    {
+      "domain": "openfpcdn.io",
+      "sourceLine": 361
+    },
+    {
+      "domain": "oppuz.com",
+      "sourceLine": 362
+    },
+    {
+      "domain": "opti-digital.com",
+      "sourceLine": 363
+    },
+    {
+      "domain": "opticksprotection.com",
+      "sourceLine": 364
+    },
+    {
+      "domain": "optistats.ovh",
+      "sourceLine": 365
+    },
+    {
+      "domain": "organiccdn.io",
+      "sourceLine": 366
+    },
+    {
+      "domain": "orhdev.com",
+      "sourceLine": 367
+    },
+    {
+      "domain": "ostrichesica.com",
+      "sourceLine": 368
+    },
+    {
+      "domain": "oz70ba58w25c.com",
+      "sourceLine": 369
+    },
+    {
+      "domain": "p7cloud.net",
+      "sourceLine": 370
+    },
+    {
+      "domain": "pageid.info",
+      "sourceLine": 371
+    },
+    {
+      "domain": "partnerlinks.io",
+      "sourceLine": 372
+    },
+    {
+      "domain": "peiq.services",
+      "sourceLine": 373
+    },
+    {
+      "domain": "permutive.app",
+      "sourceLine": 374
+    },
+    {
+      "domain": "pippio.com",
+      "sourceLine": 375
+    },
+    {
+      "domain": "pix.pub",
+      "sourceLine": 376
+    },
+    {
+      "domain": "pixel-tracker.com",
+      "sourceLine": 377
+    },
+    {
+      "domain": "pixmg.com",
+      "sourceLine": 378
+    },
+    {
+      "domain": "pixrealm.com",
+      "sourceLine": 379
+    },
+    {
+      "domain": "pjstat.com",
+      "sourceLine": 380
+    },
+    {
+      "domain": "pocustrack.com",
+      "sourceLine": 381
+    },
+    {
+      "domain": "powerrobotflower.com",
+      "sourceLine": 382
+    },
+    {
+      "domain": "prfct.co",
+      "sourceLine": 383
+    },
+    {
+      "domain": "procroanalytics.com",
+      "sourceLine": 384
+    },
+    {
+      "domain": "progmxs.com",
+      "sourceLine": 385
+    },
+    {
+      "domain": "protechts.net",
+      "sourceLine": 386
+    },
+    {
+      "domain": "purcartz.com",
+      "sourceLine": 387
+    },
+    {
+      "domain": "purple-hit.com",
+      "sourceLine": 388
+    },
+    {
+      "domain": "pxlnow.in",
+      "sourceLine": 389
+    },
+    {
+      "domain": "pxlstat.com",
+      "sourceLine": 390
+    },
+    {
+      "domain": "pzapi-ij.com",
+      "sourceLine": 391
+    },
+    {
+      "domain": "pzapi-kg.com",
+      "sourceLine": 392
+    },
+    {
+      "domain": "pzimff.com",
+      "sourceLine": 393
+    },
+    {
+      "domain": "q0losid.com",
+      "sourceLine": 394
+    },
+    {
+      "domain": "qntm.pro",
+      "sourceLine": 395
+    },
+    {
+      "domain": "qovani.com",
+      "sourceLine": 396
+    },
+    {
+      "domain": "queen-one.net",
+      "sourceLine": 397
+    },
+    {
+      "domain": "quickkoala.io",
+      "sourceLine": 398
+    },
+    {
+      "domain": "quickpcfixer.click",
+      "sourceLine": 399
+    },
+    {
+      "domain": "r42tag.com",
+      "sourceLine": 400
+    },
+    {
+      "domain": "rapidpanda.io",
+      "sourceLine": 401
+    },
+    {
+      "domain": "rapidzebra.io",
+      "sourceLine": 402
+    },
+    {
+      "domain": "re-ads.com",
+      "sourceLine": 403
+    },
+    {
+      "domain": "realtimely.io",
+      "sourceLine": 404
+    },
+    {
+      "domain": "reportic.app",
+      "sourceLine": 405
+    },
+    {
+      "domain": "rezync.com",
+      "sourceLine": 406
+    },
+    {
+      "domain": "rfpx1.com",
+      "sourceLine": 407
+    },
+    {
+      "domain": "rkdms.com",
+      "sourceLine": 408
+    },
+    {
+      "domain": "robotflowermobile.com",
+      "sourceLine": 409
+    },
+    {
+      "domain": "rsra-ph.cdn-fileserver.com",
+      "sourceLine": 544
+    },
+    {
+      "domain": "rsra.cdn-fileserver.com",
+      "sourceLine": 545
+    },
+    {
+      "domain": "rsras-ph.cdn-fileserver.com",
+      "sourceLine": 546
+    },
+    {
+      "domain": "rsras.cdn-fileserver.com",
+      "sourceLine": 547
+    },
+    {
+      "domain": "rt-pixel.com",
+      "sourceLine": 410
+    },
+    {
+      "domain": "rtactivate.com",
+      "sourceLine": 411
+    },
+    {
+      "domain": "rtgvwr.com",
+      "sourceLine": 412
+    },
+    {
+      "domain": "rtmscl.com",
+      "sourceLine": 413
+    },
+    {
+      "domain": "rum-ingress-coralogix.com",
+      "sourceLine": 414
+    },
+    {
+      "domain": "rumt-sg.com",
+      "sourceLine": 415
+    },
+    {
+      "domain": "rumt-zh.com",
+      "sourceLine": 416
+    },
+    {
+      "domain": "s-onetag.com",
+      "sourceLine": 417
+    },
+    {
+      "domain": "sbgsodufuosmmvsdf.info",
+      "sourceLine": 418
+    },
+    {
+      "domain": "sc-static.net",
+      "sourceLine": 419
+    },
+    {
+      "domain": "script.ac",
+      "sourceLine": 421
+    },
+    {
+      "domain": "seadform.net",
+      "sourceLine": 422
+    },
+    {
+      "domain": "seaskypro.com",
+      "sourceLine": 423
+    },
+    {
+      "domain": "selphiu.com",
+      "sourceLine": 424
+    },
+    {
+      "domain": "seoab.io",
+      "sourceLine": 425
+    },
+    {
+      "domain": "sf-insights.io",
+      "sourceLine": 426
+    },
+    {
+      "domain": "sgmntfy.com",
+      "sourceLine": 427
+    },
+    {
+      "domain": "sgstats.com",
+      "sourceLine": 428
+    },
+    {
+      "domain": "shdid.me",
+      "sourceLine": 429
+    },
+    {
+      "domain": "shgcdn3.com",
+      "sourceLine": 430
+    },
+    {
+      "domain": "shop-cart.app",
+      "sourceLine": 431
+    },
+    {
+      "domain": "site24x7rum.eu",
+      "sourceLine": 432
+    },
+    {
+      "domain": "sitecounter.site",
+      "sourceLine": 433
+    },
+    {
+      "domain": "sitedataprocessing.com",
+      "sourceLine": 434
+    },
+    {
+      "domain": "siteperformancetest.net",
+      "sourceLine": 435
+    },
+    {
+      "domain": "sjpf.io",
+      "sourceLine": 436
+    },
+    {
+      "domain": "skcrtxr.com",
+      "sourceLine": 437
+    },
+    {
+      "domain": "smartiwheel.com",
+      "sourceLine": 438
+    },
+    {
+      "domain": "smartmetrics.co.uk",
+      "sourceLine": 439
+    },
+    {
+      "domain": "smartytouch.co",
+      "sourceLine": 440
+    },
+    {
+      "domain": "smrtwheel.com",
+      "sourceLine": 441
+    },
+    {
+      "domain": "snptrk.com",
+      "sourceLine": 442
+    },
+    {
+      "domain": "soapfighters.com",
+      "sourceLine": 443
+    },
+    {
+      "domain": "solutionshindsight.net",
+      "sourceLine": 444
+    },
+    {
+      "domain": "speedyfox.io",
+      "sourceLine": 445
+    },
+    {
+      "domain": "speedyrhino.co",
+      "sourceLine": 446
+    },
+    {
+      "domain": "spinnaker-js.com",
+      "sourceLine": 447
+    },
+    {
+      "domain": "spotlersearchanalytics.com",
+      "sourceLine": 448
+    },
+    {
+      "domain": "sprtnd.com",
+      "sourceLine": 449
+    },
+    {
+      "domain": "sra-px.cdn-fileserver.com",
+      "sourceLine": 548
+    },
+    {
+      "domain": "srmdata-eur.com",
+      "sourceLine": 450
+    },
+    {
+      "domain": "srvgl.com",
+      "sourceLine": 451
+    },
+    {
+      "domain": "ssevt.com",
+      "sourceLine": 452
+    },
+    {
+      "domain": "stack-sonar.com",
+      "sourceLine": 453
+    },
+    {
+      "domain": "stalkoda.com",
+      "sourceLine": 454
+    },
+    {
+      "domain": "stat.ovh",
+      "sourceLine": 455
+    },
+    {
+      "domain": "statisticsplatform.com",
+      "sourceLine": 456
+    },
+    {
+      "domain": "stats.rip",
+      "sourceLine": 457
+    },
+    {
+      "domain": "sturton-lation.com",
+      "sourceLine": 458
+    },
+    {
+      "domain": "summerhamster.com",
+      "sourceLine": 459
+    },
+    {
+      "domain": "superpointlesshamsters.com",
+      "sourceLine": 460
+    },
+    {
+      "domain": "sy57d8wi.com",
+      "sourceLine": 461
+    },
+    {
+      "domain": "syncingbridge.com",
+      "sourceLine": 462
+    },
+    {
+      "domain": "t13.io",
+      "sourceLine": 463
+    },
+    {
+      "domain": "takingbackjuly.com",
+      "sourceLine": 464
+    },
+    {
+      "domain": "targetemsecure.blob.core.windows.net",
+      "sourceLine": 465
+    },
+    {
+      "domain": "tatpek.com",
+      "sourceLine": 466
+    },
+    {
+      "domain": "techpump.com",
+      "sourceLine": 467
+    },
+    {
+      "domain": "tepatonol.com",
+      "sourceLine": 468
+    },
+    {
+      "domain": "testingmetriksbre.ru",
+      "sourceLine": 469
+    },
+    {
+      "domain": "thefontzone.com",
+      "sourceLine": 470
+    },
+    {
+      "domain": "thepixelpioneer.com",
+      "sourceLine": 471
+    },
+    {
+      "domain": "tjk-njk.com",
+      "sourceLine": 472
+    },
+    {
+      "domain": "tkrconnector.com",
+      "sourceLine": 473
+    },
+    {
+      "domain": "tncid.app",
+      "sourceLine": 474
+    },
+    {
+      "domain": "tp-em.cc",
+      "sourceLine": 475
+    },
+    {
+      "domain": "trackclicks.info",
+      "sourceLine": 476
+    },
+    {
+      "domain": "trackier.com",
+      "sourceLine": 477
+    },
+    {
+      "domain": "tracking24.net",
+      "sourceLine": 478
+    },
+    {
+      "domain": "transmapp.com",
+      "sourceLine": 479
+    },
+    {
+      "domain": "triplestat.online",
+      "sourceLine": 480
+    },
+    {
+      "domain": "trk-brevinate.com",
+      "sourceLine": 481
+    },
+    {
+      "domain": "trk-maiorum.com",
+      "sourceLine": 482
+    },
+    {
+      "domain": "trkapi.impact.com",
+      "sourceLine": 483
+    },
+    {
+      "domain": "trkbc.com",
+      "sourceLine": 484
+    },
+    {
+      "domain": "trkn.us",
+      "sourceLine": 485
+    },
+    {
+      "domain": "trovo-tag.com",
+      "sourceLine": 486
+    },
+    {
+      "domain": "tru.am",
+      "sourceLine": 487
+    },
+    {
+      "domain": "truffle.bid",
+      "sourceLine": 488
+    },
+    {
+      "domain": "tryzens-analytics.com",
+      "sourceLine": 490
+    },
+    {
+      "domain": "turboeagle.co",
+      "sourceLine": 491
+    },
+    {
+      "domain": "turbolion.io",
+      "sourceLine": 492
+    },
+    {
+      "domain": "tvpixel.com",
+      "sourceLine": 493
+    },
+    {
+      "domain": "tw.cx",
+      "sourceLine": 494
+    },
+    {
+      "domain": "ubbrobccheck20.cc",
+      "sourceLine": 495
+    },
+    {
+      "domain": "ugdturner.com",
+      "sourceLine": 496
+    },
+    {
+      "domain": "uidapi.com",
+      "sourceLine": 497
+    },
+    {
+      "domain": "uimarketpro.com",
+      "sourceLine": 498
+    },
+    {
+      "domain": "umami.dev",
+      "sourceLine": 499
+    },
+    {
+      "domain": "uqd.io",
+      "sourceLine": 500
+    },
+    {
+      "domain": "usrpubtrk.com",
+      "sourceLine": 501
+    },
+    {
+      "domain": "ustat.info",
+      "sourceLine": 502
+    },
+    {
+      "domain": "venture-365-inspired.com",
+      "sourceLine": 503
+    },
+    {
+      "domain": "venusrevival.com",
+      "sourceLine": 504
+    },
+    {
+      "domain": "veozn3f.com",
+      "sourceLine": 505
+    },
+    {
+      "domain": "veradata.network",
+      "sourceLine": 506
+    },
+    {
+      "domain": "veselchaga.link",
+      "sourceLine": 507
+    },
+    {
+      "domain": "vfghe.com",
+      "sourceLine": 508
+    },
+    {
+      "domain": "vhit.io",
+      "sourceLine": 509
+    },
+    {
+      "domain": "videoplayerhub.com",
+      "sourceLine": 510
+    },
+    {
+      "domain": "visit-server.inmobi-choice.io",
+      "sourceLine": 511
+    },
+    {
+      "domain": "visitor-speed.com",
+      "sourceLine": 512
+    },
+    {
+      "domain": "vkanalytics.net",
+      "sourceLine": 513
+    },
+    {
+      "domain": "vmzqqmlpwwmazjnio.com",
+      "sourceLine": 514
+    },
+    {
+      "domain": "vpdcp.com",
+      "sourceLine": 515
+    },
+    {
+      "domain": "vstats.me",
+      "sourceLine": 516
+    },
+    {
+      "domain": "wct-2.com",
+      "sourceLine": 517
+    },
+    {
+      "domain": "whale3.io",
+      "sourceLine": 518
+    },
+    {
+      "domain": "widgetbe.com",
+      "sourceLine": 519
+    },
+    {
+      "domain": "wknd.ai",
+      "sourceLine": 520
+    },
+    {
+      "domain": "wlct-one.de",
+      "sourceLine": 521
+    },
+    {
+      "domain": "wlct-two.de",
+      "sourceLine": 522
+    },
+    {
+      "domain": "wlt-alice.de",
+      "sourceLine": 523
+    },
+    {
+      "domain": "wlt-jupiter.de",
+      "sourceLine": 524
+    },
+    {
+      "domain": "wmgroup.us",
+      "sourceLine": 525
+    },
+    {
+      "domain": "woodpeckerlog.com",
+      "sourceLine": 526
+    },
+    {
+      "domain": "xanalytics.vip",
+      "sourceLine": 527
+    },
+    {
+      "domain": "y5kvsuy8wr7c.com",
+      "sourceLine": 528
+    },
+    {
+      "domain": "yardianalytics.com",
+      "sourceLine": 529
+    },
+    {
+      "domain": "yndhi.com",
+      "sourceLine": 530
+    },
+    {
+      "domain": "yottlyscript.com",
+      "sourceLine": 531
+    },
+    {
+      "domain": "youborafds01.com",
+      "sourceLine": 532
+    },
+    {
+      "domain": "youboranqs01.com",
+      "sourceLine": 533
+    },
+    {
+      "domain": "youseasky.com",
+      "sourceLine": 549
+    },
+    {
+      "domain": "yrtace.com",
+      "sourceLine": 534
+    },
+    {
+      "domain": "zdbb.net",
+      "sourceLine": 535
+    },
+    {
+      "domain": "zenaps.com",
+      "sourceLine": 536
+    },
+    {
+      "domain": "zippyfrog.co",
+      "sourceLine": 537
+    },
+    {
+      "domain": "zjptg.com",
+      "sourceLine": 538
+    },
+    {
+      "domain": "zodalt.com",
+      "sourceLine": 539
+    },
+    {
+      "domain": "zononi.com",
+      "sourceLine": 540
+    },
+    {
+      "domain": "zqtk.net",
+      "sourceLine": 541
+    },
+    {
+      "domain": "ztsrv.com",
+      "sourceLine": 542
+    }
+  ]
+}

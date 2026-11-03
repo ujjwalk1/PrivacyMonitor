@@ -1,0 +1,12 @@
+{
+  "revision": "9cfb8e34e18831e751641a37ed6ec8400ffc9218",
+  "sourcePath": "easyprivacy/easyprivacy_trackingservers_general.txt",
+  "url": "https://raw.githubusercontent.com/easylist/easylist/9cfb8e34e18831e751641a37ed6ec8400ffc9218/easyprivacy/easyprivacy_trackingservers_general.txt",
+  "retrievedOn": "2026-11-04",
+  "sha256": "4cb9df2a5a02e7e629f94ea4e36785a1051a939b82b563d5290d6db2f28c0dbd",
+  "bytes": 9571,
+  "repository": "https://github.com/easylist/easylist",
+  "license": "GPL-3.0-or-later",
+  "licenseUrl": "https://easylist.to/pages/licence.html",
+  "attribution": "The EasyList authors (https://easylist.to/)"
+}

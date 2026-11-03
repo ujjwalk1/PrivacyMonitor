@@ -234,3 +234,82 @@ lookup semantics must not be silently changed. D21 is not marked complete;
 no D22 tracker dataset or feature work was started. No commit or push.
 
 Final D21 checks: **203 local links across 34 Markdown files pass**, including heading anchors; whitespace check passes. Of 78 pre-existing files snapshotted at session start, **76 remain byte-identical**; only PROGRESS and this verification log changed. No files are missing. In particular, the main README, original runtime and all pending D20 drafts remain intact. New D21 files are isolated module/vendor/test/documentation assets plus the vendor newline-preservation rules.
+
+## D22 offline tracker dataset — 2026-11-04
+
+**Partial: offline foundation only; production/browser acceptance open.** One
+agent, base `3139379102d552e13fe94e9a29d9351d76f7c9f5`. Read the shared
+constraints, D22 and current handoff; inspected D21 helper/tests, background
+navigation records, settings, manifest and package tools. No applicable
+AGENTS.md was found in the checkout or ancestor paths. Existing uncommitted D20
+contributor/release/verification drafts were preserved.
+
+### Dataset and adapter
+
+Read the official EasyList repository policy and
+[license statement](https://easylist.to/pages/licence.html).
+Chose its GPL-3.0-or-later option. Retrieved the small general tracking-server
+file from official raw GitHub at immutable revision
+`9cfb8e34e18831e751641a37ed6ec8400ffc9218`. The 2026-11-04 date is
+retrieval, not a claimed upstream release. No remote JavaScript or package
+installation was used.
+
+[Provenance and attribution](../../data/trackers/NOTICE.md) retain the exact
+9,571-byte original, SHA-256, source URL and GPL reference. The deterministic
+offline extractor produces 542 domain/source-line pairs (38,245-byte JSON).
+Two IP rules, one wildcard and two image-only rules remain excluded and visible
+in the report; no conditional syntax was erased to widen a rule.
+
+The [adapter contract](../TRACKER_CLASSIFICATION.md) explains whole-label
+matching, PSL/private-tenant boundaries, bounded indexing, evidence and separate
+unknown/invalid/unavailable states. Owner/category are not inferred. Match
+results assert membership in this narrow source, not effective blocker behavior
+or observed tracking. No runtime collection, score change, request blocking,
+network access or history storage was added.
+
+### Checks actually run
+
+- New focused suite: **10 passed**, zero failed/skipped. Fixtures cover known,
+  unknown, lookalike, sibling and parent domains; IDNs; local/IP/unknown suffixes;
+  conditional/wildcard omissions; private tenants and longest matching rule.
+  Additional checks cover input validation, URL-secret omission, corrupt or
+  missing dataset/dependency, mutation isolation, extraction grammar, and
+  exclusion from the beta manifest/package.
+- Full existing suite with D22 tests: **187 passed, zero failed/skipped**.
+- Every one of the 542 included rules matches its original source line and
+  classifies as listed. Source hash/size and both generated files reproduce
+  exactly with `node tools/build-tracker-data.mjs --check`. A changed source
+  fails the hash check.
+- New JavaScript syntax checks pass. Existing local lint passes for the MV2
+  manifest, references, 16-file allowlist and all shipped JavaScript.
+- No native Firefox session or new Mozilla validator run: these assets are
+  unshipped. Earlier seven validator warnings remain unresolved.
+
+### Remaining acceptance and next action
+
+D22 is **not complete**: native minimum/current Firefox loading/normalization,
+trusted local JSON loading/error behavior and production integration remain
+pending. The classifier is not connected to tab requests or the popup. D21 and
+the stable beta record/context/settings prerequisites remain open; future
+request capture and first/third-party classification were not implemented.
+
+Next execute the D19 controlled two-tab acceptance procedure documented in
+[PROGRESS](PROGRESS.md), then resolve prerequisites before integrating the
+local helpers/data together with package paths, GPL/tldts notices, source-review
+materials and native checks. Never report zero trackers without observations.
+No D23 work, commit or push was performed.
+
+Final D22 checks: **219 local links across 36 Markdown files pass**, including
+heading anchors; whitespace check passes. Git filtered/unfiltered source object
+hashes match, confirming original dataset newline preservation. Generated JSON
+is pinned to LF for reproducible checks across Windows checkouts.
+
+Of 90 pre-existing files snapshotted before D22, **86 remain byte-identical**,
+none are missing. Only .gitattributes, the D21 contract's continuation link,
+PROGRESS and this verification log changed. The main README, LICENSE, manifest,
+package allowlist, runtime, tldts assets and existing D20 drafts/contributor
+changes are intact.
+
+The existing ZIP was inspected without rebuilding: all **16 entries match
+runtime source**, D22 files are excluded, and its SHA-256 remains
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
