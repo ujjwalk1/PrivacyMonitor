@@ -1,0 +1,88 @@
+{
+  "cases": [
+    {
+      "page": "www.example.co.uk",
+      "host": "cdn.example.co.uk",
+      "party": "first-party",
+      "classification": "first-party"
+    },
+    {
+      "page": "www.example.co.uk",
+      "host": "static.example.net",
+      "party": "third-party",
+      "classification": "unclassified-third-party"
+    },
+    {
+      "page": "www.example.co.uk",
+      "host": "www.clarity.ms",
+      "party": "third-party",
+      "classification": "known-tracker"
+    },
+    {
+      "page": "clarity.ms",
+      "host": "www.clarity.ms",
+      "party": "first-party",
+      "classification": "known-tracker"
+    },
+    {
+      "page": "alice.github.io",
+      "host": "cdn.alice.github.io",
+      "party": "first-party",
+      "classification": "first-party"
+    },
+    {
+      "page": "alice.github.io",
+      "host": "bob.github.io",
+      "party": "third-party",
+      "classification": "unclassified-third-party"
+    },
+    {
+      "page": "bücher.de",
+      "host": "xn--bcher-kva.de",
+      "party": "first-party",
+      "classification": "first-party"
+    },
+    {
+      "page": "127.0.0.1",
+      "host": "127.1",
+      "party": "first-party",
+      "classification": "first-party"
+    },
+    {
+      "page": "localhost",
+      "host": "sub.localhost",
+      "party": "third-party",
+      "classification": "unclassified-third-party"
+    },
+    {
+      "page": "a.unknownsuffixzz",
+      "host": "b.unknownsuffixzz",
+      "party": "unknown",
+      "classification": "unknown"
+    },
+    {
+      "page": "a.unknownsuffixzz",
+      "host": "a.unknownsuffixzz",
+      "party": "first-party",
+      "classification": "first-party"
+    },
+    {
+      "page": "a.unknownsuffixzz",
+      "host": "clarity.ms",
+      "party": "unknown",
+      "classification": "known-tracker"
+    },
+    {
+      "page": "google.com",
+      "host": "youtube.com",
+      "party": "third-party",
+      "classification": "unclassified-third-party"
+    },
+    {
+      "page": "example.com",
+      "host": "clarity.ms.example.org",
+      "party": "third-party",
+      "classification": "unclassified-third-party"
+    }
+  ]
+}

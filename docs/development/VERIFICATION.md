@@ -313,3 +313,145 @@ changes are intact.
 The existing ZIP was inspected without rebuilding: all **16 entries match
 runtime source**, D22 files are excluded, and its SHA-256 remains
 **A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+## D23 bounded request capture — 2026-11-04
+
+**Partial isolated collector; no production or native-browser acceptance claimed.**
+One agent, base `90d641a805e8438a8b7e0c0f7197a428245444b7`. Read shared
+constraints, D23, PROGRESS and relevant source/test/package/privacy files.
+Existing D20 drafts and contributor changes remain local and preserved.
+
+### Prerequisites and scope
+
+D07 header/navigation records exist, but the beta's content migration,
+cleanup/exclusion policies and native acceptance remain open. D21/D22 modules
+are still outside the runtime. Mozilla's current
+[request API documentation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webRequest/onBeforeRequest)
+and [compatibility data](https://github.com/mdn/browser-compat-data/blob/main/webextensions/api/webRequest.json)
+were read: request document IDs are recorded from Firefox 153, beyond the
+unchanged manifest minimum 142. This collector requires that identity and
+reports unavailable when absent; it does not guess from hostname or timing.
+
+Added [collector and manual contract](../REQUEST_CAPTURE.md),
+`lib/request-capture.js` and `tests/request-capture.test.mjs`.
+Attachment is explicit; no module startup, manifest or packaging change occurs.
+The collector retains only reduced domain/type aggregates after a top-frame
+commit, with browser UUID matching and explicit normal-context checks.
+Navigation/tab lifecycle and stop release data. It does not inspect bodies,
+headers, cookie values or initiator URLs, and does not retain request URLs,
+paths, queries, fragments or request IDs. Memory is bounded structurally:
+64 records, 256 pairs each, counts capped at 65,535. Browser heap size was not
+measured. No TTL or historical browsing store was added.
+
+### Checks actually run
+
+- Focused D23 suite: **16 passed**, zero failed/skipped.
+- Full suite: **203 passed**, zero failed/skipped.
+- Source syntax and existing local MV2/runtime/reference lint pass.
+- Real D21 parsing is exercised with event mocks, not an alternate production
+  normalizer. Tests cover top-frame/commit boundaries, same-host tabs and
+  container-labelled events, same-URL navigation, stale UUID/timestamps, redirects,
+  missing document IDs, private/unknown context, unsupported URLs, IDNs/IP/local
+  hosts, tab/error cleanup, all capacity limits, caller mutation, stop and
+  partial registration failure. Throwing getters catch inspection of sensitive
+  event fields; fetch/storage/log access is forbidden by the harness.
+- No native Firefox session, new Mozilla validator run, permissions change or
+  external lookup. Earlier seven Mozilla warnings remain outstanding.
+
+### Remaining acceptance
+
+The module is **not shipped or connected to D07 records, the popup or D22
+classification**. It does not capture initial navigation, pre-commit, iframe,
+worker-without-top-frame or non-HTTP(S) traffic. Event counts are not unique
+request counts or evidence of loading/blocking. Empty or unavailable capture
+must not become a zero-tracker/safe verdict.
+
+Next run the explicit local background-console procedure in
+[REQUEST_CAPTURE](../REQUEST_CAPTURE.md#pending-firefox-procedure) on the
+minimum and current Firefox versions and record actual behavior here. Resolve
+compatibility and earlier beta record/policy prerequisites, then integrate
+identity, policy/access cleanup, package paths and dependency notices in a
+focused follow-up. D23 remains partial. No D24 work, commit or push.
+
+Final D23 checks: **225 local links across 37 Markdown files pass**, including
+heading anchors; whitespace check passes. Of 100 pre-existing files snapshotted
+at the start, **98 remain byte-identical** and none are missing; only PROGRESS
+and this verification log changed. Main README, runtime, manifest, package tools,
+D21/D22 assets and pending D20 contributor/release drafts are intact.
+
+Inspected the existing beta ZIP without rebuilding it: all **16 entries match
+current runtime source**, D23 is excluded, and SHA-256 remains
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+## D24 observed request classification — 2026-11-04
+
+**Partial isolated integration; no production or native-browser acceptance
+claimed.** One agent, base `90d641a805e8438a8b7e0c0f7197a428245444b7` with
+the uncommitted D23 collector/tests/documentation and D20 drafts preserved.
+Read shared constraints, D24, PROGRESS, D07 record source/contract, D21–D23
+modules, manifest/package paths and relevant tests. No applicable AGENTS.md was
+found in the checkout or ancestor paths.
+
+### Changes and prerequisite boundary
+
+Added [request classification contract](../REQUEST_ANALYSIS.md),
+`lib/request-analysis.js`, `tests/request-analysis.test.mjs` and
+`tests/fixtures/request-analysis.json`. It consumes the actual D23 collector
+by tab/document UUID using a trusted current D07 record, and applies actual
+D21 comparison and D22 dataset classification. It does not alter those modules
+or enable a production listener, message API, renderer or score.
+
+Findings separate site relationship from list membership. First-party,
+unclassified third-party and known-tracker classifications remain distinct;
+listed first-party hosts preserve both facts. A known-tracker result means
+evidence of a rule match, not observed tracking or blocking. Unknown boundaries
+and unavailable dependencies never become safe/unclassified success. Dataset
+owner/category remain null; company ownership is not inferred.
+
+Canonical hostname/type deduplication retains maximum cumulative counts.
+Repeated reads do not accumulate results. Coverage/truncation/saturation flags
+are retained, and malformed/oversized snapshots fail without partial findings.
+No persistent history, network lookup, arbitrary record copying or sensitive
+URL components were added.
+
+### Checks actually run
+
+- **14 focused tests pass**, zero failed/skipped, including 14 fixture rows.
+- **217 full-suite tests pass**, zero failed/skipped.
+- New module syntax and existing local MV2/runtime/reference lint pass.
+- Integration tests drive the actual D07 store, tldts/D21, D22 adapter/pinned
+  data and D23 collector with simulated browser events. They cover repeated
+  requests/types, two tabs, navigation resets, late old-document events,
+  private invalidation and stop without reusing earlier classifications.
+- Other checks cover multi-part/private boundaries, IDN/IP/local/unknown hosts,
+  same-site listed hosts, source evidence, null owner/category, corrupt/missing
+  dataset, exact snapshot validation, capacity bounds, deduplication, deterministic
+  ordering, and mutation isolation. Harnesses forbid network/storage/logging.
+- No Firefox session or new Mozilla validator run. D23's documented minimum
+  version/document-ID gap, beta prerequisite gaps and seven inherited validator
+  warnings remain unresolved.
+
+### Pending acceptance and next action
+
+D24 is not complete: the new module and its prerequisites remain outside the
+manifest/ZIP. Production setup, identity/access policy, package/license material
+and native Firefox classification are pending. D25 UI was not implemented.
+
+Start the existing local acceptance server and follow D23's background-console
+setup, then the [D24 native continuation](../REQUEST_ANALYSIS.md#pending-firefox-continuation).
+Use actual D07 records and D23 observations, keep lookup off, and record native
+versions/results for first/third-party local observations, repeated reads,
+tab/navigation/private/missing-ID behavior. Automated known-list fixtures are
+not presented as real-browser passes. Resolve prerequisites before production
+integration. No commit or push.
+
+Final D24 checks: **237 local links across 38 Markdown files pass**, including
+heading anchors; whitespace check passes. Of 103 pre-existing files snapshotted
+at the start, **101 remain byte-identical** and none are missing; only PROGRESS
+and this verification log changed. In particular, all uncommitted D23 module,
+test and contract files, pending D20 drafts/contributor changes, main README,
+LICENSE, runtime and packaging files remain intact.
+
+Inspected the existing ZIP without rebuilding: all **16 entries match current
+runtime source**, D24 is excluded, and SHA-256 remains
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
