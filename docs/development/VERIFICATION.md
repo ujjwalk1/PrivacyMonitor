@@ -455,3 +455,73 @@ LICENSE, runtime and packaging files remain intact.
 Inspected the existing ZIP without rebuilding: all **16 entries match current
 runtime source**, D24 is excluded, and SHA-256 remains
 **A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+## D25 request details view — 2026-11-05
+
+**Partial isolated UI; production and native Firefox acceptance remain open.**
+One agent, base `15a3968bcdbe2e943969d0ea3622349742e905fa`.
+Read shared constraints, D25, progress, relevant D07/D21–D24 source/contracts,
+popup, manifest and packaging/tests. Preserved the original workspace and
+uncommitted D20 contributor/release/verification work in the separate checkout.
+
+### Changes and prerequisite boundary
+
+Added the [details contract and native procedure](../REQUEST_DETAILS.md),
+`details/requests.html`, CSS, validated text renderer and lifecycle controller;
+`lib/request-details-source.js` reads the actual D07 store through D24.
+Added focused tests/helpers and a loopback synthetic preview server.
+
+Cards show hostname, observed types/counts, separate party/list classification,
+source evidence and snapshot retrieval date. Null owner/category are explicit.
+Coverage, truncation, lower bounds and unavailable states remain visible.
+There are no unsupported blocked-request totals, safe verdicts or implicit scans.
+The controller binds one explicit target, clears invalidated/hidden results,
+avoids reads while hidden and guards delayed reads. No persistent data or new
+network service is introduced.
+
+The production popup, manifest, package allowlist, README and score are untouched.
+The view/source/dependencies remain unshipped. Earlier beta prerequisites,
+D23 document-ID compatibility, production access/loading and native acceptance
+are not resolved by this isolated slice.
+
+### Checks actually run
+
+- **13 focused tests pass**, including real D07/D21/D22/D24 with a fixture
+  capture snapshot, evidence/date consistency, null owner/category, first-party
+  list matches, corrupt data, injection/bounds, private rejection and copying.
+- **230 full-suite tests pass**, zero failed/skipped. Controller tests simulate
+  explicit target binding, navigation during delayed reads, tab closure/replacement,
+  permission removal, initial hidden state, hide/show, refresh and failed reads.
+- New JavaScript syntax and existing local runtime/MV2/package-reference lint pass.
+- In-app browser inspected the clearly labeled synthetic loopback preview:
+  three classified cards, expanded rule/revision/source/hash evidence, Enter
+  key collapsing disclosure with visible focus, refresh without duplicated
+  cards, narrow dark layout and long-domain wrapping, capture/saturation warnings,
+  and separate empty/unavailable messages. No live website capture was exercised.
+- No native Firefox session or new Mozilla validator run. Light theme, zoom,
+  screen reader and native extension lifecycle remain pending. Seven inherited
+  validator warnings remain open.
+
+### Pending acceptance and next action
+
+D25 is **not complete**. Follow the [native procedure](../REQUEST_DETAILS.md#pending-firefox-procedure)
+using the local acceptance server and actual current page-B tab record, with
+lookup off. Verify observed counts and refresh, two tabs, navigation/late reads,
+private/missing identity, stopped capture and closure; record actual browser
+versions/results. Resolve production prerequisites and packaging before enabling
+the view. No D26 implementation, commit or push.
+
+Final D25 checks: **246 local links across 39 Markdown files pass**, including
+heading anchors; whitespace check passes. Of 107 pre-existing files snapshotted
+at the start, **105 remain byte-identical** and none are missing; only PROGRESS
+and this verification log changed. D20 drafts/contributor changes, README,
+LICENSE, runtime and packaging files are preserved. Nine D25 files were added.
+
+The existing ZIP was inspected without rebuilding: all **16 entries match the
+current runtime source**, D25 is excluded, and SHA-256 remains
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+D25 publication verification: the exact staged snapshot excludes local D20
+drafts and contributor changes. All 230 tests, local runtime lint, new script
+syntax and 227 local documentation links across 36 Markdown files pass. README
+and runtime/package paths are unchanged; native acceptance remains pending.

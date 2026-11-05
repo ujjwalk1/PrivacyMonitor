@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request details — Privacy Monitor</title>
+  <link rel="stylesheet" href="requests.css">
+  <script src="requests-view.js" defer></script>
+  <script src="requests-page.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="brand">Privacy Monitor</p>
+    <h1>Request details</h1>
+    <p id="page-host"></p>
+    <button type="button" id="refresh">Refresh results</button>
+  </header>
+  <p id="status" role="status" aria-live="polite" aria-atomic="true">Loading request details…</p>
+  <p class="note">A tracker-list match does not prove tracking. This view cannot determine whether a request loaded or was blocked.</p>
+  <p class="note">Results are a snapshot. Refresh updates retained observations; it does not reload the website.</p>
+  <section id="results" aria-label="Observed request domains" aria-busy="true">
+    <p id="coverage" hidden></p>
+    <p id="limits" class="warning" hidden></p>
+    <div id="findings"></div>
+  </section>
+  <noscript>JavaScript is required to display request details.</noscript>
+</main>
+</body>
+</html>
