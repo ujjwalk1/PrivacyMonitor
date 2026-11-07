@@ -525,3 +525,147 @@ D25 publication verification: the exact staged snapshot excludes local D20
 drafts and contributor changes. All 230 tests, local runtime lint, new script
 syntax and 227 local documentation links across 36 Markdown files pass. README
 and runtime/package paths are unchanged; native acceptance remains pending.
+
+## D26 monitoring access foundation — 2026-11-08
+
+**Partial isolated implementation; no production or native-browser acceptance.**
+One agent, base `436f2e915b4b6fb7291001c5189b52b20837d37a`.
+Read shared constraints, D26, PROGRESS, manifest, header/record/settings/consent
+paths and D23/D25 source/contracts. No applicable AGENTS.md found. The original
+workspace and existing D20 contributor/release/verification work are preserved.
+
+### Changes and prerequisite boundary
+
+Added [monitoring access contract](../MONITORING_ACCESS.md),
+`lib/monitoring-access.js` and `tests/monitoring-access.test.mjs`.
+This bounded slice owns optional host permission transitions and the actual
+D23 collector. The shipping manifest is intentionally rejected because required
+hosts and static content scripts cannot provide genuine on-demand-only access.
+
+Grant requests occur synchronously in the caller's gesture stack; capture
+attaches only after grant confirmation. Denial/errors stay inactive. Revocation
+and selecting on-demand immediately detach/clear capture. A late grant after
+cancellation is removed without restarting capture. Failed removal is not
+described as revoked access. Fresh instances never auto-start from existing
+grants. Disposal stops collection but does not promise permission removal.
+
+No scanner, product control, manifest migration, settings persistence or
+header/content-path integration is claimed. The module remains outside the
+manifest and ZIP. README, runtime behavior, breach consent and package list
+are unchanged. No D27 work.
+
+### Verification
+
+- **12 focused tests pass**, zero failed/skipped, using actual D23/D21 modules
+  with simulated browser events/permissions. Tests cover synchronous and exact
+  request scope; denial, rejection, malformed grant, failed confirmation;
+  actual collector attachment, capture, cleanup and re-enable; revocation;
+  unrelated breach consent; immediate disable; retained access; late grant
+  cancellation; duplicate clicks; disposal and collector registration failure.
+- **242 full-suite tests pass**, zero failed/skipped.
+- New module syntax and existing local runtime/manifest/reference lint pass.
+- Official Mozilla permission request, manifest permission and webRequest
+  references were checked on 2026-11-08; links and limitations are in the contract.
+  No actual Firefox permission prompts, grant/removal or UI were exercised.
+- No new Mozilla validator run. Seven inherited warnings, earlier beta
+  migration/settings/native gaps and D23 document-ID compatibility remain open.
+
+### Pending and next exact action
+
+Create the disposable MV2 optional-host harness described in
+[MONITORING_ACCESS](../MONITORING_ACCESS.md#next-exact-action); use one persistent
+controller owner and actual extension buttons. Run the local acceptance server
+in a disposable Firefox profile and test denial/grant/revocation, cancelled
+late grants, shutdown/restart, private/container context and version compatibility.
+Then integrate one shared policy across header/content/request/UI paths and
+implement the current-page scan before claiming an on-demand product mode.
+Record actual native outcomes. D26 remains partial; no commit, push or D27.
+
+Final D26 checks: **253 local links across 40 Markdown files pass**, including
+heading anchors; whitespace check passes. Of 116 pre-existing files snapshotted
+at the start, **114 remain byte-identical** and none are missing. Only PROGRESS
+and this verification record changed; three D26 files were added. README,
+LICENSE, all runtime files, package configuration and unrelated D20 drafts are
+preserved. The existing ZIP was inspected without rebuilding: all 16 entries
+match current runtime source, with unchanged SHA-256
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+## D27 cookie metadata collection — 2026-11-08
+
+**Partial isolated implementation; production and native Firefox acceptance open.**
+One agent, base `436f2e915b4b6fb7291001c5189b52b20837d37a`, preserving
+uncommitted D26 and D20 work. Read shared constraints, D27, progress, manifest,
+D07/D21/D26 source and relevant permission docs. No applicable AGENTS.md found.
+
+### Changes and prerequisite boundary
+
+Added [cookie metadata contract](../COOKIE_METADATA.md),
+`lib/cookie-metadata.js` and `tests/cookie-metadata.test.mjs`.
+Explicit optional-cookie permission requests do not initiate collection.
+Independent cookie/host permission checks gate reads scoped to one active
+normal-context tab, current D07 identity, exact cookieStoreId and separate
+unpartitioned/derived top-level-site partitions. No all-store or all-partition
+query is used.
+
+The reduced projection never reads cookie names, values or paths. Raw browser
+objects are projected on resolution before another await; no raw response or
+result cache is retained by the module. Browser-created memory cannot be
+zeroized by this code. Results are bounded to 256 metadata rows and one read
+per instance. Malformed/mismatched data is unavailable, not partial success.
+The browser's initial response allocation is not bounded by this output cap.
+
+Legacy first-party-isolation cookies and third-party frame domains are outside
+coverage and explicitly disclosed. Unknown purpose/SameSite/expiry remain
+null where applicable. Permission/context changes invalidate pending results;
+final permission/tab/store/navigation checks guard asynchronous completion.
+Consumers must clear copies already displayed when their access policy changes.
+
+The live manifest has no cookies permission, so the reader refuses activation.
+No README, shipping runtime, package configuration, D26 code or D28 UI change.
+Shared access controls, optional declarations, UI transport and native tests
+remain prerequisites before enabling the feature.
+
+### Checks actually run
+
+- **14 focused tests pass**, zero failed/skipped. Actual D07 store and D21 parser
+  are used with simulated cookies/permissions/events.
+- **256 full-suite tests pass**, zero failed/skipped.
+- Cases cover synchronous optional requests; denied/error/revoked grants;
+  exact active-tab/store/partition filters; secret-property getters; valid empty
+  versus unavailable; metadata unknowns; private/missing/stale context;
+  PSL/private/local/IP/IDN sites; wrong domains/stores/partitions/FPI;
+  malformed/oversized data; concurrent reads; lifecycle invalidation;
+  final identity and permission checks; no cache mutation; listener rollback.
+- New module syntax, existing local MV2/runtime/reference lint and documentation
+  links pass. No new dependency or runtime permission was added.
+- Mozilla cookies/getAll/Cookie/isolation guidance checked on 2026-11-08.
+  Sources are linked in the contract. No actual browser cookies were accessed,
+  no Firefox cookie permission granted, and no native acceptance claimed.
+  No new Mozilla validator run; seven inherited warnings remain outstanding.
+
+### Pending acceptance and next action
+
+Follow [the disposable native procedure](../COOKIE_METADATA.md#verification-and-next-exact-action):
+create a test extension copy with optional cookies and actual gesture control,
+D21/D27 helpers and current D07 records; start the local acceptance server.
+Use only synthetic local cookies in a disposable Firefox profile. Check actual
+denial/grant/revocation, stores/containers, partition key equivalence, the FPI
+coverage limitation, private context and stale reads. Record browser versions
+and results, then integrate shared product access/UI lifecycle and packaging.
+D27 remains partial. No commit, push or D28.
+
+Final D27 checks: **258 local links across 41 Markdown files pass**, including
+heading anchors; whitespace check passes. Of 119 pre-existing files snapshotted
+at the start, **117 remain byte-identical** and none are missing. Only PROGRESS
+and this verification record changed; three D27 files were added. In particular,
+the uncommitted D26 source/tests/contract, D20 drafts/contributor changes,
+README, LICENSE and shipping runtime/package configuration are preserved.
+The existing ZIP was inspected without rebuilding: all 16 entries match runtime
+source; SHA-256 remains
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+D26-D27 publication verification: the exact staged snapshot excludes local D20
+drafts and contributor changes. All 256 tests, local runtime lint, new module
+syntax and 239 local links across 38 Markdown files pass. README and shipping
+runtime/package paths are unchanged. Both days remain partial pending production
+integration and native Firefox acceptance.
