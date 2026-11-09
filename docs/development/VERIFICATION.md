@@ -669,3 +669,162 @@ drafts and contributor changes. All 256 tests, local runtime lint, new module
 syntax and 239 local links across 38 Markdown files pass. README and shipping
 runtime/package paths are unchanged. Both days remain partial pending production
 integration and native Firefox acceptance.
+
+## D28 cookie inspector — 2026-11-09
+
+**Partial isolated UI; production and native Firefox acceptance remain open.**
+One agent, base `02896db9440f57ea7269678c2025542722233d1c`. Read shared
+constraints, D28, progress, D27 source/contract, D07/D21 interfaces, existing
+details pages and packaging/tests. No applicable AGENTS.md found.
+
+Implementation and synthetic preview were performed on November 8. The final
+documentation/check command was not executed because automatic approval review
+hit a usage limit. On November 9, the authorized continuation succeeded through
+the normal approval process; final checks and this handoff were completed.
+
+### Changes and prerequisite boundary
+
+Added [inspector contract and procedure](../COOKIE_INSPECTOR.md),
+`details/cookies.html`, CSS, validated text renderer and popup controller;
+focused tests/helpers and a clearly labeled loopback preview.
+The inspector consumes actual D27 metadata and the trusted background D07 store.
+
+Cards show domain, session/persistent UTC expiry, Secure, HttpOnly, SameSite,
+partition and unknown purpose. Scope limits, store identity and empty versus
+unavailable states remain visible. Invalid/extra fields and oversized results
+fail closed. No cookie names/values, mutation controls or safety verdicts.
+
+Grant and read are separate actions. The permission call precedes the first
+await in the button path; startup/grant do not read. Rendered data clears on
+cookie/origin revocation, navigation, tab/window changes, hiding and exit.
+Pending results cannot restore cleared data. D26 mode-change wiring is pending.
+
+The native surface is a popup, not an ordinary extension tab that would replace
+the active website. Manifest, live popup, D27 collector, README and ZIP remain
+unchanged; production activation is not claimed.
+
+### Checks actually run
+
+- **12 focused tests passed** on November 8, using actual D27/D07/D21 with
+  simulated browser APIs and throwing cookie-secret getters.
+- **268 full-suite tests pass** on November 9, including those 12 tests.
+- Tests cover fields/UTC/session/unknowns, scoped empty/error states, malformed
+  and extra data, injection rejection, bounds, duplicate rows, grant/read
+  separation, actual collector rendering, display clearing, delayed results,
+  hidden/busy states, failed registration and delayed boot exit.
+- New renderer/controller/preview scripts pass syntax checks; local MV2/runtime/
+  reference lint passes.
+- November 8 in-app browser preview: initial idle; mock grant without a read;
+  Enter-key grant/read activation and visible focus; all required fields across
+  three cards; UTC expiry/partition; light/dark styling; long-domain wrapping in
+  the 440px column; distinct scoped-empty, denied and unavailable messages.
+- Preview data and permissions were synthetic. No real Firefox cookies,
+  permission dialogs or native popup interaction were exercised. Popup sizing/
+  closure, zoom, screen reader and native isolation acceptance remain pending.
+  No new Mozilla validator run; seven inherited warnings remain open.
+
+### Pending acceptance and next action
+
+Follow [the disposable test-copy procedure](../COOKIE_INSPECTOR.md#verification-and-pending-firefox-procedure):
+add optional cookies and select the new popup only in that copy, retaining
+the background D07 store. Start the local acceptance server and compare
+synthetic local cookie metadata with Firefox's storage inspector. Verify
+real denial/grant/revocation, container/partition/private context, close/reopen
+and accessibility. Record actual versions/results before production activation.
+Resolve shared access and package prerequisites. No commit, push or D29.
+
+Final D28 checks: **266 local links across 42 Markdown files pass**, including
+heading anchors; whitespace check passes. Git confirms the only modified tracked
+files are PROGRESS, this verification record and the pre-existing D20 contributor
+change. Eight D28 files were added; unrelated release drafts remain untracked.
+README, LICENSE, D26/D27 source, manifest and shipping runtime/package files
+match HEAD. No files were staged or committed.
+
+The existing ZIP was inspected without rebuilding: all **16 entries match
+current runtime source**, with unchanged SHA-256
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+
+## D29 header policy values — 2026-11-09
+
+One agent, base `02896db9440f57ea7269678c2025542722233d1c` with existing
+uncommitted D28 files and D20 documentation work. Read shared constraints, D29,
+PROGRESS, live header producer, record/message validation, popup projection,
+renderer, scoring, navigation tests and packaging. No applicable AGENTS.md found.
+
+### Changes and prerequisite boundary
+
+Added [header-policy contract and pending procedure](../HEADER_POLICIES.md),
+`lib/header-policies.js`, `tests/fixtures/header-policies.json` and
+`tests/header-policies.test.mjs`. No dependencies or browser/network/storage APIs.
+
+HSTS evaluation handles lifetime, zero, quoting, syntax, duplicate directives,
+first-field ordering and HTTP/IP applicability. Nosniff uses the first token;
+referrer analysis selects the last recognized policy and reports exposure
+facts for all eight policies. Presence does not itself yield a positive
+evaluator result. Unsupported/oversized or unreadable evidence stays unavailable;
+absent and not-observed remain separate. Only bounded normalized facts leave
+the evaluator, with no unknown directive text or sensitive URL components.
+
+The current strict header record accepts presence enums only; background drops
+raw values and popup/scoring use a compatibility projection. This session takes
+the allowed safe smaller portion rather than changing that entire contract,
+lifecycle and score together without native acceptance. **The new evaluator is
+not connected to the live popup/score. The live presence-only limitation remains.**
+No D30 CSP/framing work, runtime activation, README edit, commit or push.
+
+### Checks actually run
+
+- **72 focused tests passed**, including **64 named positive/negative fixtures**.
+- **340 complete-suite tests passed**, zero failures/skips/todos, including D28
+  and existing navigation/record/popup/score regression coverage.
+- HSTS positive/zero/short/quoted/escaped lifetimes, duplicate and unknown
+  directives, unsafe integer conversion, HTTP/IP applicability.
+- Nosniff case/quoting/parameters/order; all referrer policies, permissive versus
+  configured exposure, comma/repeated fields, unknown fallbacks and quoted tokens.
+- Missing/unavailable evidence, response type/status/URL eligibility, 304 and
+  redirects, exact/over-limit input bounds, binary/non-ASCII/control data,
+  throwing getters, independent results, no input mutation or stale findings.
+- Sensitive URL/unknown directive text excluded from outputs; unrelated header
+  values, including Set-Cookie and CSP, not read. Test context forbids browser,
+  storage, network and console access.
+- New source syntax and existing local MV2/runtime/package-reference lint pass.
+  Documentation local paths/heading anchors pass; external links are not checked
+  by that tool. Primary standards were separately read for semantic decisions.
+- Before this handoff edit, SHA-256 comparison of all 130 pre-existing files
+  showed **no changes**. Four D29 files added. D28 files, README, LICENSE,
+  manifest, shipping source, package allowlist and unrelated drafts preserved.
+- No new Firefox run, Mozilla validator run or UI preview. Existing native
+  acceptance gaps and inherited validator warnings remain open.
+
+### Pending acceptance and next exact action
+
+**D29 is partial and unshipped.** Extend `analysis-records.js` header validation
+and contract tests for bounded semantic findings first. Wire evaluation before
+raw values are dropped in `background.js`, retaining current-navigation/request
+correlation and reset rules. Coordinate message version, popup state/rendering
+and scoring; define explicit unknown/not-applicable handling and regression
+tests. Update manifest/package references only with the integrated behavior.
+
+Then follow [the native procedure](../HEADER_POLICIES.md#verification-and-remaining-integration):
+controlled trusted-HTTPS hostname and HTTP/IP fixtures; positive/ineffective/
+missing/repeated fields; cache/304, redirects, same-host tabs and stale events;
+private/container isolation and error clearing. Confirm actual popup/score
+does not treat ineffective values as successful. No browser-enforcement claim
+can be made from the pure evaluator's configured state alone. Record Firefox
+version and exact results before closing D29. Do not start D30.
+
+Final D29 checks: **277 local links across 43 Markdown files pass**; tracked
+and new-file whitespace checks pass. The existing ZIP was not rebuilt: all
+**16 entries match shipping source**, with unchanged SHA-256
+**A7FEE5DA5BE494EE2688DD6FC06AF4262FEA80DBD8F0D2D231C31D81DFF8DF25**.
+Final file hashes show only PROGRESS and this verification record changed among
+pre-existing files, alongside the four new D29 files. No files were staged.
+
+## D28-D29 publication verification — 2026-11-09
+
+The selected publication snapshot excludes unrelated D20 release/contributor
+drafts. All **340 tests pass** with zero failures/skips/todos; runtime lint,
+new module syntax and **258 local links across 40 Markdown files** pass.
+README (including future improvements), LICENSE, manifest and shipping package
+references match the parent commit. Both days remain partial pending production
+integration and native Firefox acceptance; publication is not release approval.

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cookie inspector — Privacy Monitor</title>
+  <link rel="stylesheet" href="requests.css">
+  <link rel="stylesheet" href="cookies.css">
+  <script src="../vendor/tldts/index.umd.min.js" defer></script>
+  <script src="../lib/site-domains.js" defer></script>
+  <script src="../lib/cookie-metadata.js" defer></script>
+  <script src="cookies-view.js" defer></script>
+  <script src="cookies-page.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="brand">Privacy Monitor</p>
+    <h1>Cookie inspector</h1>
+    <p id="page-host"></p>
+    <div class="actions">
+      <button type="button" id="allow" disabled>Allow cookie access</button>
+      <button type="button" id="read" disabled>Read cookie metadata</button>
+    </div>
+  </header>
+  <p id="status" role="status" aria-live="polite" aria-atomic="true">Preparing inspector…</p>
+  <p class="note">Allowing cookie access does not read cookies. Reading also requires access to the active website.</p>
+  <p class="note">Read-only metadata: cookie names and values are not shown. Attributes do not establish a cookie's purpose or whether it is used for tracking.</p>
+  <p class="note">Scope: cookies matching the current page URL in its store, from unpartitioned storage and the selected top-level-site partition. Other frame domains and legacy first-party-isolation cookies are excluded.</p>
+  <section id="results" aria-label="Cookie metadata" aria-busy="false">
+    <p id="scope" hidden></p>
+    <div id="findings"></div>
+  </section>
+  <noscript>JavaScript is required to display cookie metadata.</noscript>
+</main>
+</body>
+</html>

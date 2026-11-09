@@ -1,0 +1,714 @@
+{
+  "cases": [
+    {
+      "name": "positive HSTS lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=31536000"
+      ],
+      "expected": {
+        "state": "configured",
+        "maxAgeSeconds": 31536000,
+        "includeSubDomains": false
+      }
+    },
+    {
+      "name": "HSTS names and whitespace",
+      "header": "Strict-Transport-Security",
+      "values": [
+        " \tMAX-AGE = 60 ; Includesubdomains "
+      ],
+      "expected": {
+        "state": "configured",
+        "maxAgeSeconds": 60,
+        "includeSubDomains": true
+      }
+    },
+    {
+      "name": "quoted HSTS lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=\"60\""
+      ],
+      "expected": {
+        "state": "configured",
+        "maxAgeSeconds": 60
+      }
+    },
+    {
+      "name": "escaped quoted HSTS lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=\"\\6\\0\""
+      ],
+      "expected": {
+        "state": "configured",
+        "maxAgeSeconds": 60
+      }
+    },
+    {
+      "name": "empty HSTS directive slots",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "; ;max-age=60;;"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "extension values can contain separators",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;extension=\"a;b,c\";preload"
+      ],
+      "expected": {
+        "state": "configured",
+        "includeSubDomains": false
+      }
+    },
+    {
+      "name": "first HSTS field wins",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=0",
+        "max-age=60"
+      ],
+      "expected": {
+        "state": "disabled",
+        "maxAgeSeconds": 0,
+        "includeSubDomains": false
+      }
+    },
+    {
+      "name": "later HSTS field does not invalidate first",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60",
+        "broken"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "zero disables subdomain directive too",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=000;includeSubDomains"
+      ],
+      "expected": {
+        "state": "disabled",
+        "includeSubDomains": false
+      }
+    },
+    {
+      "name": "short lifetime remains factual",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=1"
+      ],
+      "expected": {
+        "state": "configured",
+        "maxAgeSeconds": 1
+      }
+    },
+    {
+      "name": "empty HSTS",
+      "header": "Strict-Transport-Security",
+      "values": [
+        ""
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "missing-max-age"
+      }
+    },
+    {
+      "name": "missing lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "includeSubDomains"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "missing-max-age"
+      }
+    },
+    {
+      "name": "missing lifetime value",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-max-age"
+      }
+    },
+    {
+      "name": "negative lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=-1"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-max-age"
+      }
+    },
+    {
+      "name": "decimal lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=1.5"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-max-age"
+      }
+    },
+    {
+      "name": "exponent lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=1e3"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-max-age"
+      }
+    },
+    {
+      "name": "duplicate lifetime",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=0;MAX-AGE=60"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "duplicate-directive"
+      }
+    },
+    {
+      "name": "duplicate subdomains",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60; includeSubDomains; includesubdomains"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "duplicate-directive"
+      }
+    },
+    {
+      "name": "valued subdomains",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;includeSubDomains=true"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "valued-include-subdomains"
+      }
+    },
+    {
+      "name": "duplicate unknown directive",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;preload;PRELOAD"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "duplicate-directive"
+      }
+    },
+    {
+      "name": "joined HSTS fields",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60, max-age=0"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-syntax"
+      }
+    },
+    {
+      "name": "unterminated quote",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;extension=\"oops"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-syntax"
+      }
+    },
+    {
+      "name": "malformed ignored directive",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;extension=a b"
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-syntax"
+      }
+    },
+    {
+      "name": "empty directive value",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60;extension="
+      ],
+      "expected": {
+        "state": "invalid",
+        "reason": "invalid-syntax"
+      }
+    },
+    {
+      "name": "unsafe numeric conversion",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=9007199254740992"
+      ],
+      "expected": {
+        "state": "unavailable",
+        "reason": "max-age-out-of-range"
+      }
+    },
+    {
+      "name": "HSTS HTTP ignored",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60"
+      ],
+      "expected": {
+        "state": "not-applicable",
+        "reason": "insecure-transport"
+      },
+      "url": "http://fixture.example/"
+    },
+    {
+      "name": "HSTS IP https://127.0.0.1/",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60"
+      ],
+      "expected": {
+        "state": "not-applicable",
+        "reason": "ip-address"
+      },
+      "url": "https://127.0.0.1/"
+    },
+    {
+      "name": "HSTS IP https://[::1]/",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60"
+      ],
+      "expected": {
+        "state": "not-applicable",
+        "reason": "ip-address"
+      },
+      "url": "https://[::1]/"
+    },
+    {
+      "name": "HSTS IP https://0x7f000001/",
+      "header": "Strict-Transport-Security",
+      "values": [
+        "max-age=60"
+      ],
+      "expected": {
+        "state": "not-applicable",
+        "reason": "ip-address"
+      },
+      "url": "https://0x7f000001/"
+    },
+    {
+      "name": "missing HSTS",
+      "header": "Strict-Transport-Security",
+      "values": [],
+      "expected": {
+        "state": "absent"
+      }
+    },
+    {
+      "name": "nosniff accepted \"nosniff\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "nosniff accepted \" NoSnIfF\\t\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        " NoSnIfF\t"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "nosniff accepted \"nosniff, ignored\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff, ignored"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "nosniff accepted \"nosniff,\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff,"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "nosniff rejected \"\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        ""
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \"sniff\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "sniff"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \"\\\"nosniff\\\"\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "\"nosniff\""
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \"nosniff=true\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff=true"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \",nosniff\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        ",nosniff"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \"wrong,nosniff\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "wrong,nosniff"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "nosniff rejected \"nosniff ;mode=1\"",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff ;mode=1"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "first nosniff field wins",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "wrong",
+        "nosniff"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "later nosniff field cannot disable first",
+      "header": "X-Content-Type-Options",
+      "values": [
+        "nosniff",
+        "wrong"
+      ],
+      "expected": {
+        "state": "configured"
+      }
+    },
+    {
+      "name": "missing nosniff",
+      "header": "X-Content-Type-Options",
+      "values": [],
+      "expected": {
+        "state": "absent"
+      }
+    },
+    {
+      "name": "referrer no-referrer",
+      "header": "Referrer-Policy",
+      "values": [
+        "no-referrer"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "no-referrer",
+        "sameOrigin": "none",
+        "crossOrigin": "none",
+        "downgrade": "none"
+      }
+    },
+    {
+      "name": "referrer same-origin",
+      "header": "Referrer-Policy",
+      "values": [
+        "same-origin"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "same-origin",
+        "sameOrigin": "url",
+        "crossOrigin": "none",
+        "downgrade": "none"
+      }
+    },
+    {
+      "name": "referrer strict-origin",
+      "header": "Referrer-Policy",
+      "values": [
+        "strict-origin"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "strict-origin",
+        "sameOrigin": "origin",
+        "crossOrigin": "origin",
+        "downgrade": "none"
+      }
+    },
+    {
+      "name": "referrer strict-origin-when-cross-origin",
+      "header": "Referrer-Policy",
+      "values": [
+        "strict-origin-when-cross-origin"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "strict-origin-when-cross-origin",
+        "sameOrigin": "url",
+        "crossOrigin": "origin",
+        "downgrade": "none"
+      }
+    },
+    {
+      "name": "referrer origin",
+      "header": "Referrer-Policy",
+      "values": [
+        "origin"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "origin",
+        "sameOrigin": "origin",
+        "crossOrigin": "origin",
+        "downgrade": "origin"
+      }
+    },
+    {
+      "name": "referrer origin-when-cross-origin",
+      "header": "Referrer-Policy",
+      "values": [
+        "origin-when-cross-origin"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "origin-when-cross-origin",
+        "sameOrigin": "url",
+        "crossOrigin": "origin",
+        "downgrade": "origin"
+      }
+    },
+    {
+      "name": "referrer no-referrer-when-downgrade",
+      "header": "Referrer-Policy",
+      "values": [
+        "no-referrer-when-downgrade"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "no-referrer-when-downgrade",
+        "sameOrigin": "url",
+        "crossOrigin": "url",
+        "downgrade": "none"
+      }
+    },
+    {
+      "name": "referrer unsafe-url",
+      "header": "Referrer-Policy",
+      "values": [
+        "unsafe-url"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "unsafe-url",
+        "sameOrigin": "url",
+        "crossOrigin": "url",
+        "downgrade": "url"
+      }
+    },
+    {
+      "name": "last recognized referrer wins",
+      "header": "Referrer-Policy",
+      "values": [
+        "no-referrer,unsafe-url"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "unsafe-url"
+      }
+    },
+    {
+      "name": "later unknown does not erase fallback",
+      "header": "Referrer-Policy",
+      "values": [
+        "unsafe-url, no-referrer, future-policy"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "no-referrer"
+      }
+    },
+    {
+      "name": "repeated referrer fields preserve order",
+      "header": "Referrer-Policy",
+      "values": [
+        "no-referrer",
+        "unsafe-url"
+      ],
+      "expected": {
+        "state": "permissive",
+        "policy": "unsafe-url"
+      }
+    },
+    {
+      "name": "empty referrer token ignored",
+      "header": "Referrer-Policy",
+      "values": [
+        " , no-referrer , "
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "no-referrer"
+      }
+    },
+    {
+      "name": "quoted comma is not a referrer delimiter",
+      "header": "Referrer-Policy",
+      "values": [
+        "\"future,unsafe-url\",no-referrer"
+      ],
+      "expected": {
+        "state": "configured",
+        "policy": "no-referrer"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"\"",
+      "header": "Referrer-Policy",
+      "values": [
+        ""
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"NO-REFERRER\"",
+      "header": "Referrer-Policy",
+      "values": [
+        "NO-REFERRER"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"\\\"no-referrer\\\"\"",
+      "header": "Referrer-Policy",
+      "values": [
+        "\"no-referrer\""
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"future-policy\"",
+      "header": "Referrer-Policy",
+      "values": [
+        "future-policy"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"no-referrer;unsafe-url\"",
+      "header": "Referrer-Policy",
+      "values": [
+        "no-referrer;unsafe-url"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "unrecognized referrer \"\\\"future,unsafe-url\"",
+      "header": "Referrer-Policy",
+      "values": [
+        "\"future,unsafe-url"
+      ],
+      "expected": {
+        "state": "invalid"
+      }
+    },
+    {
+      "name": "missing referrer",
+      "header": "Referrer-Policy",
+      "values": [],
+      "expected": {
+        "state": "absent"
+      }
+    }
+  ]
+}
